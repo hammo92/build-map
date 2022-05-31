@@ -1,0 +1,190 @@
+// api.test.ts
+import { jest } from "@jest/globals";
+import { api } from "@serverless/cloud";
+import jwt from "jsonwebtoken";
+import { deleteUserById } from "../../user/data";
+import { User } from "../../user/data/user.model";
+import { createDemoUser } from "../../user/tests/data";
+import { deleteOrganisationById } from "../data";
+import { Organisation } from "../data/organisation.model";
+import { createDemoOrganisation } from "./data";
+
+let loggedInUser: User;
+let testUser: User;
+let testOrganisation: Organisation;
+
+beforeAll(async () => {
+    //* create logged in user */
+    loggedInUser = await createDemoUser();
+
+    //* mock auth for user*/
+    jest.spyOn(jwt, "verify").mockImplementation(() => ({
+        id: loggedInUser.id,
+        email: loggedInUser.email,
+    }));
+
+    //* create other user */
+    testUser = await createDemoUser();
+
+    //* create test organisation */
+    testOrganisation = await createDemoOrganisation(testUser.id);
+});
+
+test("Should get an organisation by id", async () => {
+    const { body } = await api
+        .get(`/organisations/${testOrganisation.id}`)
+        .invoke();
+    expect(body.organisation).toEqual(testOrganisation.clean());
+});
+
+describe("create organisation", () => {
+    let organisationId;
+    test("Should create an organisation", async () => {
+        // create organisation from demo organisation
+        const { body } = await api.post(`/organisations`).invoke({
+            name: "new organisation",
+        });
+
+        organisationId = body.organisation.id;
+
+        // response should include cleaned demo organisation
+        expect(body.organisation).toEqual({
+            name: "new organisation",
+            id: expect.any(String),
+            date: expect.any(String),
+            creator_id: loggedInUser.id,
+        });
+    });
+
+    test("Should get all organisations created by logged in user", async () => {
+        const { body } = await api.get(`/me/createdOrganisations`).invoke();
+        // response should include cleaned demo organisation
+        expect(body.organisations).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    name: expect.any(String),
+                    id: expect.any(String),
+                    date: expect.any(String),
+                    creator_id: expect.any(String),
+                }),
+            ])
+        );
+    });
+
+    test("Should get all organisations for test user", async () => {
+        const { body } = await api.get(`/me/organisations`).invoke();
+
+        // response should include cleaned demo organisation
+        expect(body.organisations).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    id: expect.any(String),
+                    name: expect.any(String),
+                    creator_id: expect.any(String),
+                }),
+            ])
+        );
+    });
+
+    // delete created organisation and organisationUsers
+    afterAll(async () => {
+        await deleteOrganisationById(organisationId);
+    });
+});
+
+test("Should update an organisation's name", async () => {
+    const { body } = await api
+        .patch(`/organisations/${testOrganisation.id}`)
+        .invoke({
+            name: "new name",
+        });
+    expect(body.organisation).toEqual({
+        ...testOrganisation.clean(),
+        name: "new name",
+    });
+});
+
+test("Should create an organisation user", async () => {
+    // create organisation user from demo user
+    const { body } = await api
+        .post(`/organisations/${testOrganisation.id}/users`)
+        .invoke({
+            userId: testUser.id,
+        });
+
+    // response should include cleaned demo organisation user
+    expect(body.organisationUser).toEqual({
+        organisation_id: testOrganisation.id,
+        user_id: testUser.id,
+        role_id: expect.any(String),
+    });
+});
+
+test("Should return all users for an organisation", async () => {
+    const { body } = await api
+        .get(`/organisations/${testOrganisation.id}/users`)
+        .invoke();
+    expect(body.users).toEqual(
+        expect.arrayContaining([
+            expect.objectContaining({
+                id: testUser.id,
+                email: testUser.email,
+                name: testUser.name,
+            }),
+        ])
+    );
+});
+
+test("Should return all organisationUsers for an organisation", async () => {
+    const { body } = await api
+        .get(`/organisations/${testOrganisation.id}/organistaionUsers`)
+        .invoke();
+    expect(body.organisationUsers).toEqual(
+        expect.arrayContaining([
+            expect.objectContaining({
+                organisation_id: testOrganisation.id,
+                user_id: testUser.id,
+                role_id: expect.any(String),
+            }),
+        ])
+    );
+});
+
+test("Should delete an organisation user", async () => {
+    const { body } = await api
+        .delete(`/organisations/${testOrganisation.id}/users`)
+        .invoke({
+            userId: testUser.id,
+        });
+
+    // response should include cleaned user
+    expect(body.removed).toEqual(
+        expect.objectContaining({
+            organisation_id: testOrganisation.id,
+            user_id: testUser.id,
+            role_id: expect.any(String),
+        })
+    );
+});
+
+test("Should delete an organisation", async () => {
+    const { body } = await api
+        .delete(`/organisations/${testOrganisation.id}`)
+        .invoke();
+    expect(body.organisation).toEqual(
+        expect.objectContaining({
+            name: "new name",
+            id: testOrganisation.id,
+            date: testOrganisation.date,
+            creator_id: testUser.id,
+        })
+    );
+});
+
+afterAll(async () => {
+    await Promise.all([
+        deleteUserById(loggedInUser.id),
+        deleteUserById(testUser.id),
+        deleteOrganisationById(testOrganisation.id),
+    ]);
+});

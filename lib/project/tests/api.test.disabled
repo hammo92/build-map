@@ -1,0 +1,193 @@
+// api.test.ts
+import { jest } from "@jest/globals";
+import { api } from "@serverless/cloud";
+import jwt from "jsonwebtoken";
+import { deleteOrganisationById } from "../../organisation/data";
+import { Organisation } from "../../organisation/data/organisation.model";
+import { createDemoOrganisation } from "../../organisation/tests/data";
+import { deleteUserById } from "../../user/data";
+import { User } from "../../user/data/userModel";
+import { createDemoUser } from "../../user/tests/data";
+import { deleteProjectById } from "../data";
+import { Project } from "../data/projectModel";
+import { createDemoProject, generateAddress } from "./data";
+
+let loggedInUser: User;
+let testUser: User;
+let testOrganisation: Organisation;
+let testProject: Project;
+
+beforeAll(async () => {
+    //* create logged in user */
+    loggedInUser = await createDemoUser();
+
+    //* mock auth for user*/
+    jest.spyOn(jwt, "verify").mockImplementation(() => ({
+        id: loggedInUser.id,
+        email: loggedInUser.email,
+    }));
+
+    //* create other user */
+    testUser = await createDemoUser();
+
+    //* create test organisation */
+    testOrganisation = await createDemoOrganisation(loggedInUser.id);
+
+    //* create test project */
+    testProject = await createDemoProject({
+        organisationId: testOrganisation.id,
+        userId: loggedInUser.id,
+        withAddress: true,
+    });
+});
+
+test("Should get a project by id", async () => {
+    const { body } = await api.get(`/projects/${testProject.id}`).invoke();
+    expect(body.project).toEqual(testProject.clean());
+});
+
+describe("create project", () => {
+    let projectId;
+    test("Should create a project", async () => {
+        const { body } = await api.post(`/projects`).invoke({
+            name: "new project",
+            organisationId: testOrganisation.id,
+        });
+        projectId = body.project.id;
+        expect(body.project).toEqual({
+            name: "new project",
+            id: expect.any(String),
+            date: expect.any(String),
+            creator_id: loggedInUser.id,
+            is_active: true,
+            organisation_id: testOrganisation.id,
+        });
+    });
+
+    afterAll(async () => {
+        deleteProjectById(projectId);
+    });
+});
+
+test("Should get all projects created by logged in user", async () => {
+    const { body } = await api.get(`/me/createdProjects`).invoke();
+
+    expect(body.projects).toEqual(
+        expect.arrayContaining([testProject.clean()])
+    );
+});
+
+test("Should get all projects for logged in user", async () => {
+    const { body } = await api.get(`/me/projects`).invoke();
+    // response should include cleaned demo project
+    expect(body.projects).toEqual(
+        expect.arrayContaining([testProject.clean()])
+    );
+});
+
+test("Should update an project's name", async () => {
+    const { body } = await api.patch(`/projects/${testProject.id}`).invoke({
+        name: "new name",
+    });
+    expect(body.project).toEqual({
+        ...testProject.clean(),
+        name: "new name",
+    });
+});
+
+test("Should update an project's address with coordinates", async () => {
+    const address = await generateAddress({ withCoordinates: true });
+    const { body } = await api.patch(`/projects/${testProject.id}`).invoke({
+        address,
+    });
+    expect(body.project).toEqual({
+        ...testProject.clean(),
+        name: "new name",
+        address,
+    });
+});
+
+test("Should update an project's postcode", async () => {
+    const address = await generateAddress({ withCoordinates: true });
+    const { body } = await api.patch(`/projects/${testProject.id}`).invoke({
+        address: {
+            postcode: address.postcode,
+        },
+    });
+    expect(body.project).toEqual({
+        ...testProject.clean(),
+        name: "new name",
+        address: {
+            postcode: address.postcode,
+            latitude: address.latitude,
+            longitude: address.longitude,
+        },
+    });
+});
+
+test("Should create a projectUser", async () => {
+    // create project user from demo user
+    const { body } = await api
+        .post(`/projects/${testProject.id}/users`)
+        .invoke({
+            userId: loggedInUser.id,
+        });
+    // response should include cleaned demo project user
+    expect(body.projectUser).toEqual({
+        project_id: testProject.id,
+        user_id: loggedInUser.id,
+        role_id: expect.any(String),
+    });
+});
+
+test("Should return all users for a project", async () => {
+    const { body } = await api
+        .get(`/projects/${testProject.id}/users`)
+        .invoke();
+    expect(body.users).toEqual(
+        expect.arrayContaining([
+            expect.objectContaining({
+                id: loggedInUser.id,
+                email: loggedInUser.email,
+                name: loggedInUser.name,
+            }),
+        ])
+    );
+});
+
+test("Should delete a project user", async () => {
+    const { body } = await api
+        .delete(`/projects/${testProject.id}/users`)
+        .invoke({
+            userId: loggedInUser.id,
+        });
+
+    // response should include cleaned user
+    expect(body.projectUser).toEqual(
+        expect.objectContaining({
+            project_id: testProject.id,
+            user_id: loggedInUser.id,
+            role_id: expect.any(String),
+        })
+    );
+});
+
+test("Should delete a project", async () => {
+    const { body } = await api.delete(`/projects/${testProject.id}`).invoke();
+    expect(body.project).toEqual(
+        expect.objectContaining({
+            ...testProject.clean(),
+            name: "new name",
+            address: expect.any(Object),
+        })
+    );
+});
+
+afterAll(async () => {
+    await Promise.all([
+        deleteUserById(loggedInUser.id),
+        deleteUserById(testUser.id),
+        deleteOrganisationById(testOrganisation.id),
+        deleteProjectById(testProject.id),
+    ]);
+});

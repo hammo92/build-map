@@ -1,0 +1,201 @@
+// api.test.t
+import { jest } from "@jest/globals";
+import { api } from "@serverless/cloud";
+import jwt from "jsonwebtoken";
+import { indexBy } from "serverless-cloud-data-utils";
+import { deleteOrganisationById } from "../../organisation/data";
+import { Organisation } from "../../organisation/data/organisation.model";
+import { createDemoOrganisation } from "../../organisation/tests/data";
+import { deleteProjectById } from "../../project/data";
+import { Project } from "../../project/data/projectModel";
+import { createDemoProject } from "../../project/tests/data";
+import { deleteUserById } from "../../user/data";
+import { User } from "../../user/data/userModel";
+import { createDemoUser } from "../../user/tests/data";
+import { Invitation, InvitationCreator } from "../data/invitation.model";
+import { createDemoInvitation } from "./data";
+
+let loggedInUser: User;
+const testUsers: User[] = [];
+let testOrganisation: Organisation;
+let testProject: Project;
+let testInvitation: Invitation;
+
+beforeAll(async () => {
+    //*create logged in user */
+    loggedInUser = await createDemoUser();
+
+    //* mock auth for user*/
+    jest.spyOn(jwt, "verify").mockImplementation(() => ({
+        id: loggedInUser.id,
+        email: loggedInUser.email,
+    }));
+
+    //* create other users */
+    testUsers.push(await createDemoUser());
+    testUsers.push(await createDemoUser());
+
+    //* create test organisation */
+    testOrganisation = await createDemoOrganisation(loggedInUser.id);
+
+    //* create test project */
+    testProject = await createDemoProject({
+        organisationId: testOrganisation.id,
+        userId: loggedInUser.id,
+    });
+
+    //* create test invitation */
+    testInvitation = await createDemoInvitation({
+        creatorId: testUsers[0].id,
+        email: loggedInUser.email,
+        organisationId: testOrganisation.id,
+        projectId: testProject.id,
+    });
+
+    //await testOrganisations[2].save();
+});
+
+test("Should get a invitation by id", async () => {
+    const { body } = await api
+        .get(`/invitations/${testInvitation.id}`)
+        .invoke();
+    expect(body.invitation).toEqual(testInvitation.clean());
+});
+
+test("Should create a invitation", async () => {
+    // create invitation with logged in user
+    const { body } = await api.post(`/invitations`).invoke({
+        email: testUsers[0].email,
+        organisationId: testOrganisation.id,
+        projectId: testProject.id,
+    });
+    expect(body.invitation).toEqual({
+        email: testUsers[0].email,
+        id: expect.any(String),
+        date: expect.any(String),
+        creator_id: loggedInUser.id,
+        organisation_id: testOrganisation.id,
+        project_id: testProject.id,
+        redeemed: false,
+    });
+});
+
+test("Should get invitations created by logged in user", async () => {
+    const { body } = await api.get(`/me/createdInvitations`).invoke();
+    expect(body.invitations).toEqual([
+        {
+            email: testUsers[0].email,
+            id: expect.any(String),
+            date: expect.any(String),
+            creator_id: loggedInUser.id,
+            organisation_id: testOrganisation.id,
+            project_id: testProject.id,
+            redeemed: false,
+        },
+    ]);
+});
+
+test("Should get invitations by user id", async () => {
+    const { body } = await api
+        .get(`/invitations/user/${testUsers[0].id}`)
+        .invoke();
+    expect(body.invitations).toEqual(
+        expect.arrayContaining([
+            {
+                email: testUsers[0].email,
+                id: expect.any(String),
+                date: expect.any(String),
+                creator_id: loggedInUser.id,
+                organisation_id: testOrganisation.id,
+                project_id: testProject.id,
+                redeemed: false,
+            },
+        ])
+    );
+});
+
+test("Should get invitations by user email", async () => {
+    const { body } = await api
+        .get(`/invitations/user/${testUsers[0].email}`)
+        .invoke();
+    expect(body.invitations).toEqual(
+        expect.arrayContaining([
+            {
+                email: testUsers[0].email,
+                id: expect.any(String),
+                date: expect.any(String),
+                creator_id: loggedInUser.id,
+                organisation_id: testOrganisation.id,
+                project_id: testProject.id,
+                redeemed: false,
+            },
+        ])
+    );
+});
+
+test("Should get invitations for logged in user", async () => {
+    const { body } = await api.get(`/me/invitations`).invoke();
+    expect(body.invitations).toEqual(
+        expect.arrayContaining([testInvitation.clean()])
+    );
+});
+
+test("Should redeem an invitation, with project", async () => {
+    const { body } = await api
+        .get(`/invitations/${testInvitation.id}/redeem`)
+        .invoke();
+
+    //check organisationUser has been created for user
+    const { body: organisationUsers } = await api
+        .get(`/organisations/${testInvitation.organisationId}/users`)
+        .invoke(["salt", "hashedPassword"]);
+
+    //check projectUser has been created for user
+    const { body: projectUsers } = await api
+        .get(`/projects/${testInvitation.projectId}/users`)
+        .invoke(["salt", "hashedPassword"]);
+
+    expect(body.invitation).toEqual({
+        ...testInvitation.clean(),
+        redeemed: true,
+    });
+    expect(organisationUsers.users).toEqual([
+        loggedInUser.clean(["salt", "hashedPassword"]),
+    ]);
+    expect(projectUsers.users).toEqual([
+        loggedInUser.clean(["salt", "hashedPassword"]),
+    ]);
+});
+
+test("Should delete an invitation", async () => {
+    const { body } = await api
+        .delete(`/invitations/${testInvitation.id}`)
+        .invoke();
+    expect(body.invitation).toEqual({
+        ...testInvitation.clean(),
+        redeemed: true,
+    });
+});
+
+test("test description", async () => {});
+
+afterAll(async () => {
+    await Promise.all([
+        // delete all invitations
+        Promise.all(
+            [...testUsers, loggedInUser].map(async (user) => {
+                const invitations = await indexBy(
+                    InvitationCreator(user.id)
+                ).get(Invitation);
+                Promise.all(
+                    invitations.map(async (invitation) => {
+                        invitation.delete();
+                    })
+                );
+                deleteUserById(user.id);
+            })
+        ),
+        deleteProjectById(testProject.id),
+        deleteOrganisationById(testOrganisation.id),
+    ]);
+});
