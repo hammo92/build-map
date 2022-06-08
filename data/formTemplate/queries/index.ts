@@ -6,6 +6,10 @@ import camelcaseKeys from "camelcase-keys";
 import { apiClient } from "data/config";
 import { CleanedSnake, ModelRequired } from "type-helpers";
 
+export type FormTemplateResponse = {
+    formTemplate: FormTemplate;
+};
+
 export async function createFormTemplate({
     name,
     organisationId,
@@ -22,11 +26,43 @@ export async function createFormTemplate({
     return camelcaseKeys(data);
 }
 
+export async function getFormTemplate(formTemplateId: string) {
+    const { data } = await apiClient.get<{
+        formTemplate: CleanedSnake<FormTemplate>;
+    }>(`/formTemplates/${formTemplateId}`);
+    return camelcaseKeys(data, { deep: true });
+}
+
+export async function updateFormTemplate({
+    formTemplateId,
+    name,
+    status,
+}: {
+    formTemplateId: string;
+    name?: string;
+    status?: "draft" | "published";
+}) {
+    const { data } = await apiClient.patch<{
+        formTemplate: CleanedSnake<FormTemplate>;
+    }>(`/formTemplates/${formTemplateId}`, {
+        name,
+        status,
+    });
+    return camelcaseKeys(data, { deep: true });
+}
+
+export async function deleteFormTemplate(formTemplateId: string) {
+    const { data } = await apiClient.delete<{
+        formTemplate: CleanedSnake<FormTemplate>;
+    }>(`/formTemplates/${formTemplateId}`);
+    return camelcaseKeys(data, { deep: true });
+}
+
 export async function getOrganisationFormTemplates(organisationId: string) {
     const { data } = await apiClient.get<{
         formTemplates: CleanedSnake<FormTemplate>[];
     }>(`/organisations/${organisationId}/formTemplates`);
-    return data;
+    return camelcaseKeys(data, { deep: true });
 }
 
 export async function createFormTemplateField({
@@ -37,7 +73,7 @@ export async function createFormTemplateField({
     fieldDetails: ModelRequired<FormTemplateField, "name" | "type">;
 }) {
     const { data } = await apiClient.post<{
-        newField: CleanedSnake<FormTemplateField>;
+        formTemplate: CleanedSnake<FormTemplate>;
     }>(`/formTemplates/${formTemplateId}/fields`, {
         fieldDetails,
     });
@@ -52,9 +88,27 @@ export async function updateFormTemplateField({
     fieldDetails: ModelRequired<FormTemplateField, "id">;
 }) {
     const { data } = await apiClient.patch<{
-        updatedField: CleanedSnake<FormTemplateField>;
+        formTemplate: CleanedSnake<FormTemplate>;
     }>(`/formTemplates/${formTemplateId}/fields/${fieldDetails.id}`, {
         fieldDetails,
+    });
+    return camelcaseKeys(data);
+}
+
+export async function reorderFormTemplateFields({
+    formTemplateId,
+    fromIndex,
+    toIndex,
+}: {
+    formTemplateId: string;
+    fromIndex: number;
+    toIndex: number;
+}) {
+    const { data } = await apiClient.post<{
+        formTemplate: CleanedSnake<FormTemplate>;
+    }>(`/formTemplates/${formTemplateId}/reorderFields`, {
+        fromIndex,
+        toIndex,
     });
     return camelcaseKeys(data);
 }
@@ -67,7 +121,7 @@ export async function deleteFormTemplateField({
     fieldId: string;
 }) {
     const { data } = await apiClient.delete<{
-        deletedField: CleanedSnake<FormTemplateField>;
+        formTemplate: CleanedSnake<FormTemplate>;
     }>(`/formTemplates/${formTemplateId}/fields/${fieldId}`);
     return camelcaseKeys(data);
 }

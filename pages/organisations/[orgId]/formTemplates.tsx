@@ -1,17 +1,11 @@
 import { FormTemplate } from "@components/formTemplate";
+import { FormTemplateCard } from "@components/formTemplate/formTemplate-card";
 import { FormTemplateCreateModal } from "@components/formTemplate/formTemplate-create/formTemplate-create-modal";
 import { NavigationList } from "@components/navigation/link-list";
+import { PageHeader } from "@components/ui/page-header";
 import { useGetOrganisationFormTemplates } from "@data/formTemplate/hooks";
 import { faFile, faHouse, faUser } from "@fortawesome/pro-regular-svg-icons";
-import {
-    Box,
-    Button,
-    Container,
-    Grid,
-    Group,
-    Paper,
-    Title,
-} from "@mantine/core";
+import { Box, Button, Grid, Group, Paper, Title } from "@mantine/core";
 import { LayoutShellSideNav } from "layouts";
 import { GetServerSidePropsContext } from "next";
 import Head from "next/head";
@@ -47,10 +41,9 @@ const HomeSidebar = () => {
 };
 
 function FormTemplatePage({ organisationId }: FormTemplatePageProps) {
-    const { data, isLoading, error } =
-        useGetOrganisationFormTemplates(organisationId);
-    const [active, setActive] = useState(0);
+    const { data } = useGetOrganisationFormTemplates(organisationId);
     const [modalOpen, setModalOpen] = useState(false);
+    //console.log("data", data);
     return (
         <>
             <Head>
@@ -61,51 +54,47 @@ function FormTemplatePage({ organisationId }: FormTemplatePageProps) {
                 />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <Group px="md" direction="column" grow spacing={0}>
-                <Group
-                    direction="row"
-                    position="apart"
-                    sx={{ minHeight: "76px" }}
-                >
-                    <Title order={3}>Form Templates</Title>
+            <Group
+                direction="column"
+                grow
+                spacing={0}
+                sx={{ height: "100%" }}
+                noWrap
+            >
+                <PageHeader title="Form Templates">
                     <Button onClick={() => setModalOpen(true)}>
                         Add Template
                     </Button>
-                </Group>
-                <Box
-                    p="md"
+                </PageHeader>
+                <Grid
                     sx={(theme) => ({
-                        background: theme.colors.dark[6],
-                        borderRadius: theme.radius.md,
+                        borderTop: `1px solid ${theme.colors.dark[6]}`,
                     })}
+                    gutter="md"
+                    px="sm"
+                    mx={0}
                 >
-                    <Grid>
-                        <Grid.Col span={3}>
+                    <Grid.Col
+                        span={3}
+                        sx={(theme) => ({
+                            borderRight: `1px solid ${theme.colors.dark[6]}`,
+                        })}
+                    >
+                        <Group direction="column" grow>
                             {data?.formTemplates?.length
                                 ? data.formTemplates.map((formTemplate, i) => (
-                                      <Paper
+                                      <FormTemplateCard
                                           key={formTemplate.id}
-                                          onClick={() => setActive(i)}
-                                          p={3}
-                                      >
-                                          <Title order={4}>
-                                              {formTemplate.name}
-                                          </Title>
-                                      </Paper>
+                                          formTemplate={formTemplate}
+                                      />
                                   ))
                                 : "No templates Found"}
-                        </Grid.Col>
-                        <Grid.Col span={9}>
-                            {active && data?.formTemplates ? (
-                                <FormTemplate
-                                    formTemplate={data?.formTemplates[active]}
-                                />
-                            ) : (
-                                "Select a form"
-                            )}
-                        </Grid.Col>
-                    </Grid>
-                </Box>
+                        </Group>
+                    </Grid.Col>
+                    <Grid.Col span={9}>
+                        <FormTemplate />
+                    </Grid.Col>
+                </Grid>
             </Group>
             <FormTemplateCreateModal
                 opened={modalOpen}

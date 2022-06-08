@@ -3,8 +3,12 @@ import snakecaseKeys from "snakecase-keys";
 import {
     createFormTemplate,
     createFormTemplateField,
+    deleteFormTemplateById,
     deleteFormTemplateField,
+    getFormTemplateById,
     getOrganisationFormTemplates,
+    reorderFormTemplateFields,
+    updateFormTemplate,
     updateFormTemplateField,
 } from "../data";
 
@@ -29,6 +33,72 @@ export const formTemplates = () => {
             });
         }
     });
+
+    //* Get formTemplate */
+    api.get(
+        `/formTemplates/:formTemplateId`,
+        async function (req: any, res: any) {
+            const { formTemplateId } = req.params;
+
+            try {
+                const formTemplate = await getFormTemplateById(formTemplateId);
+                return res.status(200).send({
+                    formTemplate: formTemplate && formTemplate.clean(),
+                });
+            } catch (error: any) {
+                console.log(error);
+                return res.status(403).send({
+                    message: error.message,
+                });
+            }
+        }
+    );
+
+    //* Update formTemplate  */
+    api.patch(
+        `/formTemplates/:formTemplateId`,
+        async function (req: any, res: any) {
+            const { formTemplateId } = req.params;
+            const { name, status } = req.body;
+
+            try {
+                const formTemplate = await updateFormTemplate({
+                    formTemplateId,
+                    name,
+                    status,
+                });
+                return res.status(200).send({
+                    formTemplate: formTemplate && formTemplate.clean(),
+                });
+            } catch (error: any) {
+                console.log(error);
+                return res.status(403).send({
+                    message: error.message,
+                });
+            }
+        }
+    );
+
+    //* Delete formTemplate */
+    api.delete(
+        `/formTemplates/:formTemplateId`,
+        async function (req: any, res: any) {
+            const { formTemplateId } = req.params;
+            try {
+                const formTemplate = await deleteFormTemplateById(
+                    formTemplateId
+                );
+                return res.status(200).send({
+                    formTemplate: formTemplate && formTemplate.clean(),
+                });
+            } catch (error: any) {
+                console.log(error);
+                return res.status(403).send({
+                    message: error.message,
+                });
+            }
+        }
+    );
 
     //* Get organsation formTemplates */
     api.get(
@@ -63,13 +133,13 @@ export const formTemplates = () => {
             const { formTemplateId } = req.params;
             try {
                 const { user } = req;
-                const newField = await createFormTemplateField({
+                const formTemplate = await createFormTemplateField({
                     formTemplateId,
                     fieldDetails,
                 });
                 return res.status(200).send({
                     // not a model so can't clean, need to send snakecase over network
-                    newField: newField && snakecaseKeys(newField),
+                    formTemplate: formTemplate && formTemplate.clean(),
                 });
             } catch (error: any) {
                 console.log(error);
@@ -88,12 +158,37 @@ export const formTemplates = () => {
             const { formTemplateId, fieldId } = req.params;
             try {
                 const { user } = req;
-                const updatedField = await updateFormTemplateField({
+                const formTemplate = await updateFormTemplateField({
                     formTemplateId,
                     fieldDetails,
                 });
                 return res.status(200).send({
-                    updatedField: updatedField && snakecaseKeys(updatedField),
+                    formTemplate: formTemplate && formTemplate.clean(),
+                });
+            } catch (error: any) {
+                console.log(error);
+                return res.status(403).send({
+                    message: error.message,
+                });
+            }
+        }
+    );
+
+    //* Reorder formTemplate Field */
+    api.post(
+        "/formTemplates/:formTemplateId/reorderFields",
+        async function (req: any, res: any) {
+            const { fromIndex, toIndex } = req.body;
+            const { formTemplateId } = req.params;
+            try {
+                const { user } = req;
+                const formTemplate = await reorderFormTemplateFields({
+                    formTemplateId,
+                    fromIndex,
+                    toIndex,
+                });
+                return res.status(200).send({
+                    formTemplate: formTemplate.clean(),
                 });
             } catch (error: any) {
                 console.log(error);
@@ -112,12 +207,12 @@ export const formTemplates = () => {
             console.log("req.params", req.params);
             try {
                 const { user } = req;
-                const deletedField = await deleteFormTemplateField({
+                const formTemplate = await deleteFormTemplateField({
                     formTemplateId,
                     fieldId,
                 });
                 return res.status(200).send({
-                    deletedField: deletedField && snakecaseKeys(deletedField),
+                    formTemplate: formTemplate && formTemplate.clean(),
                 });
             } catch (error: any) {
                 console.log(error);

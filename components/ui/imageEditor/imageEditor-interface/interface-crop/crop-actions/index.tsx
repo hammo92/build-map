@@ -16,7 +16,7 @@ const CropButton = () => {
         });
     };
     return (
-        <Button color="teal" onClick={() => crop()}>
+        <Button color="blue" onClick={() => crop()}>
             Crop
         </Button>
     );

@@ -1,28 +1,14 @@
 import {
-    faAt,
-    faE,
-    faSquareCheck,
     fa1,
-    faText,
-    faParagraph,
-    faImage,
+    faAt,
     faCalendar,
-    faBallotCheck,
+    faImage,
     faListDropdown,
+    faParagraph,
+    faSquareCheck,
+    faText,
 } from "@fortawesome/pro-regular-svg-icons";
-import { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
-import { Omit } from "utility-types";
-
-export interface FieldTypeProps {
-    type: string;
-    description: string;
-    label: string;
-    icon: FontAwesomeIconProps["icon"];
-    config?: {
-        subtype?: { type: string; description: string; label: string }[];
-        [key: string]: any;
-    };
-}
+import { FieldTypeProps } from "./formTemplateTypes";
 
 // object key must match type
 export const FIELD_TYPES: { [type: string]: FieldTypeProps } = {
@@ -44,7 +30,6 @@ export const FIELD_TYPES: { [type: string]: FieldTypeProps } = {
                     label: "Multiple",
                 },
             ],
-            options: [],
         },
     },
     boolean: {
@@ -52,11 +37,10 @@ export const FIELD_TYPES: { [type: string]: FieldTypeProps } = {
         description: "Yes or no",
         label: "Boolean",
         icon: faSquareCheck,
-        config: {},
     },
     number: {
         type: "number",
-        description: "Numbers (intergers, float, decimal)",
+        description: "Numbers (integers, float, decimal)",
         label: "Number",
         icon: fa1,
         config: {
@@ -104,7 +88,6 @@ export const FIELD_TYPES: { [type: string]: FieldTypeProps } = {
         description: "Text with formatting options",
         label: "Rich Text",
         icon: faParagraph,
-        config: {},
     },
     image: {
         type: "image",
@@ -156,7 +139,6 @@ export const FIELD_TYPES: { [type: string]: FieldTypeProps } = {
         description: "An Email address",
         label: "Email",
         icon: faAt,
-        config: {},
     },
 };
 

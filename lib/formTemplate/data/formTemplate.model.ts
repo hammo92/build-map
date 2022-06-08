@@ -20,6 +20,8 @@ export interface FormTemplateField {
     description?: string;
     config?: {
         subtype?: string;
+        editableBy?: "all" | "issuer" | "recipient";
+        visibleTo?: "all" | "issuer" | "recipient";
         [key: string]: any;
     };
 }

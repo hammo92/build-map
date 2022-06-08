@@ -60,38 +60,6 @@ export async function createFormTemplate({
     return newFormTemplate;
 }
 
-//* Create formTemplateField */
-export async function createFormTemplateField(props: {
-    formTemplateId: string;
-    fieldDetails: ModelRequired<FormTemplateField, "name" | "type">;
-}) {
-    errorRequiredPropsUndefined({
-        props,
-        propPaths: ["formTemplateId", "fieldDetails.name", "fieldDetails.type"],
-    });
-
-    const { formTemplateId, fieldDetails } = props;
-
-    const formTemplate = await indexBy(FormTemplateId)
-        .exact(formTemplateId)
-        .get(FormTemplate);
-
-    if (!formTemplate) throw new Error("No form template found");
-
-    const newField = {
-        ...fieldDetails,
-        id: uuidv4(),
-        active: true,
-    };
-    console.log("newField", newField);
-    console.log("formTemplate", formTemplate);
-
-    formTemplate.fields.push(newField);
-
-    await formTemplate.save();
-    return newField;
-}
-
 //* Get formTemplate by id */
 export async function getFormTemplateById(formTemplateId: string) {
     errorUndefined({ formTemplateId });
@@ -129,21 +97,53 @@ export async function deleteFormTemplateById(formTemplateId: string) {
 export async function updateFormTemplate({
     formTemplateId,
     name,
+    status,
 }: {
     formTemplateId: string;
     name?: string;
+    status?: "draft" | "published";
 }) {
     errorUndefined({ formTemplateId });
     const formTemplate = await indexBy(FormTemplateId)
         .exact(formTemplateId)
         .get(FormTemplate);
-
-    errorUndefined({ formTemplate }, "notFound");
-
+    if (!formTemplate) throw new Error("No form template found");
     if (name) {
-        formTemplate!.name = name;
+        formTemplate.name = name;
+    }
+    if (status) {
+        formTemplate.status = status;
     }
     await formTemplate!.save();
+    return formTemplate;
+}
+
+//* Create formTemplateField */
+export async function createFormTemplateField(props: {
+    formTemplateId: string;
+    fieldDetails: ModelRequired<FormTemplateField, "name" | "type">;
+}) {
+    errorRequiredPropsUndefined({
+        props,
+        propPaths: ["formTemplateId", "fieldDetails.name", "fieldDetails.type"],
+    });
+
+    const { formTemplateId, fieldDetails } = props;
+
+    const formTemplate = await indexBy(FormTemplateId)
+        .exact(formTemplateId)
+        .get(FormTemplate);
+
+    if (!formTemplate) throw new Error("No form template found");
+
+    const newField = {
+        ...fieldDetails,
+        id: uuidv4(),
+        active: true,
+    };
+    formTemplate.fields.push(newField);
+
+    await formTemplate.save();
     return formTemplate;
 }
 
@@ -178,7 +178,38 @@ export async function updateFormTemplateField(props: {
     };
 
     await formTemplate.save();
-    return formTemplate.fields[fieldIndexToUpdate];
+    return formTemplate;
+}
+
+//* Reorder formTemplateFields */
+export async function reorderFormTemplateFields(props: {
+    formTemplateId: string;
+    fromIndex: number;
+    toIndex: number;
+}) {
+    errorRequiredPropsUndefined({
+        props,
+        propPaths: ["formTemplateId", "fromIndex", "toIndex"],
+    });
+
+    const { formTemplateId, fromIndex, toIndex } = props;
+    const formTemplate = await indexBy(FormTemplateId)
+        .exact(formTemplateId)
+        .get(FormTemplate);
+
+    if (!formTemplate) throw new Error("No form template found");
+
+    const clonedFields = [...formTemplate.fields];
+    const field = formTemplate.fields[fromIndex];
+
+    clonedFields.splice(fromIndex, 1);
+    clonedFields.splice(toIndex, 0, field);
+
+    // update field on template
+    formTemplate.fields = clonedFields;
+
+    await formTemplate.save();
+    return formTemplate;
 }
 
 //* Delete formTemplate field */
@@ -200,12 +231,16 @@ export async function deleteFormTemplateField(props: {
 
     if (!formTemplate) throw new Error("No form template found");
 
-    const fieldToDelete = formTemplate.fields.find(({ id }) => id === fieldId);
-    console.log("fieldToDelete", fieldToDelete);
     const fields = formTemplate.fields.filter(({ id }) => id !== fieldId);
 
     formTemplate.fields = fields;
+
+    //if no fields left set formTemplate status to draft
+    if (!fields.length) {
+        formTemplate.status = "draft";
+    }
+
     await formTemplate.save();
 
-    return fieldToDelete;
+    return formTemplate;
 }

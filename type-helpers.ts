@@ -4,7 +4,18 @@ import { Required } from "utility-types";
 // strip properties from model that are not data keys
 export type StripModel<T> = Omit<
     T,
-    "clean" | "__snapshot" | "save" | "delete" | "keys" | "primary"
+    | "clean"
+    | "__snapshot"
+    | "save"
+    | "delete"
+    | "keys"
+    | "primary"
+    | "shadowKeys"
+    | "updateShadowSnapshots"
+    | "resolveShadowKeys"
+    | "UNSAFE_shadowKeysUnbounded"
+    | "__shadowSnapshots"
+    | "secondaries"
 >;
 
 // set all to partial except provided keys

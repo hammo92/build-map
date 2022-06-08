@@ -1,8 +1,9 @@
 import { useCreateFormTemplate } from "@data/formTemplate/hooks";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { useForm } from "@mantine/form";
 import { Box, Button, Group, Modal, TextInput } from "@mantine/core";
 import { useRouter } from "next/router";
+import { formTemplateState } from "@state/formTemplate";
 
 interface FormTemplateCreateModalProps {
     opened: boolean;
@@ -14,6 +15,7 @@ export const FormTemplateCreateModal: FC<FormTemplateCreateModalProps> = ({
     onClose,
 }) => {
     const { query } = useRouter();
+    const [loading, setLoading] = useState(false);
     const form = useForm({
         initialValues: {
             name: "",
@@ -29,10 +31,13 @@ export const FormTemplateCreateModal: FC<FormTemplateCreateModalProps> = ({
             <Box>
                 <form
                     onSubmit={form.onSubmit(async ({ name }) => {
-                        await mutateAsync({
+                        setLoading(true);
+                        const { newFormTemplate } = await mutateAsync({
                             name,
                             organisationId: query.orgId! as string,
                         });
+                        //set new formTemplate as active in state
+                        formTemplateState.formTemplateId = newFormTemplate.id;
                         onClose();
                     })}
                 >
@@ -44,7 +49,9 @@ export const FormTemplateCreateModal: FC<FormTemplateCreateModalProps> = ({
                     />
 
                     <Group position="right" mt="md">
-                        <Button type="submit">Submit</Button>
+                        <Button disabled={loading} type="submit">
+                            Submit
+                        </Button>
                     </Group>
                 </form>
             </Box>

@@ -35,7 +35,7 @@ export const OrganisationInviteListItem = ({ invitation, org }) => {
                         <Text transform="capitalize">{org.name}</Text>
                         <Text
                             size="sm"
-                            color={invitationRedeemed ? "teal" : "orange"}
+                            color={invitationRedeemed ? "blue" : "orange"}
                         >
                             {invitationRedeemed ? "Joined" : "Pending"}
                         </Text>
