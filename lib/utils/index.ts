@@ -2,7 +2,7 @@ import { Model } from "serverless-cloud-data-utils";
 import { KeyPath, StripModel } from "type-helpers";
 
 // throw an error with the property name/names which are missing
-export function errorUndefined(
+export function errorIfUndefined(
     props: { [key: string]: any },
     errorType: "notProvided" | "notFound" = "notProvided"
 ) {

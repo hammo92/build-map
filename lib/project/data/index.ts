@@ -14,7 +14,7 @@ import {
 } from "./projectModel";
 import { params } from "@serverless/cloud";
 import { getUserById } from "../../../lib/user/data";
-import { errorNotFound, errorUndefined } from "../../../lib/utils";
+import { errorNotFound, errorIfUndefined } from "../../../lib/utils";
 import { Oso } from "oso-cloud";
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
@@ -32,10 +32,10 @@ export async function createProject({
     address?: Address;
     jobNumber?: string;
 }) {
-    errorUndefined({ name, userId, organisationId });
+    errorIfUndefined({ name, userId, organisationId });
 
     const user = await getUserById(userId);
-    errorUndefined({ user }, "notFound");
+    errorIfUndefined({ user }, "notFound");
 
     // create project
     const newProject = new Project();
@@ -95,7 +95,7 @@ export async function updateProject({
     name?: string;
     address?: Address;
 }) {
-    errorUndefined({ projectId });
+    errorIfUndefined({ projectId });
     const project = await indexBy(ProjectId).exact(projectId).get(Project);
     if (!project) {
         throw new Error("No project found");
@@ -122,10 +122,10 @@ export async function updateProject({
 
 //* Delete project by id */
 export async function deleteProjectById(projectId: string) {
-    errorUndefined({ projectId });
+    errorIfUndefined({ projectId });
     // get project
     const project = await indexBy(ProjectId).exact(projectId).get(Project);
-    errorUndefined({ project }, "notFound");
+    errorIfUndefined({ project }, "notFound");
 
     // get all ProjectUsers
     const projectUsers =
@@ -148,14 +148,14 @@ export async function deleteProjectById(projectId: string) {
 
 //* Get all projects created by a user */
 export async function getProjectsByCreator(ownerId: string) {
-    errorUndefined({ ownerId });
+    errorIfUndefined({ ownerId });
     const projects = await indexBy(ProjectCreator(ownerId)).get(Project);
     return projects;
 }
 
 //* Get all projects for an organisation */
 export async function getProjectsByOrgId(organisationId: string) {
-    errorUndefined({ organisationId });
+    errorIfUndefined({ organisationId });
     const projects = await indexBy(ProjectOrg(organisationId)).get(Project);
     return projects;
 }
@@ -168,7 +168,7 @@ export async function createProjectUser({
     projectId: string;
     userId: string;
 }) {
-    errorUndefined({ projectId, userId });
+    errorIfUndefined({ projectId, userId });
     // create organisationUser for creator
     const newProjectUser = new ProjectUser();
     newProjectUser.projectId = projectId;
@@ -186,7 +186,7 @@ export async function removeUserFromProject({
     projectId: string;
     userId: string;
 }) {
-    errorUndefined({ projectId, userId });
+    errorIfUndefined({ projectId, userId });
     const projectUser = await indexBy(UserProjects(userId))
         .exact(projectId)
         .get(ProjectUser);
@@ -199,7 +199,7 @@ export async function removeUserFromProject({
 
 //* Get all projectUsers for a user */
 export async function getUserProjectUsers(userId: string) {
-    errorUndefined({ userId });
+    errorIfUndefined({ userId });
     const projectUsers = await indexBy(UserProjects(userId)).get(ProjectUser);
     return projectUsers;
 }
@@ -212,7 +212,7 @@ export async function getUserProjects(userId: string) {
         "Project"!
     );
     console.log("canRead", canRead);
-    errorUndefined({ userId });
+    errorIfUndefined({ userId });
     const projectUsers = await indexBy(UserProjects(userId)).get(ProjectUser);
     const projects = await Promise.all(
         projectUsers.map(
@@ -225,7 +225,7 @@ export async function getUserProjects(userId: string) {
 
 //* Get all projectUsers for a project */
 export async function getProjectProjectUsers(projectId: string) {
-    errorUndefined({ projectId });
+    errorIfUndefined({ projectId });
     const projectUsers = await indexBy(ProjectUsers(projectId)).get(
         ProjectUser
     );
@@ -234,7 +234,7 @@ export async function getProjectProjectUsers(projectId: string) {
 
 //* Get all users for a project */
 export async function getProjectUsers(projectId: string) {
-    errorUndefined({ projectId });
+    errorIfUndefined({ projectId });
     const projectUsers = await indexBy(ProjectUsers(projectId)).get(
         ProjectUser
     );

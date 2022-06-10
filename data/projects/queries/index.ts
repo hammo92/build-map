@@ -1,6 +1,7 @@
 import { Project } from "@lib/project/data/projectModel";
+import camelcaseKeys from "camelcase-keys";
 import { apiClient } from "data/config";
-import { CleanedSnake, StripModel } from "type-helpers";
+import { CleanedSnake } from "type-helpers";
 
 export async function createProject({
     name,
@@ -16,7 +17,7 @@ export async function createProject({
             organisationId,
         }
     );
-    return data;
+    return camelcaseKeys(data);
 }
 
 export async function getMyProjects() {
@@ -30,7 +31,7 @@ export async function deleteProject({ projectId }: { projectId: string }) {
     const { data } = await apiClient.delete<{ project: CleanedSnake<Project> }>(
         `/projects/${projectId}`
     );
-    return data;
+    return camelcaseKeys(data);
 }
 
 export async function getOrgProjects({
@@ -39,5 +40,5 @@ export async function getOrgProjects({
     organisationId: string;
 }) {
     const { data } = await apiClient.get(`/org/${organisationId}/projects`);
-    return data;
+    return camelcaseKeys(data);
 }

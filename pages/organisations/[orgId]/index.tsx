@@ -1,4 +1,4 @@
-import { NavigationList } from "@components/navigation/link-list";
+import { NavigationList } from "@components/navigation/linkList";
 import { ProjectCreateButton } from "@components/project/project-create";
 import { ProjectList } from "@components/project/project-list";
 import { useGetMe } from "@data/user/hooks";
@@ -15,7 +15,7 @@ interface OrganisationPageProps {
     organisationId: string;
 }
 
-const HomeSidebar = () => {
+const OrgSidebar = () => {
     return (
         <NavigationList
             items={[
@@ -26,9 +26,9 @@ const HomeSidebar = () => {
                     active: true,
                 },
                 {
-                    link: "formTemplates",
+                    link: "contentTypes",
                     icon: faFile,
-                    text: "Form Templates",
+                    text: "Content Types",
                 },
                 {
                     link: "/users",
@@ -99,7 +99,7 @@ function OrganisationPage({ organisationId }: OrganisationPageProps) {
 
 OrganisationPage.getLayout = (page: ReactElement) => (
     <LayoutShellSideNav
-        sidebarContent={<HomeSidebar />}
+        sidebarContent={<OrgSidebar />}
         headerProps={{ title: "Dashboard" }}
     >
         {page}

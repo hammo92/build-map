@@ -16,7 +16,7 @@ const pbkdf2 = util.promisify(crypto.pbkdf2);
 const TOKEN_SECRET = params.TOKEN_SECRET;
 
 export const USER_UUID_NAMESPACE = "9738E54D-3350-402B-9849-35F0ECEB772C";
-import { errorUndefined } from "../../utils";
+import { errorIfUndefined } from "../../utils";
 
 //* Create user token */
 export async function createUserToken({
@@ -67,7 +67,7 @@ export async function createUser({
             throw new Error(`${arg} is not defined`);
         }
     });
-    errorUndefined([email, name, password]);
+    errorIfUndefined([email, name, password]);
     // Check email isn't already in use
     const user = await getUserByEmail(email);
     if (user) {
@@ -106,7 +106,7 @@ export async function updateUser({
     password?: string;
     nickname?: string;
 }) {
-    errorUndefined([userId]);
+    errorIfUndefined([userId]);
 
     const user = await indexBy(UserId).exact(userId).get(User);
     if (!user) {
@@ -141,7 +141,7 @@ export async function updateUser({
 
 //* Get user by id */
 export async function getUserById(userId: string) {
-    errorUndefined([userId]);
+    errorIfUndefined([userId]);
     const user = await indexBy(UserId).exact(userId).get(User);
     if (!user) {
         throw new Error("No user exists for this email");
@@ -151,7 +151,7 @@ export async function getUserById(userId: string) {
 
 //* Delete user by id */
 export async function deleteUserById(userId: string) {
-    errorUndefined([userId]);
+    errorIfUndefined([userId]);
     const user = await indexBy(UserId).exact(userId).get(User);
     if (!user) {
         throw new Error("No user exists for this email");
@@ -163,7 +163,7 @@ export async function deleteUserById(userId: string) {
 
 //* Get user by email */
 export async function getUserByEmail(userEmail: string) {
-    errorUndefined([userEmail]);
+    errorIfUndefined([userEmail]);
     const userId = uuidv5(userEmail, USER_UUID_NAMESPACE);
     const user = await indexBy(UserId).exact(userId).get(User);
     if (!user) {

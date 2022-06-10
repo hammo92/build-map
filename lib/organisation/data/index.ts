@@ -1,5 +1,5 @@
 import { getUserById } from "../../user/data";
-import { errorUndefined } from "../../utils";
+import { errorIfUndefined } from "../../utils";
 import { indexBy } from "serverless-cloud-data-utils";
 import { v4 as uuidv4 } from "uuid";
 import { User, UserId } from "../../user/data/user.model";
@@ -24,9 +24,9 @@ export async function createOrganisation({
     name: string;
     userId: string;
 }) {
-    errorUndefined({ name, userId });
+    errorIfUndefined({ name, userId });
     const user = await getUserById(userId);
-    errorUndefined({ user }, "notFound");
+    errorIfUndefined({ user }, "notFound");
     // create organisation
     const newOrganisation = new Organisation();
     newOrganisation.name = name;
@@ -51,7 +51,7 @@ export async function createOrganisation({
 
 //* Get organisation by id */
 export async function getOrganisationById(organisationId: string) {
-    errorUndefined({ organisationId });
+    errorIfUndefined({ organisationId });
     const organisation = await indexBy(OrganisationId)
         .exact(organisationId)
         .get(Organisation);
@@ -60,7 +60,7 @@ export async function getOrganisationById(organisationId: string) {
 
 //* Delete organisation by id */
 export async function deleteOrganisationById(organisationId: string) {
-    errorUndefined({ organisationId });
+    errorIfUndefined({ organisationId });
     // get organisation
     const organisation = await indexBy(OrganisationId)
         .exact(organisationId)
@@ -91,12 +91,12 @@ export async function updateOrganisation({
     organisationId: string;
     name?: string;
 }) {
-    errorUndefined({ organisationId });
+    errorIfUndefined({ organisationId });
     const organisation = await indexBy(OrganisationId)
         .exact(organisationId)
         .get(Organisation);
 
-    errorUndefined({ organisation }, "notFound");
+    errorIfUndefined({ organisation }, "notFound");
 
     if (name) {
         organisation!.name = name;
@@ -107,7 +107,7 @@ export async function updateOrganisation({
 
 //* Get all organisations created by a user */
 export async function getOrganisationsByCreator(ownerId: string) {
-    errorUndefined({ ownerId });
+    errorIfUndefined({ ownerId });
     const organisations = await indexBy(OrganisationCreator(ownerId)).get(
         Organisation
     );
@@ -122,7 +122,7 @@ export async function createOrganisationtUser({
     organisationId: string;
     userId: string;
 }) {
-    errorUndefined({ organisationId, userId });
+    errorIfUndefined({ organisationId, userId });
     // create organisationUser for creator
     const newOrganisationUser = new OrganisationUser();
     newOrganisationUser.organisationId = organisationId;
@@ -134,7 +134,7 @@ export async function createOrganisationtUser({
 
 //* Get all users for an organisation */
 export async function getOrganisationUsers(organisationId: string) {
-    errorUndefined({ organisationId });
+    errorIfUndefined({ organisationId });
     const organisationUsers = await indexBy(
         OrganisationUsers(organisationId)
     ).get(OrganisationUser);
@@ -149,7 +149,7 @@ export async function getOrganisationUsers(organisationId: string) {
 
 //* Get all organisationUsers for an organisation */
 export async function getOrganisationOrganisationUsers(organisationId: string) {
-    errorUndefined({ organisationId });
+    errorIfUndefined({ organisationId });
     const organisationUsers = await indexBy(
         OrganisationUsers(organisationId)
     ).get(OrganisationUser);
@@ -158,7 +158,7 @@ export async function getOrganisationOrganisationUsers(organisationId: string) {
 
 //* Get all organisationUsers for a user */
 export async function getUserOrganisationUsers(userId: string) {
-    errorUndefined({ userId });
+    errorIfUndefined({ userId });
     const organisationUsers = await indexBy(UserOrganisations(userId)).get(
         OrganisationUser
     );
@@ -167,7 +167,7 @@ export async function getUserOrganisationUsers(userId: string) {
 
 //* Get all organisations a user is a member of */
 export async function getUserOrganisations(userId: string) {
-    errorUndefined({ userId });
+    errorIfUndefined({ userId });
     const userOrganisationUserEntries = await getUserOrganisationUsers(userId);
     const organisations = await Promise.all(
         userOrganisationUserEntries.map(({ organisationId }) =>
@@ -185,12 +185,12 @@ export async function removeUserFromOrganisation({
     organisationId: string;
     userId: string;
 }) {
-    errorUndefined({ organisationId, userId });
+    errorIfUndefined({ organisationId, userId });
     const user = await indexBy(UserOrganisations(userId))
         .exact(organisationId)
         .get(OrganisationUser);
 
-    errorUndefined({ user }, "notFound");
+    errorIfUndefined({ user }, "notFound");
     await user!.delete();
     return user;
 }

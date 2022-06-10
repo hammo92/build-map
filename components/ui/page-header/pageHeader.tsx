@@ -14,7 +14,7 @@ export const PageHeader: FC<PageHeaderProps> = ({ title, children }) => {
             sx={{ minHeight: "76px" }}
         >
             <Title order={3}>{title}</Title>
-            {children}
+            <Group>{children}</Group>
         </Group>
     );
 };

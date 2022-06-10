@@ -1,14 +1,14 @@
+import { useDeleteProject } from "@data/projects/hooks";
 import { faArrowRight, faTrash } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ActionIcon, Card, Group, Text } from "@mantine/core";
-import React, { FC } from "react";
-import { useRouter } from "next/router";
 import { Project } from "@lib/project/data/projectModel";
-import { CleanedSnake } from "type-helpers";
-import { useDeleteProject } from "@data/projects/hooks";
+import { ActionIcon, Card, Group, Text } from "@mantine/core";
+import { useRouter } from "next/router";
+import React, { FC } from "react";
+import { CleanedCamel } from "type-helpers";
 
 interface ProjectListItemProps {
-    project: CleanedSnake<Project>;
+    project: CleanedCamel<Project>;
 }
 
 export const ProjectListItem: FC<ProjectListItemProps> = ({ project }) => {
@@ -22,8 +22,7 @@ export const ProjectListItem: FC<ProjectListItemProps> = ({ project }) => {
                 width: "100%",
                 background: theme.colors.dark[5],
             })}
-
-            //onClick={() => router.push(`/project/${project.id}`)}
+            onClick={() => router.push(`/projects/${project.id}`)}
         >
             <Group position="apart">
                 <Group direction="column" spacing="xs">

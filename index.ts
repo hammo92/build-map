@@ -2,7 +2,8 @@ import { users } from "./lib/user/endpoints";
 import { organisations } from "./lib/organisation/endpoints";
 import { projects } from "./lib/project/endpoints";
 import { invitations } from "./lib/invitation/endpoints";
-import { formTemplates } from "./lib/formTemplate/endpoints";
+import { contentTypes } from "./lib/contentType/endpoints";
+import { content } from "./lib/content/endpoints";
 import { schedule, api } from "@serverless/cloud";
 import cors from "cors";
 
@@ -16,4 +17,5 @@ users();
 organisations();
 invitations();
 projects();
-formTemplates();
+contentTypes();
+content();

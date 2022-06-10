@@ -26,3 +26,14 @@ export const moveInArray = (array: any[], from: number, to: number) => {
     clonedArray.splice(to, 0, toMove);
     return clonedArray;
 };
+
+export const chunkArray = (array: any[], chunkSize: number) => {
+    const chunkedArray = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+        const chunk = array.slice(i, i + chunkSize);
+        chunkedArray.push(chunk);
+    }
+    return chunkedArray;
+};
+
+export const removeDuplicatesFromArray = (array: any[]) => [...new Set(array)];
