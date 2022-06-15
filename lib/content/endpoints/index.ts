@@ -8,17 +8,17 @@ import {
 export const content = () => {
     //* Create content */
     api.post("/content", async function (req: any, res: any) {
-        const { contentTypeId, projectId } = req.body;
+        const { contentTemplateId, projectId } = req.body;
         try {
             const { user } = req;
-            const { newContent, contentType } = await createContent({
-                contentTypeId,
+            const { newContent, contentTemplate } = await createContent({
+                contentTemplateId,
                 projectId,
                 userId: user.id,
             });
             return res.status(200).send({
                 newContent: newContent && newContent.clean(),
-                contentType: contentType && contentType.clean(),
+                contentTemplate: contentTemplate && contentTemplate.clean(),
             });
         } catch (error: any) {
             console.log(error);
@@ -33,10 +33,12 @@ export const content = () => {
         const { contentId } = req.params;
 
         try {
-            const { content, contentType } = await getContentById(contentId);
+            const { content, contentTemplate } = await getContentById(
+                contentId
+            );
             return res.status(200).send({
                 content: content && content.clean(),
-                contentType: contentType && contentType.clean(),
+                contentTemplate: contentTemplate && contentTemplate.clean(),
             });
         } catch (error: any) {
             console.log(error);
@@ -48,19 +50,20 @@ export const content = () => {
 
     //* Get all content of type for project */
     api.get(
-        `/projects/:projectId/contentTypes/:contentTypeId`,
+        `/projects/:projectId/contentTemplates/:contentTemplateId`,
         async function (req: any, res: any) {
             try {
-                const { projectId, contentTypeId } = req.params;
-                const { content, contentType } = await getProjectContentOfType({
-                    contentTypeId,
-                    projectId,
-                });
+                const { projectId, contentTemplateId } = req.params;
+                const { content, contentTemplate } =
+                    await getProjectContentOfType({
+                        contentTemplateId,
+                        projectId,
+                    });
                 return res.status(200).send({
                     content: content.length
                         ? content.map((content) => content.clean())
                         : [],
-                    contentType: contentType && contentType.clean(),
+                    contentTemplate: contentTemplate && contentTemplate.clean(),
                 });
             } catch (error: any) {
                 console.log(error);

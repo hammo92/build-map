@@ -31,15 +31,15 @@ import React, { FC, useState } from "react";
 import { chunkArray, removeDuplicatesFromArray } from "utils/arrayModify";
 import tinyColor from "tinycolor2";
 import { useStyles } from "./styles";
-import { ContentTypeIcon } from "@lib/contentType/data/contentType.model";
+import { ContentTemplateIcon } from "@lib/contentTemplate/data/contentTemplate.model";
 import { useUncontrolled } from "@mantine/hooks";
 
 interface IconPickerProps {
     perPage?: number;
     cols?: number;
-    defaultValue?: Partial<ContentTypeIcon>;
-    value?: Partial<ContentTypeIcon>;
-    onChange: ({ icon, color }: ContentTypeIcon) => void;
+    defaultValue?: Partial<ContentTemplateIcon>;
+    value?: Partial<ContentTemplateIcon>;
+    onChange: ({ icon, color }: ContentTemplateIcon) => void;
 }
 
 export const IconPicker: FC<IconPickerProps> = ({

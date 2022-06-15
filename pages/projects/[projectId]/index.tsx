@@ -1,7 +1,7 @@
 import { NavigationList } from "@components/navigation/linkList";
 import { ProjectCreateButton } from "@components/project/project-create";
 import { ProjectList } from "@components/project/project-list";
-import { useGetOrganisationContentTypes } from "@data/contentType/hooks";
+import { useGetOrganisationContentTemplates } from "@data/contentTemplate/hooks";
 import { useGetMe } from "@data/user/hooks";
 import {
     faCompassDrafting,
@@ -33,16 +33,16 @@ interface ProjectPageProps {
     projectDetails: CleanedCamel<Project>;
 }
 
-const ContentTypesNavigationList = ({
+const ContentTemplatesNavigationList = ({
     organisationId,
 }: {
     organisationId: string;
 }) => {
-    const { data } = useGetOrganisationContentTypes(organisationId);
-    if (data?.contentTypes) {
+    const { data } = useGetOrganisationContentTemplates(organisationId);
+    if (data?.contentTemplates) {
         return (
             <NavigationList
-                items={data?.contentTypes
+                items={data?.contentTemplates
                     ?.filter(({ status }) => status === "published")
                     .map(({ name, icon }) => ({
                         link: `/content/${name}`,
@@ -81,7 +81,7 @@ const ProjectSidebar = () => {
                 ]}
             />
             {activeOrganisation.length > 1 && (
-                <ContentTypesNavigationList
+                <ContentTemplatesNavigationList
                     organisationId={activeOrganisation}
                 />
             )}

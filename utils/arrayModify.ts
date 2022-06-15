@@ -1,3 +1,5 @@
+import { KeyPath } from "type-helpers";
+
 export const reorderArray = (array: any[], from: number, to: number) => {
     const clone = [...array];
     const fromValue = clone[from];
@@ -37,3 +39,14 @@ export const chunkArray = (array: any[], chunkSize: number) => {
 };
 
 export const removeDuplicatesFromArray = (array: any[]) => [...new Set(array)];
+
+//* Convert array to object with array items indexed by key */
+export function objArrayToMapIndexedByValue<T>(array: T[], key: KeyPath<T>) {
+    const path = key.split(".");
+    const map = new Map();
+    array.forEach((obj) => {
+        const value = path.reduce((acc, step) => acc[step], obj);
+        map.set(value, obj);
+    });
+    return map;
+}

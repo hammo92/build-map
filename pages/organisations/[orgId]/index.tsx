@@ -26,9 +26,9 @@ const OrgSidebar = () => {
                     active: true,
                 },
                 {
-                    link: "contentTypes",
+                    link: "contentTemplates",
                     icon: faFile,
-                    text: "Content Types",
+                    text: "Content Templates",
                 },
                 {
                     link: "/users",

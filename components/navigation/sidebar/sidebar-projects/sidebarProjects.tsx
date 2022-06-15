@@ -1,5 +1,5 @@
 import { NavigationList } from "@components/navigation/linkList";
-import { LinkListContentTypes } from "@components/navigation/linkList/linkList-contentTypes";
+import { LinkListContentTemplates } from "@components/navigation/linkList/linkList-contentTemplates";
 import {
     faCompassDrafting,
     faHouse,
@@ -34,7 +34,7 @@ export const SidebarProjects = () => {
                 ]}
             />
             {activeOrganisation.length > 1 && (
-                <LinkListContentTypes organisationId={activeOrganisation} />
+                <LinkListContentTemplates organisationId={activeOrganisation} />
             )}
         </Group>
     );

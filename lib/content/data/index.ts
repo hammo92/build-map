@@ -3,39 +3,39 @@ import { Content, ContentByTypeForProject, ContentId } from "./content.model";
 import { v4 as uuidv4 } from "uuid";
 import { indexBy } from "serverless-cloud-data-utils";
 import { data } from "@serverless/cloud";
-import { getContentTypeById } from "../../contentType/data";
+import { getContentTemplateById } from "../../contentTemplate/data";
 
 //* Create content */
 export async function createContent({
-    contentTypeId,
+    contentTemplateId,
     projectId,
     userId,
 }: {
-    contentTypeId: string;
+    contentTemplateId: string;
     projectId: string;
     userId: string;
 }) {
-    errorIfUndefined({ contentTypeId, projectId, userId });
-    const contentType = await getContentTypeById(contentTypeId);
-    if (!contentType) {
-        throw new Error("Content type not found");
+    errorIfUndefined({ contentTemplateId, projectId, userId });
+    const contentTemplate = await getContentTemplateById(contentTemplateId);
+    if (!contentTemplate) {
+        throw new Error("Content template not found");
     }
-    // create contentType //
+    // create contentTemplate //
     const newContent = new Content();
-    newContent.contentTypeId = contentTypeId;
+    newContent.contentTemplateId = contentTemplateId;
     newContent.projectId = projectId;
     newContent.status = "draft";
     newContent.id = uuidv4();
     newContent.date = new Date().toISOString();
     newContent.fields = [];
 
-    // add contentType fields //
-    /*newContentType.fields = fields.map((field) => {
+    // add contentTemplate fields //
+    /*newContentTemplate.fields = fields.map((field) => {
         return { ...field, id: uuidv4(), active: true };
     });*/
 
     await newContent.save();
-    return { newContent, contentType };
+    return { newContent, contentTemplate };
 }
 
 //* Get content by id */
@@ -45,25 +45,27 @@ export async function getContentById(contentId: string) {
     if (!content) {
         throw new Error("Content not found");
     }
-    const contentType = await getContentTypeById(content.contentTypeId);
-    return { content, contentType };
+    const contentTemplate = await getContentTemplateById(
+        content.contentTemplateId
+    );
+    return { content, contentTemplate };
 }
 
-//* Get all content of contentType for project */
+//* Get all content of contentTemplate for project */
 export async function getProjectContentOfType({
-    contentTypeId,
+    contentTemplateId,
     projectId,
 }: {
-    contentTypeId: string;
+    contentTemplateId: string;
     projectId: string;
 }) {
-    errorIfUndefined({ contentTypeId, projectId });
-    const contentType = await getContentTypeById(contentTypeId);
-    if (!contentType) {
-        throw new Error("Content type not found");
+    errorIfUndefined({ contentTemplateId, projectId });
+    const contentTemplate = await getContentTemplateById(contentTemplateId);
+    if (!contentTemplate) {
+        throw new Error("Content template not found");
     }
     const contentOfType = await indexBy(
-        ContentByTypeForProject({ contentTypeId, projectId })
+        ContentByTypeForProject({ contentTemplateId, projectId })
     ).get(Content);
-    return { content: contentOfType, contentType };
+    return { content: contentOfType, contentTemplate };
 }

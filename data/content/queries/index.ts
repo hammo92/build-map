@@ -1,21 +1,21 @@
 import { Content } from "@lib/content/data/content.model";
-import { ContentType } from "@lib/contentType/data/contentType.model";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import camelcaseKeys from "camelcase-keys";
 import { apiClient } from "data/config";
 import { CleanedCamel, CleanedSnake } from "type-helpers";
 
 export async function createContent({
-    contentTypeId,
+    contentTemplateId,
     projectId,
 }: {
-    contentTypeId: string;
+    contentTemplateId: string;
     projectId: string;
 }) {
     const { data } = await apiClient.post<{
         newContent: CleanedSnake<Content>;
-        contentType: CleanedSnake<ContentType>;
+        contentTemplate: CleanedSnake<ContentTemplate>;
     }>(`/content`, {
-        contentTypeId,
+        contentTemplateId,
         projectId,
     });
     return camelcaseKeys(data, { deep: true });
@@ -24,23 +24,23 @@ export async function createContent({
 export async function getContent(contentId: string) {
     const { data } = await apiClient.get<{
         content: CleanedSnake<Content>;
-        contentType: CleanedSnake<ContentType>;
+        contentTemplate: CleanedSnake<ContentTemplate>;
     }>(`/content/${contentId}`);
     return camelcaseKeys(data, { deep: true });
 }
 
 export async function getProjectContentOfType({
-    contentTypeId,
+    contentTemplateId,
     projectId,
 }: {
-    contentTypeId: string;
+    contentTemplateId: string;
     projectId: string;
 }) {
     const { data } = await apiClient.get(
-        `/projects/${projectId}/contentTypes/${contentTypeId}`
+        `/projects/${projectId}/contentTemplates/${contentTemplateId}`
     );
     return camelcaseKeys(data, { deep: true }) as {
         content: CleanedCamel<Content>[];
-        contentType: CleanedCamel<ContentType>;
+        contentTemplate: CleanedCamel<ContentTemplate>;
     };
 }

@@ -31,7 +31,7 @@ export const IconTitle: FC<IconTitleProps> = ({
     textProps,
 }) => {
     return (
-        <Group align="center">
+        <Group align="center" noWrap>
             <ThemeIcon size={subtitle ? "xl" : "md"} {...iconProps}>
                 <FontAwesomeIcon icon={icon} />
             </ThemeIcon>
@@ -39,14 +39,14 @@ export const IconTitle: FC<IconTitleProps> = ({
                 direction="column"
                 sx={{ textTransform: "capitalize" }}
                 spacing={0}
-                align="left"
+                align="flex-start"
                 position="center"
             >
                 <Title order={4} {...titleProps}>
                     {title}
                 </Title>
                 {subtitle && (
-                    <Text size="sm" color="dimmed" {...textProps}>
+                    <Text size="sm" color="dimmed" {...textProps} align="left">
                         {subtitle}
                     </Text>
                 )}

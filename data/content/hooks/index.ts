@@ -4,10 +4,10 @@ import { useNotifications } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { createContent, getContent, getProjectContentOfType } from "../queries";
 import { CleanedCamel } from "type-helpers";
-import { ContentType } from "@lib/contentType/data/contentType.model";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Content } from "@lib/content/data/content.model";
 
-export function useCreateContentType() {
+export function useCreateContentTemplate() {
     const queryClient = useQueryClient();
     const notifications = useNotifications();
     return useMutation(createContent, {
@@ -31,18 +31,18 @@ export function useCreateContentType() {
     });
 }
 
-export function useGetContentType(contentId: string) {
+export function useGetContentTemplate(contentId: string) {
     return useQuery([Keys.GET_CONTENT, contentId], () => getContent(contentId));
 }
 
 export function useGetProjectContentOfType(
     projectId: string,
-    contentTypeId: string,
+    contentTemplateId: string,
     initialData?: { content: CleanedCamel<Content>[] }
 ) {
     return useQuery(
         Keys.GET_PROJECT_CONTENT_OF_TYPE,
-        () => getProjectContentOfType({ projectId, contentTypeId }),
+        () => getProjectContentOfType({ projectId, contentTemplateId }),
         { initialData }
     );
 }
