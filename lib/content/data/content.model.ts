@@ -1,6 +1,9 @@
 //* content model and indexes //
 
-import { FieldType } from "@components/contentType/constants";
+import {
+    FieldType,
+    FIELD_TYPES,
+} from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
 import {
     buildIndex,
     indexBy,
@@ -14,21 +17,21 @@ interface ContentField {
     value: any;
 }
 
-// To get all an contentType by it's ID *//
+// To get all an contentTemplate by it's ID *//
 //namespace content:${contentId} */
 export const ContentId = buildIndex({ namespace: `content` });
 
-// To get all content of contentType for a project *//
-//namespace project_${projectId}:contentType_${contentTypeId}:${date} */
+// To get all content of contentTemplate for a project *//
+//namespace project_${projectId}:contentTemplate_${contentTemplateId}:${date} */
 export const ContentByTypeForProject = ({
     projectId,
-    contentTypeId,
+    contentTemplateId,
 }: {
     projectId: string;
-    contentTypeId: string;
+    contentTemplateId: string;
 }) =>
     buildIndex({
-        namespace: `project_${projectId}:contentType_${contentTypeId}`,
+        namespace: `project_${projectId}:contentTemplate_${contentTemplateId}`,
         label: "label1",
         converter: timekey,
     });
@@ -36,7 +39,7 @@ export const ContentByTypeForProject = ({
 //model: Content */
 export class Content extends Model<Content> {
     id: string;
-    contentTypeId: string;
+    contentTemplateId: string;
     projectId: string;
     date: string;
     status: "draft" | "published";
@@ -47,7 +50,7 @@ export class Content extends Model<Content> {
             indexBy(
                 ContentByTypeForProject({
                     projectId: this.projectId,
-                    contentTypeId: this.contentTypeId,
+                    contentTemplateId: this.contentTemplateId,
                 })
             ).exact(this.date),
         ];
