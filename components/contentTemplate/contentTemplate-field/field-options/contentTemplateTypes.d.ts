@@ -1,55 +1,42 @@
-interface Subtype<t> {
-    type: t;
+import { FieldType } from "./fieldsDefinitions";
+
+interface Subtype<T> {
+    type: T;
     description: string;
     label: string;
 }
 
 interface FieldTypePropsBase {
-    type: string;
+    type: FieldType;
     description: string;
     label: string;
     icon: FontAwesomeIconProps["icon"];
-    config?: {
-        subtype?: Subtype[];
-        options?: string[];
-    };
+    subtypes?: Subtype[];
 }
 
 export interface FieldTypePropsSelect extends FieldTypePropsBase {
     type: "select";
-    config: {
-        subtype: [Subtype<"single">, Subtype<"multiple">];
-        options: string[];
-        defaultSelected: string | string[];
-    };
+    subtypes: [Subtype<"single">, Subtype<"multiple">];
 }
 
 export interface FieldTypePropsNumber extends FieldTypePropsBase {
     type: "number";
-    config: {
-        subtype: [Subtype<"integer">, Subtype<"decimal">, Subtype<"float">];
-    };
+    subtypes: [Subtype<"integer">, Subtype<"decimal">, Subtype<"float">];
 }
 
 export interface FieldTypePropsText extends FieldTypePropsBase {
     type: "text";
-    config: {
-        subtype: [Subtype<"shortText">, Subtype<"longText">];
-    };
+    subtypes: [Subtype<"shortText">, Subtype<"longText">];
 }
 
 export interface FieldTypePropsImage extends FieldTypePropsBase {
     type: "image";
-    config: {
-        subtype: [Subtype<"single">, Subtype<"multiple">];
-    };
+    subtypes: [Subtype<"single">, Subtype<"multiple">];
 }
 
 export interface FieldTypePropsDate extends FieldTypePropsBase {
     type: "date";
-    config: {
-        subtype: [Subtype<"date">, Subtype<"dateTime">, Subtype<"time">];
-    };
+    subtypes: [Subtype<"date">, Subtype<"dateTime">, Subtype<"time">];
 }
 
 export type FieldTypeProps =

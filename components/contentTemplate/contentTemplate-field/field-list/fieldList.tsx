@@ -1,17 +1,11 @@
-import React, { useEffect } from "react";
-import { ContentTemplate as ContentTemplateProps } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Box, createStyles, Group, Skeleton, Text } from "@mantine/core";
-import { useListState } from "@mantine/hooks";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { FieldCard } from "../field-card";
-import { Required } from "utility-types";
-import { CleanedCamel } from "type-helpers";
 import { useReorderContentTemplateFields } from "@data/contentTemplate/hooks";
-import { useQueryClient } from "react-query";
-import { useSnapshot } from "valtio";
-import { contentTemplateState } from "@state/contentTemplate";
-import { ContentTemplateResponse } from "@data/contentTemplate/queries";
-import { Keys } from "@data/contentTemplate/constants";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { Box, Group, Skeleton } from "@mantine/core";
+import { useListState } from "@mantine/hooks";
+import { FC, useEffect } from "react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { CleanedCamel } from "type-helpers";
+import { FieldCard } from "../field-card";
 
 const FieldListSkeleton = () => (
     <Group direction="column" spacing="sm">
@@ -21,37 +15,20 @@ const FieldListSkeleton = () => (
     </Group>
 );
 
-export const FieldList = () => {
-    const { contentTemplateId } = useSnapshot(contentTemplateState);
-    const queryClient = useQueryClient();
-    const data = queryClient.getQueryData<ContentTemplateResponse>([
-        Keys.GET_CONTENT_TYPE,
-        contentTemplateId,
-    ]);
-    const [state, { setState, reorder }] = useListState(
-        data?.contentTemplate?.fields
-    );
+export const FieldList: FC<{ contentTemplate: CleanedCamel<ContentTemplate> }> = ({ contentTemplate }) => {
+    const [state, { setState, reorder }] = useListState(contentTemplate.fields);
     const { mutateAsync, error } = useReorderContentTemplateFields();
 
     useEffect(() => {
-        setState(data?.contentTemplate?.fields ?? []);
-    }, [data?.contentTemplate?.fields, setState]);
+        setState(contentTemplate.fields ?? []);
+    }, [contentTemplate.fields, setState]);
 
-    const items = data ? (
+    const items = contentTemplate.fields ? (
         state.map((field, index) => (
             <Draggable key={field.name} index={index} draggableId={field.name}>
                 {(provided, snapshot) => (
-                    <Box
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        ref={provided.innerRef}
-                        mb="sm"
-                    >
-                        <FieldCard
-                            index={index}
-                            field={field}
-                            key={`field-${index}`}
-                        />
+                    <Box {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef} mb="sm">
+                        <FieldCard index={index} field={field} key={`field-${index}`} />
                     </Box>
                 )}
             </Draggable>
@@ -70,7 +47,7 @@ export const FieldList = () => {
                     to: toIndex,
                 });
                 await mutateAsync({
-                    contentTemplateId,
+                    contentTemplateId: contentTemplate.id,
                     fromIndex,
                     toIndex,
                 });

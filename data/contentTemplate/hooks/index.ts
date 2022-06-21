@@ -1,8 +1,10 @@
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { ContentTemplateField } from "@lib/contentTemplate/data/types";
 import { useNotifications } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { CleanedCamel } from "type-helpers";
+import { Required } from "utility-types";
 import { moveInArray } from "utils/arrayModify";
 import { Keys } from "../constants";
 import {
@@ -42,10 +44,13 @@ export function useCreateContentTemplate() {
     });
 }
 
-export function useGetContentTemplate(contentTemplateId: string) {
-    return useQuery([Keys.GET_CONTENT_TYPE, contentTemplateId], () =>
-        getContentTemplate(contentTemplateId)
-    );
+export function useGetContentTemplate(
+    contentTemplateId: string,
+    initialData?: { contentTemplate: Required<CleanedCamel<ContentTemplate>, "id" | "name"> }
+) {
+    return useQuery([Keys.GET_CONTENT_TYPE, contentTemplateId], () => getContentTemplate(contentTemplateId), {
+        initialData,
+    });
 }
 
 export function useUpdateContentTemplate() {
@@ -59,8 +64,7 @@ export function useUpdateContentTemplate() {
             await queryClient.cancelQueries(queryId);
 
             // Snapshot the previous value
-            const currentData =
-                queryClient.getQueryData<ContentTemplateResponse>(queryId);
+            const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
 
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
@@ -88,10 +92,7 @@ export function useUpdateContentTemplate() {
             });
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([
-                Keys.GET_CONTENT_TYPE,
-                data?.contentTemplate.id,
-            ]);
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
             // also force refresh of organisation content templates as this will need to update
             queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
         },
@@ -126,11 +127,9 @@ export function useGetOrganisationContentTemplates(
     organisationId: string,
     initialData?: { contentTemplates: CleanedCamel<ContentTemplate>[] }
 ) {
-    return useQuery(
-        Keys.GET_ORGANISATION_CONTENT_TYPES,
-        () => getOrganisationContentTemplates(organisationId),
-        { initialData }
-    );
+    return useQuery(Keys.GET_ORGANISATION_CONTENT_TYPES, () => getOrganisationContentTemplates(organisationId), {
+        initialData,
+    });
 }
 
 export function useCreateContentTemplateField() {
@@ -138,23 +137,17 @@ export function useCreateContentTemplateField() {
     const notifications = useNotifications();
     return useMutation(createContentTemplateField, {
         mutationKey: Keys.CREATE_CONTENT_TYPE_FIELD,
-        onMutate: async ({ contentTemplateId, fieldDetails }) => {
+        onMutate: async ({ contentTemplateId, fieldProperties }) => {
             const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
-
             // Snapshot the previous value
-            const currentData =
-                queryClient.getQueryData<ContentTemplateResponse>(queryId);
-
+            const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
                 // add new field to end with placeholder default values
-                contentTemplate.fields.push({
-                    ...fieldDetails,
-                    id: "newField",
-                    active: true,
-                });
+                //Todo Fix typings
+                contentTemplate.fields.push({ ...fieldProperties, id: "placeHolder" });
 
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {
@@ -176,10 +169,7 @@ export function useCreateContentTemplateField() {
             });
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([
-                Keys.GET_CONTENT_TYPE,
-                data?.contentTemplate.id,
-            ]);
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
             // also force refresh of organisation content templates as this will need to update
             queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
         },
@@ -191,23 +181,23 @@ export function useUpdateContentTemplateField() {
     const notifications = useNotifications();
     return useMutation(updateContentTemplateField, {
         mutationKey: Keys.UPDATE_CONTENT_TYPE_FIELD,
-        onMutate: async ({ contentTemplateId, fieldDetails }) => {
+        onMutate: async ({ contentTemplateId, fieldProperties }) => {
             const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
 
             // Snapshot the previous value
-            const currentData =
-                queryClient.getQueryData<ContentTemplateResponse>(queryId);
+            const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
 
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
-                const fieldIndex = contentTemplate.fields.findIndex(
-                    ({ id }) => id === fieldDetails.id
-                );
+                const fieldIndex = contentTemplate.fields.findIndex(({ id }) => id === fieldProperties.id);
+
+                const { type, id, ...rest } = fieldProperties;
+
                 contentTemplate.fields[fieldIndex] = {
                     ...contentTemplate.fields[fieldIndex],
-                    ...fieldDetails,
+                    ...rest,
                 };
 
                 // Optimistically update to the new value
@@ -230,10 +220,7 @@ export function useUpdateContentTemplateField() {
             });
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([
-                Keys.GET_CONTENT_TYPE,
-                data?.contentTemplate.id,
-            ]);
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
         },
     });
 }
@@ -249,14 +236,11 @@ export function useDeleteContentTemplateField() {
             await queryClient.cancelQueries(queryId);
 
             // Snapshot the previous value
-            const currentData =
-                queryClient.getQueryData<ContentTemplateResponse>(queryId);
+            const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
 
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
-                const updatedFields = contentTemplate.fields.filter(
-                    ({ id }) => id !== fieldId
-                );
+                const updatedFields = contentTemplate.fields.filter(({ id }) => id !== fieldId);
                 contentTemplate.fields = updatedFields;
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {
@@ -278,10 +262,7 @@ export function useDeleteContentTemplateField() {
             });
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([
-                Keys.GET_CONTENT_TYPE,
-                data?.contentTemplate.id,
-            ]);
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
             // also force refresh of organisation content templates as this will need to update
             queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
         },
@@ -299,16 +280,11 @@ export function useReorderContentTemplateFields() {
             await queryClient.cancelQueries(queryId);
 
             // Snapshot the previous value
-            const currentData =
-                queryClient.getQueryData<ContentTemplateResponse>(queryId);
+            const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
 
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
-                const updatedContentTemplateFields = moveInArray(
-                    contentTemplate!.fields,
-                    fromIndex,
-                    toIndex
-                );
+                const updatedContentTemplateFields = moveInArray(contentTemplate!.fields, fromIndex, toIndex);
                 contentTemplate.fields = updatedContentTemplateFields;
 
                 // Optimistically update to the new value
@@ -331,10 +307,7 @@ export function useReorderContentTemplateFields() {
             });
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([
-                Keys.GET_CONTENT_TYPE,
-                data?.contentTemplate.id,
-            ]);
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
         },
     });
 }

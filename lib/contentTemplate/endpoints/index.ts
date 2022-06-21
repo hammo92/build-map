@@ -134,13 +134,13 @@ export const contentTemplates = () => {
     api.post(
         "/contentTemplates/:contentTemplateId/fields",
         async function (req: any, res: any) {
-            const { fieldDetails } = req.body;
+            const { fieldProperties } = req.body;
             const { contentTemplateId } = req.params;
             try {
                 const { user } = req;
                 const contentTemplate = await createContentTemplateField({
                     contentTemplateId,
-                    fieldDetails,
+                    fieldProperties,
                 });
                 return res.status(200).send({
                     contentTemplate: contentTemplate && contentTemplate.clean(),
@@ -158,13 +158,13 @@ export const contentTemplates = () => {
     api.patch(
         "/contentTemplates/:contentTemplateId/fields/:fieldId",
         async function (req: any, res: any) {
-            const { fieldDetails } = req.body;
+            const { fieldProperties } = req.body;
             const { contentTemplateId, fieldId } = req.params;
             try {
                 const { user } = req;
                 const contentTemplate = await updateContentTemplateField({
                     contentTemplateId,
-                    fieldDetails,
+                    fieldProperties,
                 });
                 return res.status(200).send({
                     contentTemplate: contentTemplate && contentTemplate.clean(),

@@ -1,31 +1,27 @@
 import { FIELD_TYPES } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
-import { ContentTemplateField } from "@lib/contentTemplate/data/contentTemplate.model";
-
+import { ContentTemplateField } from "@lib/contentTemplate/data/types";
 export const checkFieldValues = (
-    fieldDetails: Partial<ContentTemplateField>
+    fieldProperties: Partial<ContentTemplateField>
 ) => {
-    if (!fieldDetails.type) {
+    if (!fieldProperties.type) {
         throw new Error("Type is required");
     }
 
-    if (!fieldDetails.name) {
+    if (!fieldProperties.name) {
         throw new Error("Name is required");
     }
 
     //check for subtype
-    const hasSubtype = FIELD_TYPES[fieldDetails.type].config?.subtype;
-    const subtypeHasValue = fieldDetails.config?.subtype;
+    const hasSubtype = FIELD_TYPES[fieldProperties.type]?.subtypes;
+    const subtypeHasValue = fieldProperties?.subtype;
     if (hasSubtype && !subtypeHasValue) {
         throw new Error("Please select a subtype");
     }
 
     //check field specific values
-    switch (fieldDetails.type) {
+    switch (fieldProperties.type) {
         case "select":
-            if (
-                !fieldDetails?.config?.options ||
-                fieldDetails?.config?.options.length < 1
-            ) {
+            if (!fieldProperties?.data || fieldProperties?.data.length < 1) {
                 throw new Error(
                     "At least two options are required for a select field"
                 );

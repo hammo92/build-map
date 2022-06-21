@@ -2,7 +2,7 @@ import { FIELD_TYPES } from "@components/contentTemplate/contentTemplate-field/f
 import { IconTitle } from "@components/ui/iconTitle/iconTitle";
 import { faGripVertical } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ContentTemplateField } from "@lib/contentTemplate/data/contentTemplate.model";
+import { ContentTemplateField } from "@lib/contentTemplate/data/types";
 import { Card, Center, Group } from "@mantine/core";
 import { FC } from "react";
 import { splitCamel } from "utils/stringTransform";
@@ -16,12 +16,19 @@ interface FieldCardProps {
     withActions?: boolean;
 }
 
-export const FieldCard: FC<FieldCardProps> = ({
-    field,
-    index,
-    withDrag = true,
-    withActions = true,
-}) => {
+const fieldSubtitle = (field: ContentTemplateField) => {
+    const typeString = splitCamel(field.type);
+    switch (field.type) {
+        case "number":
+            return `${typeString} - ${splitCamel(field.subtype)}`;
+        case "text":
+            return `${typeString} - ${splitCamel(field.subtype)}`;
+        default:
+            return typeString;
+    }
+};
+
+export const FieldCard: FC<FieldCardProps> = ({ field, index, withDrag = true, withActions = true }) => {
     return (
         <Card
             sx={(theme) => ({
@@ -51,11 +58,7 @@ export const FieldCard: FC<FieldCardProps> = ({
                     >
                         <IconTitle
                             title={field.name}
-                            subtitle={`${splitCamel(field.type)}${
-                                field.config?.subtype
-                                    ? ` - ${splitCamel(field.config.subtype)}`
-                                    : ""
-                            } `}
+                            subtitle={fieldSubtitle(field)}
                             icon={FIELD_TYPES[field.type].icon}
                         />
                     </Group>

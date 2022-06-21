@@ -1,84 +1,43 @@
-import { FIELD_TYPES } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
+import {
+    FieldType,
+    FIELD_TYPES,
+} from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
 import { IconTitle } from "@components/ui/iconTitle/iconTitle";
 import { useCreateContentTemplateField } from "@data/contentTemplate/hooks";
-import { FieldType } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
-import { Button, Group } from "@mantine/core";
+import { faPlus } from "@fortawesome/pro-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { ActionIcon, Button, Group } from "@mantine/core";
 import { useModals } from "@mantine/modals";
-import { useNotifications } from "@mantine/notifications";
-import { contentTemplateState } from "@state/contentTemplate";
-import React, { FC, useEffect, useState } from "react";
+import { FC } from "react";
+import { CleanedCamel } from "type-helpers";
 import { splitCamel } from "utils/stringTransform";
-import { useSnapshot } from "valtio";
-import { FieldDetails } from "../field-details";
-import { checkFieldValues } from "./create-utils/checkFieldValues";
-import { getFieldDefaultConfig } from "./create-utils/setFieldDefaults";
+import { FieldProperties } from "../field-properties";
+import { getFieldDefaults } from "./create-utils/getFieldDefaults";
 import { SelectFieldType } from "./selectFieldType";
 
-const ModalButtons = ({ cancelAction }: { cancelAction: () => void }) => {
+export const FieldCreate: FC<{ contentTemplate: CleanedCamel<ContentTemplate>; variant: "button" | "icon" }> = ({
+    contentTemplate,
+    variant = "button",
+}) => {
     const modals = useModals();
-    const notifications = useNotifications();
     const { mutateAsync, isLoading } = useCreateContentTemplateField();
-    const { fieldDetails, contentTemplateId } =
-        useSnapshot(contentTemplateState);
 
-    const onConfirm = async () => {
-        const { name, type } = fieldDetails;
-        try {
-            checkFieldValues(fieldDetails);
-            await mutateAsync({
-                // Janky workaround for typescript possibly undefined
-                fieldDetails: { ...fieldDetails, name: name!, type: type! },
-                contentTemplateId: contentTemplateId,
-            });
+    const onSubmit = async (values: any) => {
+        const data = await mutateAsync({
+            fieldProperties: {
+                ...values,
+            },
+            contentTemplateId: contentTemplate.id,
+        });
+        if (data.contentTemplate) {
             modals.closeAll();
-        } catch (error: any) {
-            notifications.showNotification({
-                title: "Unable to create field",
-                message:
-                    error.message ?? "Have you filled all the required fields",
-                color: "red",
-            });
         }
     };
-    return (
-        <Group grow>
-            <Button
-                variant="light"
-                color="gray"
-                onClick={() => cancelAction()}
-                disabled={isLoading}
-            >
-                Back
-            </Button>
-            <Button
-                onClick={() => onConfirm()}
-                loading={isLoading}
-                disabled={isLoading}
-            >
-                Create
-            </Button>
-        </Group>
-    );
-};
-
-export const FieldCreate: FC = () => {
-    // reset state when closed
-    useEffect(() => {
-        return () => {
-            contentTemplateState.fieldDetails = {};
-        };
-    }, []);
-
-    const modals = useModals();
 
     const setFieldType = (type: FieldType) => {
-        // reset any values when field type is changed and set field details
-        contentTemplateState.fieldDetails = {
-            type,
-            config: getFieldDefaultConfig(type),
-        };
         modals.closeModal("selectFieldType");
-        openDetailsModal(type);
+        openPropertiesModal(type);
     };
 
     const openTypeSelectModal = () =>
@@ -96,7 +55,7 @@ export const FieldCreate: FC = () => {
         openTypeSelectModal();
     };
 
-    const openDetailsModal = (type: FieldType) =>
+    const openPropertiesModal = (type: FieldType) =>
         modals.openModal({
             title: (
                 <IconTitle
@@ -111,22 +70,33 @@ export const FieldCreate: FC = () => {
             size: "xl",
             children: (
                 <Group direction="column" grow>
-                    <FieldDetails />
-                    <ModalButtons cancelAction={onBackClick} />
+                    <FieldProperties
+                        initialData={getFieldDefaults(type)}
+                        onCancel={onBackClick}
+                        onSubmit={onSubmit}
+                        isSubmitting={isLoading}
+                        action="create"
+                    />
                 </Group>
             ),
         });
 
+    if (variant === "button")
+        return (
+            <Button
+                fullWidth
+                variant="light"
+                color="blue"
+                onClick={() => {
+                    openTypeSelectModal();
+                }}
+            >
+                Add Field
+            </Button>
+        );
     return (
-        <Button
-            fullWidth
-            variant="light"
-            color="blue"
-            onClick={() => {
-                openTypeSelectModal();
-            }}
-        >
-            Add Field
-        </Button>
+        <ActionIcon onClick={() => openTypeSelectModal()} color="blue" variant="light" size="lg">
+            <FontAwesomeIcon icon={faPlus} />
+        </ActionIcon>
     );
 };

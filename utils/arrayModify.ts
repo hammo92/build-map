@@ -9,6 +9,7 @@ export const reorderArray = (array: any[], from: number, to: number) => {
 };
 
 export const commaListToArray = (list: string) => {
+    if (!list || !list.length) return [];
     const values = list.split(",");
     const trimmed = values.map((value) => value.trim());
     //const removeEmpty = trimmed.filter((value) => value.length !== 0);

@@ -1,11 +1,10 @@
-import {
-    ContentTemplate,
-    ContentTemplateField,
-    ContentTemplateIcon,
-} from "@lib/contentTemplate/data/contentTemplate.model";
+import { IconPickerIcon } from "@components/ui/iconPicker/types";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { ContentTemplateField } from "@lib/contentTemplate/data/types";
 import camelcaseKeys from "camelcase-keys";
 import { apiClient } from "data/config";
 import { json } from "stream/consumers";
+import { CamelCase } from "type-fest";
 import { CleanedCamel, CleanedSnake, ModelRequired } from "type-helpers";
 
 export type ContentTemplateResponse = {
@@ -20,7 +19,7 @@ export async function createContentTemplate({
 }: {
     name: string;
     organisationId: string;
-    icon: ContentTemplateIcon;
+    icon: IconPickerIcon;
     type: ContentTemplate["type"];
 }) {
     const { data } = await apiClient.post<{
@@ -31,7 +30,7 @@ export async function createContentTemplate({
         icon,
         type,
     });
-    return camelcaseKeys(data);
+    return camelcaseKeys(data, { deep: true });
 }
 
 export async function getContentTemplate(contentTemplateId: string) {
@@ -50,7 +49,7 @@ export async function updateContentTemplate({
     contentTemplateId: string;
     name?: string;
     status?: "draft" | "published";
-    icon?: ContentTemplateIcon;
+    icon?: IconPickerIcon;
 }) {
     const { data } = await apiClient.patch<{
         contentTemplate: CleanedSnake<ContentTemplate>;
@@ -70,9 +69,7 @@ export async function deleteContentTemplate(contentTemplateId: string) {
 }
 
 export async function getOrganisationContentTemplates(organisationId: string) {
-    const { data } = await apiClient.get(
-        `/organisations/${organisationId}/contentTemplates`
-    );
+    const { data } = await apiClient.get(`/organisations/${organisationId}/contentTemplates`);
     return camelcaseKeys(data, { deep: true }) as {
         contentTemplates: CleanedCamel<ContentTemplate>[];
     };
@@ -80,32 +77,32 @@ export async function getOrganisationContentTemplates(organisationId: string) {
 
 export async function createContentTemplateField({
     contentTemplateId,
-    fieldDetails,
+    fieldProperties,
 }: {
     contentTemplateId: string;
-    fieldDetails: ModelRequired<ContentTemplateField, "name" | "type">;
+    fieldProperties: ModelRequired<ContentTemplateField, "name" | "type">;
 }) {
     const { data } = await apiClient.post<{
         contentTemplate: CleanedSnake<ContentTemplate>;
     }>(`/contentTemplates/${contentTemplateId}/fields`, {
-        fieldDetails,
+        fieldProperties,
     });
-    return camelcaseKeys(data);
+    return camelcaseKeys(data, { deep: true });
 }
 
 export async function updateContentTemplateField({
     contentTemplateId,
-    fieldDetails,
+    fieldProperties,
 }: {
     contentTemplateId: string;
-    fieldDetails: ModelRequired<ContentTemplateField, "id">;
+    fieldProperties: ModelRequired<ContentTemplateField, "id">;
 }) {
     const { data } = await apiClient.patch<{
         contentTemplate: CleanedSnake<ContentTemplate>;
-    }>(`/contentTemplates/${contentTemplateId}/fields/${fieldDetails.id}`, {
-        fieldDetails,
+    }>(`/contentTemplates/${contentTemplateId}/fields/${fieldProperties.id}`, {
+        fieldProperties,
     });
-    return camelcaseKeys(data);
+    return camelcaseKeys(data, { deep: true });
 }
 
 export async function reorderContentTemplateFields({
@@ -123,7 +120,7 @@ export async function reorderContentTemplateFields({
         fromIndex,
         toIndex,
     });
-    return camelcaseKeys(data);
+    return camelcaseKeys(data, { deep: true });
 }
 
 export async function deleteContentTemplateField({
@@ -136,5 +133,5 @@ export async function deleteContentTemplateField({
     const { data } = await apiClient.delete<{
         contentTemplate: CleanedSnake<ContentTemplate>;
     }>(`/contentTemplates/${contentTemplateId}/fields/${fieldId}`);
-    return camelcaseKeys(data);
+    return camelcaseKeys(data, { deep: true });
 }

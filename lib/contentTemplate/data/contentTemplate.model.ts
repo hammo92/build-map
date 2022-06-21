@@ -1,37 +1,14 @@
 /* contentTemplate.model.ts */
 
-import {
-    FieldType,
-    FIELD_TYPES,
-} from "../../../components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
+import { IconPickerIcon } from "@components/ui/iconPicker/types";
 import {
     buildIndex,
     indexBy,
     Model,
     timekey,
 } from "serverless-cloud-data-utils";
-import { IconDefinition } from "@fortawesome/pro-regular-svg-icons";
-import { MantineColor } from "@mantine/core";
-
-export interface ContentTemplateIcon {
-    icon: IconDefinition;
-    color: MantineColor;
-}
-
-export interface ContentTemplateField {
-    id: string;
-    name: string;
-    type: FieldType;
-    active: boolean;
-    required?: boolean;
-    description?: string;
-    config?: {
-        subtype?: string;
-        editableBy?: "all" | "issuer" | "recipient";
-        visibleTo?: "all" | "issuer" | "recipient";
-        [key: string]: any;
-    };
-}
+import { FieldType } from "../../../components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
+import { ContentTemplateField } from "./types";
 
 //* contentTemplate model and indexes //
 
@@ -52,7 +29,7 @@ export const ContentTemplateOrganisation = (organisationId: string) =>
 export class ContentTemplate extends Model<ContentTemplate> {
     id: string;
     name: string;
-    icon: ContentTemplateIcon;
+    icon: IconPickerIcon;
     organisationId: string;
     date: string;
     status: "draft" | "published";

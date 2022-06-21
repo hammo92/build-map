@@ -1,9 +1,8 @@
+import { indexBy } from "serverless-cloud-data-utils";
+import { v4 as uuidv4 } from "uuid";
+import { getContentTemplateById } from "../../contentTemplate/data";
 import { errorIfUndefined } from "../../utils";
 import { Content, ContentByTypeForProject, ContentId } from "./content.model";
-import { v4 as uuidv4 } from "uuid";
-import { indexBy } from "serverless-cloud-data-utils";
-import { data } from "@serverless/cloud";
-import { getContentTemplateById } from "../../contentTemplate/data";
 
 //* Create content */
 export async function createContent({
@@ -27,13 +26,13 @@ export async function createContent({
     newContent.status = "draft";
     newContent.id = uuidv4();
     newContent.date = new Date().toISOString();
-    newContent.fields = [];
-
-    // add contentTemplate fields //
-    /*newContentTemplate.fields = fields.map((field) => {
-        return { ...field, id: uuidv4(), active: true };
-    });*/
-
+    newContent.fields = contentTemplate.fields.map((field) => {
+        const values = [];
+        if (field?.defaultValue) {
+            values.push([field?.defaultValue]);
+        }
+        return { ...field, values };
+    });
     await newContent.save();
     return { newContent, contentTemplate };
 }
@@ -51,7 +50,7 @@ export async function getContentById(contentId: string) {
     return { content, contentTemplate };
 }
 
-//* Get all content of contentTemplate for project */
+//* Get all content for contentTemplate for project */
 export async function getProjectContentOfType({
     contentTemplateId,
     projectId,

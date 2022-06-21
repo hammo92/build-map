@@ -9,10 +9,10 @@ import { errorRequiredPropsUndefined, errorIfUndefined } from "../../utils";
 import {
     ContentTemplate,
     ContentTemplateField,
-    ContentTemplateIcon,
     ContentTemplateId,
     ContentTemplateOrganisation,
 } from "./contentTemplate.model";
+import { IconPickerIcon } from "@components/ui/iconPicker/types";
 
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
@@ -25,7 +25,7 @@ export async function createContentTemplate({
     type,
 }: {
     name: string;
-    icon: ContentTemplateIcon;
+    icon: IconPickerIcon;
     organisationId: string;
     userId: string;
     type: ContentTemplate["type"];
@@ -110,7 +110,7 @@ export async function updateContentTemplate({
     contentTemplateId: string;
     name?: string;
     status?: "draft" | "published";
-    icon?: ContentTemplateIcon;
+    icon?: IconPickerIcon;
 }) {
     errorIfUndefined({ contentTemplateId });
     const contentTemplate = await indexBy(ContentTemplateId)
@@ -133,18 +133,18 @@ export async function updateContentTemplate({
 //* Create contentTemplateField */
 export async function createContentTemplateField(props: {
     contentTemplateId: string;
-    fieldDetails: ModelRequired<ContentTemplateField, "name" | "type">;
+    fieldProperties: ModelRequired<ContentTemplateField, "name" | "type">;
 }) {
     errorRequiredPropsUndefined({
         props,
         propPaths: [
             "contentTemplateId",
-            "fieldDetails.name",
-            "fieldDetails.type",
+            "fieldProperties.name",
+            "fieldProperties.type",
         ],
     });
 
-    const { contentTemplateId, fieldDetails } = props;
+    const { contentTemplateId, fieldProperties } = props;
 
     const contentTemplate = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
@@ -153,7 +153,7 @@ export async function createContentTemplateField(props: {
     if (!contentTemplate) throw new Error("No content template found");
 
     const newField = {
-        ...fieldDetails,
+        ...fieldProperties,
         id: uuidv4(),
         active: true,
     };
@@ -166,14 +166,14 @@ export async function createContentTemplateField(props: {
 //* Update contentTemplateField */
 export async function updateContentTemplateField(props: {
     contentTemplateId: string;
-    fieldDetails: ModelRequired<ContentTemplateField, "id">;
+    fieldProperties: ModelRequired<ContentTemplateField, "id">;
 }) {
     errorRequiredPropsUndefined({
         props,
-        propPaths: ["contentTemplateId", "fieldDetails.id"],
+        propPaths: ["contentTemplateId", "fieldProperties.id"],
     });
 
-    const { contentTemplateId, fieldDetails } = props;
+    const { contentTemplateId, fieldProperties } = props;
     const contentTemplate = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
@@ -181,11 +181,11 @@ export async function updateContentTemplateField(props: {
     if (!contentTemplate) throw new Error("No content template found");
 
     const fieldIndexToUpdate = contentTemplate.fields.findIndex(
-        ({ id }) => id === fieldDetails.id
+        ({ id }) => id === fieldProperties.id
     );
 
     // remove id as to not overwrite, and type as that cannot be changed once created
-    const { id, type, ...rest } = fieldDetails;
+    const { id, type, ...rest } = fieldProperties;
 
     // update field on content template
     contentTemplate.fields[fieldIndexToUpdate] = {

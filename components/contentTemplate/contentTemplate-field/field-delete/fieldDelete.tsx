@@ -1,11 +1,11 @@
 import { useDeleteContentTemplateField } from "@data/contentTemplate/hooks";
 import { faTrash } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ContentTemplateField } from "@lib/contentTemplate/data/contentTemplate.model";
+import { ContentTemplateField } from "@lib/contentTemplate/data/types";
 import { ActionIcon } from "@mantine/core";
 import { useModals } from "@mantine/modals";
 import { contentTemplateState } from "@state/contentTemplate";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useSnapshot } from "valtio";
 import { FieldCard } from "../field-card";
 
@@ -29,14 +29,12 @@ export const FieldDelete: FC<FieldDeleteProps> = ({ field }) => {
             labels: { confirm: "Delete", cancel: "Cancel" },
             onConfirm: async () => {
                 await mutateAsync({
-                    fieldId: field.id,
+                    fieldId: field.id!,
                     contentTemplateId,
                 });
                 modals.closeAll();
             },
-            children: (
-                <FieldCard withActions={false} withDrag={false} field={field} />
-            ),
+            children: <FieldCard withActions={false} withDrag={false} field={field} />,
         });
 
     return (

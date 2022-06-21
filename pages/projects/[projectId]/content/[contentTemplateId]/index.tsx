@@ -1,7 +1,18 @@
+import { ContentCard } from "@components/content/content-card/contentCard";
+import { ContentCreate } from "@components/content/content-create";
+import { SmartForm } from "@components/smartForm";
 import { PageHeader } from "@components/ui/page-header";
+import { useGetProjectContentOfType } from "@data/content/hooks";
 import { Content } from "@lib/content/data/content.model";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Button, Grid, Group, SegmentedControl, Text } from "@mantine/core";
+import {
+    Chip,
+    Grid,
+    Group,
+    Radio,
+    SegmentedControl,
+    Text,
+} from "@mantine/core";
 import { params as cloudParams } from "@serverless/cloud";
 import axios from "axios";
 import camelcaseKeys from "camelcase-keys";
@@ -10,11 +21,11 @@ import { NestedProjectLayout } from "layouts/layouts-nested/nested-projectLayout
 import { GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import pluralize from "pluralize";
-import React, { ReactElement } from "react";
+import { ReactElement } from "react";
 import { CleanedCamel, CleanedSnake } from "type-helpers";
 
 interface ContentPageProps {
-    content: CleanedCamel<Content>;
+    content: CleanedCamel<Content>[];
     contentTemplate: CleanedCamel<ContentTemplate>;
     projectId: string;
 }
@@ -24,8 +35,13 @@ function ContentPage({
     projectId,
     content,
 }: ContentPageProps) {
-    console.log("contentTemplate :>> ", contentTemplate);
-    console.log("content :>> ", content);
+    const { data } = useGetProjectContentOfType({
+        projectId,
+        contentTemplateId: contentTemplate.id,
+        initialData: {
+            content,
+        },
+    });
     return (
         <>
             <Head>
@@ -52,14 +68,16 @@ function ContentPage({
                             { label: "Board", value: "board" },
                         ]}
                     />
-                    <Button>{`Add ${contentTemplate.name}`}</Button>
+                    <ContentCreate
+                        contentTemplate={contentTemplate}
+                        projectId={projectId}
+                    />
                 </PageHeader>
                 <Grid
                     sx={(theme) => ({
                         borderTop: `1px solid ${theme.colors.dark[6]}`,
                     })}
                     gutter="md"
-                    px="sm"
                     mx={0}
                 >
                     <Grid.Col
@@ -67,16 +85,127 @@ function ContentPage({
                         sx={(theme) => ({
                             borderRight: `1px solid ${theme.colors.dark[6]}`,
                         })}
-                    ></Grid.Col>
-                    <Grid.Col span={9}></Grid.Col>
+                        p={0}
+                    >
+                        <Group
+                            px="md"
+                            py="sm"
+                            direction="column"
+                            grow
+                            spacing="sm"
+                        >
+                            {data?.content?.length
+                                ? data.content.map((content, i) => (
+                                      <ContentCard
+                                          key={content.id}
+                                          content={content}
+                                      />
+                                  ))
+                                : "No content templates Found"}
+                        </Group>
+                    </Grid.Col>
+                    <Grid.Col span={9} px="md" py="sm">
+                        <SmartForm
+                            onSubmit={(values) => {
+                                console.log("values", values);
+                            }}
+                            formName="test"
+                        >
+                            <SmartForm.TextInput
+                                name="textInput"
+                                label="textInput"
+                                defaultValue="hello"
+                                span={6}
+                            />
+                            <SmartForm.Select
+                                name="input"
+                                label="Select"
+                                data={["one", "two"]}
+                                span={12}
+                            />
+                            <SmartForm.Checkbox
+                                name="checkbox"
+                                label="Checkbox"
+                                defaultChecked
+                            />
+                            <SmartForm.SegmentedControl
+                                name="segmented"
+                                data={["one", "two"]}
+                                label="Segmented"
+                                defaultValue="two"
+                                fullWidth
+                            />
+
+                            <SmartForm.Textarea
+                                name="textArea"
+                                label="textarea"
+                                defaultValue="two"
+                            />
+
+                            <SmartForm.RadioGroup
+                                name="radio"
+                                label="radioGroup"
+                                defaultValue="two"
+                            >
+                                <Radio value="react" label="React" />
+                                <Radio value="svelte" label="Svelte" />
+                                <Radio value="ng" label="Angular" />
+                                <Radio value="vue" label="Vue" />
+                            </SmartForm.RadioGroup>
+                            <SmartForm.PasswordInput
+                                name="password"
+                                label="password"
+                            />
+                            <SmartForm.IconPicker
+                                name="icon"
+                                label="iconPicker"
+                                span={6}
+                            />
+
+                            <SmartForm.Chips
+                                name="chips"
+                                multiple
+                                label="chips"
+                            >
+                                <Chip value="react">React</Chip>
+                                <Chip value="ng">Angular</Chip>
+                                <Chip value="svelte">Svelte</Chip>
+                                <Chip value="vue">Vue</Chip>
+                            </SmartForm.Chips>
+
+                            <SmartForm.ColorPicker
+                                name="picker"
+                                label="colorPicker"
+                            />
+                            <SmartForm.ColorInput
+                                name="colorInput"
+                                label="colorInput"
+                            />
+                            <SmartForm.JsonInput name="json" label="json" />
+                            <SmartForm.Slider
+                                name="slider"
+                                label="Slider"
+                                sliderLabel={(value) => `${value} °C`}
+                            />
+                            <SmartForm.MultiSelect
+                                name="multiselect"
+                                label="multiSelect"
+                                clearable
+                                data={[
+                                    { value: "react", label: "React" },
+                                    { value: "ng", label: "Angular" },
+                                    { value: "svelte", label: "Svelte" },
+                                    { value: "vue", label: "Vue" },
+                                    { value: "riot", label: "Riot" },
+                                    { value: "next", label: "Next.js" },
+                                    { value: "blitz", label: "Blitz.js" },
+                                ]}
+                            />
+                            <input type="submit" />
+                        </SmartForm>
+                    </Grid.Col>
                 </Grid>
             </Group>
-
-            {/*<Group>
-                        <OrganisationInviteCreate
-                            organisationId={organisationId}
-                        />
-                    </Group> */}
         </>
     );
 }

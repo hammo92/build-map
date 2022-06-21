@@ -1,30 +1,22 @@
-import { ContentTemplateField } from "@lib/contentTemplate/data/contentTemplate.model";
+import { ContentTemplateField } from "@lib/contentTemplate/data/types";
 import { proxy } from "valtio";
 
-export const contentTemplateState = proxy<{
+
+export interface ContentTemplateStateProps {
     hasEditPermission: boolean;
     contentTemplateId: string;
-    fieldDetails: Partial<ContentTemplateField>;
-    updateFieldDetails: (newDetails: Partial<ContentTemplateField>) => void;
-    updateFieldConfig: (
-        newConfig: Partial<ContentTemplateField["config"]>
-    ) => void;
-}>({
+    fieldProperties: ContentTemplateField;
+    updateFieldProperties: (newDetails: Partial<ContentTemplateField>) => void;
+}
+
+export const contentTemplateState = proxy<ContentTemplateStateProps>({
     hasEditPermission: true,
     contentTemplateId: "",
-    fieldDetails: {},
-    updateFieldDetails: (newDetails) => {
-        contentTemplateState.fieldDetails = {
-            ...contentTemplateState.fieldDetails,
+    fieldProperties: { type: "text", name: "" },
+    updateFieldProperties: (newDetails) => {
+        contentTemplateState.fieldProperties = {
+            ...contentTemplateState.fieldProperties,
             ...newDetails,
         };
-    },
-    updateFieldConfig: (newConfig) => {
-        contentTemplateState.updateFieldDetails({
-            config: {
-                ...contentTemplateState.fieldDetails.config,
-                ...newConfig,
-            },
-        });
     },
 });

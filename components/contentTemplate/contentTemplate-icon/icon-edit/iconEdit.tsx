@@ -1,10 +1,8 @@
 import { IconPicker } from "@components/ui/iconPicker";
+import { IconPickerIcon } from "@components/ui/iconPicker/types";
 import { useUpdateContentTemplate } from "@data/contentTemplate/hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    ContentTemplate,
-    ContentTemplateIcon,
-} from "@lib/contentTemplate/data/contentTemplate.model";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { ActionIcon, Button, Group, Modal, ThemeIcon } from "@mantine/core";
 import { contentTemplateState } from "@state/contentTemplate";
 import React, { useEffect, useState } from "react";
@@ -13,10 +11,10 @@ import { useSnapshot } from "valtio";
 export const IconEdit = ({
     defaultValue,
 }: {
-    defaultValue: ContentTemplateIcon;
+    defaultValue: IconPickerIcon;
 }) => {
     const { contentTemplateId } = useSnapshot(contentTemplateState);
-    const [icon, setIcon] = useState<ContentTemplateIcon>(defaultValue);
+    const [icon, setIcon] = useState<IconPickerIcon>(defaultValue);
     const [opened, setOpened] = useState(false);
     const { mutateAsync, isLoading } = useUpdateContentTemplate();
     useEffect(() => {

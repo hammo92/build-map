@@ -1,13 +1,12 @@
-import { Keys } from "../constants";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { Content } from "@lib/content/data/content.model";
 import { useNotifications } from "@mantine/notifications";
 import { AxiosError } from "axios";
-import { createContent, getContent, getProjectContentOfType } from "../queries";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { CleanedCamel } from "type-helpers";
-import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Content } from "@lib/content/data/content.model";
+import { Keys } from "../constants";
+import { createContent, getContent, getProjectContentOfType } from "../queries";
 
-export function useCreateContentTemplate() {
+export function useCreateContent() {
     const queryClient = useQueryClient();
     const notifications = useNotifications();
     return useMutation(createContent, {
@@ -31,15 +30,20 @@ export function useCreateContentTemplate() {
     });
 }
 
-export function useGetContentTemplate(contentId: string) {
+export function useGetContent(contentId: string) {
     return useQuery([Keys.GET_CONTENT, contentId], () => getContent(contentId));
 }
 
-export function useGetProjectContentOfType(
-    projectId: string,
-    contentTemplateId: string,
-    initialData?: { content: CleanedCamel<Content>[] }
-) {
+// get all content entries which use contentTemplate
+export function useGetProjectContentOfType({
+    projectId,
+    contentTemplateId,
+    initialData,
+}: {
+    projectId: string;
+    contentTemplateId: string;
+    initialData?: { content: CleanedCamel<Content>[] };
+}) {
     return useQuery(
         Keys.GET_PROJECT_CONTENT_OF_TYPE,
         () => getProjectContentOfType({ projectId, contentTemplateId }),

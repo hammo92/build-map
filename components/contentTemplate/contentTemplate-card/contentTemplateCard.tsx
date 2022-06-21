@@ -1,43 +1,20 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import {
-    Badge,
-    Card,
-    Grid,
-    Group,
-    Paper,
-    Text,
-    ThemeIcon,
-    Title,
-} from "@mantine/core";
-import { contentTemplateState } from "@state/contentTemplate";
-import React, { FC, useState } from "react";
+import { Badge, Card, Group, Text, ThemeIcon } from "@mantine/core";
+import { FC } from "react";
 import { CleanedCamel } from "type-helpers";
-import { useSnapshot } from "valtio";
 import { useStyles } from "./styles";
 
 interface ContentTemplateCardProps {
     contentTemplate: CleanedCamel<ContentTemplate>;
+    active: boolean;
 }
 
-export const ContentTemplateCard: FC<ContentTemplateCardProps> = ({
-    contentTemplate,
-}) => {
-    const { contentTemplateId } = useSnapshot(contentTemplateState);
+export const ContentTemplateCard: FC<ContentTemplateCardProps> = ({ contentTemplate, active }) => {
     const { classes } = useStyles();
     return (
-        <Card
-            className={`${classes.clickableCard} ${
-                contentTemplateId === contentTemplate.id && classes.active
-            }`}
-            onClick={() =>
-                (contentTemplateState.contentTemplateId = contentTemplate.id)
-            }
-        >
-            <Card.Section
-                p="md"
-                sx={(theme) => ({ background: theme.colors.dark[7] })}
-            >
+        <Card className={`${classes.clickableCard} ${active && classes.active}`}>
+            <Card.Section p="md" sx={(theme) => ({ background: theme.colors.dark[7] })}>
                 <Group position="apart" noWrap>
                     <Group noWrap>
                         <ThemeIcon color={contentTemplate.icon.color}>
@@ -49,16 +26,8 @@ export const ContentTemplateCard: FC<ContentTemplateCardProps> = ({
                     </Group>
                     <Badge
                         sx={{ flexShrink: 0 }}
-                        color={
-                            contentTemplate.status === "published"
-                                ? "violet"
-                                : "blue"
-                        }
-                        variant={
-                            contentTemplate.status === "published"
-                                ? "filled"
-                                : "outline"
-                        }
+                        color={contentTemplate.status === "published" ? "violet" : "blue"}
+                        variant={contentTemplate.status === "published" ? "filled" : "outline"}
                     >
                         {contentTemplate.status}
                     </Badge>

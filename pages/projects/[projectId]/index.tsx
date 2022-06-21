@@ -1,32 +1,27 @@
 import { NavigationList } from "@components/navigation/linkList";
-import { ProjectCreateButton } from "@components/project/project-create";
-import { ProjectList } from "@components/project/project-list";
 import { useGetOrganisationContentTemplates } from "@data/contentTemplate/hooks";
 import { useGetMe } from "@data/user/hooks";
 import {
     faCompassDrafting,
-    faFile,
     faHouse,
-    faMemo,
     faUser,
 } from "@fortawesome/pro-regular-svg-icons";
+import { Project } from "@lib/project/data/projectModel";
 import { Divider, Group, Title } from "@mantine/core";
+import { params as cloudParams } from "@serverless/cloud";
+import { organisationState } from "@state/organisation";
+import axios from "axios";
+import camelcaseKeys from "camelcase-keys";
+import { getCookie } from "cookies-next";
 import dayjs from "dayjs";
 import { LayoutShellSideNav } from "layouts";
 import { GetServerSidePropsContext } from "next";
 import Head from "next/head";
-import React, { ReactElement } from "react";
-import { capitalise } from "utils/stringTransform";
-import { params as cloudParams } from "@serverless/cloud";
-import axios from "axios";
-import { apiClient } from "@data/config";
-import { getCookie } from "cookies-next";
-import { CleanedCamel } from "type-helpers";
-import { Project } from "@lib/project/data/projectModel";
-import { organisationState } from "@state/organisation";
-import { useSnapshot } from "valtio";
-import camelcaseKeys from "camelcase-keys";
 import { plural } from "pluralize";
+import { ReactElement } from "react";
+import { CleanedCamel } from "type-helpers";
+import { capitalise } from "utils/stringTransform";
+import { useSnapshot } from "valtio";
 
 interface ProjectPageProps {
     projectId: string;

@@ -9,6 +9,11 @@ export const content = () => {
     //* Create content */
     api.post("/content", async function (req: any, res: any) {
         const { contentTemplateId, projectId } = req.body;
+        console.log(
+            "contentTemplateId, projectId",
+            contentTemplateId,
+            projectId
+        );
         try {
             const { user } = req;
             const { newContent, contentTemplate } = await createContent({

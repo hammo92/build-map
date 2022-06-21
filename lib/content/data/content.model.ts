@@ -4,6 +4,7 @@ import {
     FieldType,
     FIELD_TYPES,
 } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
+import { ContentTemplateField } from "@lib/contentTemplate/data/types";
 import {
     buildIndex,
     indexBy,
@@ -11,11 +12,9 @@ import {
     timekey,
 } from "serverless-cloud-data-utils";
 
-interface ContentField {
-    templateFieldId: string;
-    fieldType: FieldType;
-    value: any;
-}
+type ContentField = ContentTemplateField & {
+    values: any[];
+};
 
 // To get all an contentTemplate by it's ID *//
 //namespace content:${contentId} */

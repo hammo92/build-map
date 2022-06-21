@@ -1,165 +1,214 @@
-import {
-    far,
-    faPickleball,
-    IconDefinition,
-} from "@fortawesome/pro-regular-svg-icons";
-import {
-    FontAwesomeIcon,
-    FontAwesomeIconProps,
-} from "@fortawesome/react-fontawesome";
+import { far, IconDefinition } from "@fortawesome/pro-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     ActionIcon,
-    Box,
-    Button,
     Center,
-    ColorInput,
     ColorSwatch,
+    DefaultProps,
+    extractSystemStyles,
     Group,
-    MantineColor,
-    Modal,
+    InputWrapper,
+    MantineSize,
     Pagination,
-    Popover,
-    ScrollArea,
     SimpleGrid,
     Text,
     TextInput,
-    ThemeIcon,
     Tooltip,
-    useMantineTheme,
+    useMantineDefaultProps,
 } from "@mantine/core";
-import React, { FC, useState } from "react";
+import { useUncontrolled, useUuid } from "@mantine/hooks";
+import { forwardRef, useState } from "react";
 import { chunkArray, removeDuplicatesFromArray } from "utils/arrayModify";
-import tinyColor from "tinycolor2";
 import { useStyles } from "./styles";
-import { ContentTemplateIcon } from "@lib/contentTemplate/data/contentTemplate.model";
-import { useUncontrolled } from "@mantine/hooks";
+import { BaseIconPickerProps, BaseIconPickerStylesNames, IconPickerIcon } from "./types";
 
-interface IconPickerProps {
+const colors = [
+    "red",
+    "pink",
+    "grape",
+    "violet",
+    "indigo",
+    "blue",
+    "cyan",
+    "green",
+    "lime",
+    "yellow",
+    "orange",
+    "teal",
+];
+
+export interface IconPickerProps extends BaseIconPickerProps, DefaultProps<BaseIconPickerStylesNames> {
+    /** Icons to show per page */
     perPage?: number;
+
+    /** Icon columns */
     cols?: number;
-    defaultValue?: Partial<ContentTemplateIcon>;
-    value?: Partial<ContentTemplateIcon>;
-    onChange: ({ icon, color }: ContentTemplateIcon) => void;
+
+    /** Controlled input value */
+    value?: IconPickerIcon;
+
+    /** Uncontrolled input defaultValue */
+    defaultValue?: IconPickerIcon;
+
+    /** Controlled input onChange handler */
+    onChange?(value: IconPickerIcon): void;
+
+    /** Input size */
+    size?: MantineSize;
 }
 
-export const IconPicker: FC<IconPickerProps> = ({
-    perPage = 40,
-    cols = 8,
-    onChange,
-    defaultValue,
-    value,
-}) => {
-    const [_value, handleChange] = useUncontrolled({
+const defaultProps: Partial<IconPickerProps> = {
+    required: false,
+    perPage: 40,
+    cols: 8,
+    size: "sm",
+    disabled: false,
+};
+
+export const IconPicker = forwardRef<HTMLInputElement, IconPickerProps>((props: IconPickerProps, ref) => {
+    const {
+        perPage,
+        cols,
+        className,
+        style,
+        required,
+        label,
+        id,
+        error,
+        description,
+        size,
         value,
         defaultValue,
-        rule: (val) => val !== undefined,
-        finalValue: {
-            color: "blue",
-        },
         onChange,
-    });
+        onBlur,
+        onFocus,
+        wrapperProps,
+        classNames,
+        styles,
+        disabled,
+        sx,
+        name,
+        errorProps,
+        descriptionProps,
+        labelProps,
+        placeholder,
+        form,
+        ...others
+    } = useMantineDefaultProps("IconPicker", defaultProps, props);
 
-    const { classes } = useStyles();
-    const theme = useMantineTheme();
-    const [opened, setOpened] = useState(false);
+    const { classes, cx, theme } = useStyles();
+    const { systemStyles, rest } = extractSystemStyles(others);
     const [page, setPage] = useState(1);
     const [searchString, setSearchString] = useState("");
-    //convert icons object into array of icons
-    const iconsArray = Object.keys(far).map(
-        (key) => far[key as keyof typeof far]
-    );
-    const duplicatesRemoved = removeDuplicatesFromArray(
-        iconsArray
-    ) as IconDefinition[];
-    const filteredList = duplicatesRemoved.filter(({ iconName }) =>
-        iconName.includes(searchString)
-    );
-    const pagedIcons = chunkArray(filteredList, perPage);
+    const uuid = useUuid(id);
 
-    const onClick = (icon: IconDefinition) => {
-        handleChange({ ..._value, icon });
+    const [_value, handleChange, inputMode] = useUncontrolled({
+        value,
+        defaultValue,
+        finalValue: {
+            icon: far[0],
+            color: "red",
+        },
+        onChange: onChange!,
+        rule: (val) => typeof val === "object",
+    });
+
+    const onIconClick = (icon: IconDefinition) => {
+        handleChange({ color: _value?.color ?? "red", icon });
     };
 
-    // remove grey and black, return swatches for colours
-    const swatches = Object.keys(theme.colors)
-        .slice(2, theme.colors.length as unknown as number)
-        .map((color) => (
-            <ColorSwatch
-                className={`${classes.clickable} ${
-                    color === _value?.color && classes.activeSwatch
-                }`}
-                key={color}
-                color={theme.colors[color][7]}
-                onClick={() => handleChange({ ..._value, color })}
-            />
-        ));
+    //* Create paged icon list //
+    /** convert icons object into array of icons */
+    const iconsArray = Object.keys(far).map((key) => far[key as keyof typeof far]);
+    const duplicatesRemoved = removeDuplicatesFromArray(iconsArray) as IconDefinition[];
+    const filteredList = duplicatesRemoved.filter(({ iconName }) => iconName.includes(searchString));
+    const pagedIcons = chunkArray(filteredList, perPage!);
+    //* //
 
-    // displays chosen icon and colour
-    const previewIcon = (
-        <ThemeIcon
-            color={_value?.color}
-            variant="filled"
-            size={36}
-            className={classes.transition}
-        >
-            {_value?.icon ? (
-                <FontAwesomeIcon icon={_value?.icon} size="lg" />
-            ) : (
-                ""
-            )}
-        </ThemeIcon>
-    );
-
+    const swatches = colors.map((color) => (
+        <ColorSwatch
+            className={`${classes.clickable} ${color === _value?.color && classes.activeSwatch}`}
+            key={color}
+            color={theme.colors[color][7]}
+            onClick={() => handleChange({ icon: _value?.icon ?? far[0], color })}
+        />
+    ));
+    //* */
     return (
-        <Group direction="column" grow>
-            <Group grow>{swatches}</Group>
-            <TextInput
-                onChange={(event) => setSearchString(event.currentTarget.value)}
-                value={searchString}
-                placeholder="Type to search icons"
-            />
-
-            {pagedIcons[page - 1] ? (
-                <SimpleGrid cols={cols}>
-                    {pagedIcons[page - 1].map((icon, index) => (
-                        <Tooltip
-                            label={icon.iconName}
-                            withArrow
-                            key={`${icon.iconName}${index}`}
-                        >
-                            <ActionIcon
-                                size="lg"
-                                className={classes.clickable}
-                                onClick={() => onClick(icon)}
-                                color={
-                                    icon.iconName === _value?.icon?.iconName
-                                        ? _value?.color
-                                        : "gray"
-                                }
-                                variant={
-                                    icon.iconName === _value?.icon?.iconName
-                                        ? "filled"
-                                        : "hover"
-                                }
-                            >
-                                <FontAwesomeIcon icon={icon} size="lg" />
-                            </ActionIcon>
-                        </Tooltip>
-                    ))}
-                </SimpleGrid>
-            ) : (
-                <Center>
-                    <Text>No icons found</Text>
-                </Center>
-            )}
-            {pagedIcons.length > 1 && (
-                <Pagination
-                    page={page}
-                    grow
-                    onChange={setPage}
-                    total={Math.floor(filteredList.length / perPage)}
+        <InputWrapper
+            required={required}
+            id={uuid}
+            label={label}
+            error={error}
+            description={description}
+            size={size}
+            className={className}
+            style={style}
+            classNames={classNames}
+            styles={styles}
+            __staticSelector="Select"
+            sx={sx}
+            errorProps={errorProps}
+            descriptionProps={descriptionProps}
+            labelProps={labelProps}
+            {...systemStyles}
+            {...wrapperProps}
+        >
+            <Group
+                direction="column"
+                grow
+                style={{
+                    border: `1px solid ${theme.colors.dark[6]}`,
+                    borderRadius: theme.radius.md,
+                }}
+                p={size}
+            >
+                <Group grow>{swatches}</Group>
+                <TextInput
+                    onChange={(event) => setSearchString(event.currentTarget.value)}
+                    size={size}
+                    value={searchString}
+                    placeholder="Type to search icons"
                 />
-            )}
-        </Group>
+
+                {pagedIcons[page - 1] ? (
+                    <SimpleGrid cols={cols}>
+                        {pagedIcons[page - 1].map((icon, index) => (
+                            <Tooltip label={icon.iconName} withArrow key={`${icon.iconName}${index}`}>
+                                <Center>
+                                    <ActionIcon
+                                        size={size}
+                                        className={classes.clickable}
+                                        onClick={() => onIconClick(icon)}
+                                        color={icon.iconName === _value?.icon?.iconName ? _value?.color : "gray"}
+                                        variant={icon.iconName === _value?.icon?.iconName ? "filled" : "hover"}
+                                    >
+                                        <FontAwesomeIcon
+                                            icon={icon}
+                                            size={size === "md" ? "1x" : size === "xl" ? "2x" : size}
+                                        />
+                                    </ActionIcon>
+                                </Center>
+                            </Tooltip>
+                        ))}
+                    </SimpleGrid>
+                ) : (
+                    <Center>
+                        <Text>No icons found</Text>
+                    </Center>
+                )}
+                {pagedIcons.length > 1 && (
+                    <Pagination
+                        page={page}
+                        size={size}
+                        grow
+                        onChange={setPage}
+                        total={Math.floor(filteredList.length / perPage!)}
+                    />
+                )}
+            </Group>
+        </InputWrapper>
     );
-};
+});
+
+IconPicker.displayName = "IconPicker";

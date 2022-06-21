@@ -24,11 +24,11 @@ const ModalContents = () => {
     const { mutateAsync } = useUpdateContentTemplate();
     const onConfirm = async () => {
         setLoading(true);
-        const fieldDetails = await mutateAsync({
+        const fieldProperties = await mutateAsync({
             name,
             contentTemplateId,
         });
-        fieldDetails ? modals.closeAll() : setLoading(false);
+        fieldProperties ? modals.closeAll() : setLoading(false);
     };
     return (
         <Group grow direction="column">

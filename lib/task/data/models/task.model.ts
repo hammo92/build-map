@@ -62,13 +62,13 @@ export class Task extends Model<Task> {
     fields: {
         id: string;
         value: any | any[] | null;
-        fieldDetails?: TaskField; // not stored, returned on query
+        fieldProperties?: TaskField; // not stored, returned on query
         updatedBy?: string;
     }[];
     subtaskCollectionId?: string;
     description?: string;
     complete?: boolean;
-    media?: string[]; 
+    media?: string[];
     //set on return for assignment queries
     assignmentId?: string;
     keys() {

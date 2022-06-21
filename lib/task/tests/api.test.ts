@@ -284,9 +284,9 @@ describe("create collection and add tasks", () => {
     });
 
     test("Should add 5 fields", async () => {
-        const fieldDetails = [];
+        const fieldProperties = [];
         for (let i = 4; i < 9; i++) {
-            fieldDetails.push({
+            fieldProperties.push({
                 collectionId,
                 title: `new field ${i}`,
                 sortIndex: i,
@@ -294,7 +294,7 @@ describe("create collection and add tasks", () => {
             });
         }
         const fields = await Promise.all(
-            fieldDetails.map((field) =>
+            fieldProperties.map((field) =>
                 api
                     .post(`/taskCollections/${collectionId}/fields`)
                     .invoke(field)
