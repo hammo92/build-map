@@ -1,10 +1,11 @@
+import { ModeOptions } from "@components/ui/imageEditor/imageEditor-interface";
 import { atom } from "jotai";
 import { atomWithImmer } from "jotai/immer";
 import TuiImageEditor from "tui-image-editor";
 
 export const imageEditorState = atomWithImmer({
     instance: undefined as unknown as TuiImageEditor,
-    activeObject: undefined,
+    activeObject: undefined as number | undefined,
     activeTab: 0,
     stroke: "#000000",
     fill: "#ffffff",
@@ -24,6 +25,8 @@ export const imageEditorState = atomWithImmer({
     height: 0,
     undoDisabled: true,
     redoDisabled: true,
+    mode: "POINTER" as ModeOptions,
+    toBlob: undefined,
 });
 
 export const shapeParamsAtom = atom((get) => {

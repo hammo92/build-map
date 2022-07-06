@@ -5,18 +5,10 @@ import {
     FIELD_TYPES,
 } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
 import { ContentTemplateField } from "@lib/contentTemplate/data/types";
-import {
-    buildIndex,
-    indexBy,
-    Model,
-    timekey,
-} from "serverless-cloud-data-utils";
+import { buildIndex, indexBy, Model, timekey } from "serverless-cloud-data-utils";
+import { ContentField } from "./types";
 
-type ContentField = ContentTemplateField & {
-    values: any[];
-};
-
-// To get all an contentTemplate by it's ID *//
+// To get a contentTemplate by it's ID *//
 //namespace content:${contentId} */
 export const ContentId = buildIndex({ namespace: `content` });
 
@@ -41,6 +33,9 @@ export class Content extends Model<Content> {
     contentTemplateId: string;
     projectId: string;
     date: string;
+    createdBy: string;
+    lastEditedTime: string;
+    lastEditedBy: string;
     status: "draft" | "published";
     fields: ContentField[];
     keys() {

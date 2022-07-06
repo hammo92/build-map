@@ -12,11 +12,10 @@ export const ShapeColor: React.FC<ColorSelectProps> = ({ type }) => {
     const [imageEditor, setImageEditorState] = useImmerAtom(imageEditorState);
     const { shape, instance, activeObject } = imageEditor;
     const [shapeParams] = useAtom(shapeParamsAtom);
-    const onChange = (newColor) => {
+    const onChange = (newColor: string) => {
         shapeParams[type] = newColor;
         instance.setDrawingShape(shape, shapeParams);
-        activeObject &&
-            instance.changeShape(activeObject, { [type]: newColor });
+        activeObject && instance.changeShape(activeObject, { [type]: newColor });
         setImageEditorState((i) => {
             i[type] = newColor;
         });

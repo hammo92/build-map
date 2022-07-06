@@ -1,12 +1,7 @@
 /* contentTemplate.model.ts */
 
 import { IconPickerIcon } from "@components/ui/iconPicker/types";
-import {
-    buildIndex,
-    indexBy,
-    Model,
-    timekey,
-} from "serverless-cloud-data-utils";
+import { buildIndex, indexBy, Model, timekey } from "serverless-cloud-data-utils";
 import { FieldType } from "../../../components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
 import { ContentTemplateField } from "./types";
 
@@ -35,12 +30,13 @@ export class ContentTemplate extends Model<ContentTemplate> {
     status: "draft" | "published";
     type: "collection" | "component";
     fields: ContentTemplateField[];
+    createdBy: string;
+    lastEditedTime: string;
+    lastEditedBy: string;
     keys() {
         return [
             indexBy(ContentTemplateId).exact(this.id),
-            indexBy(ContentTemplateOrganisation(this.organisationId)).exact(
-                this.date
-            ),
+            indexBy(ContentTemplateOrganisation(this.organisationId)).exact(this.date),
         ];
     }
 }

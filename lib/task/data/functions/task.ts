@@ -1,5 +1,5 @@
 import { indexBy } from "serverless-cloud-data-utils";
-import { objArrayToMapIndexedByValue } from "utils/arrayModify";
+import { objArrToKeyIndexedMap } from "utils/arrayModify";
 import { v4 as uuidv4 } from "uuid";
 import { getTaskCollectionFields } from "..";
 import { ModelRequired } from "../../../../type-helpers";
@@ -23,17 +23,14 @@ const AddTaskRelatedData = async (tasks: Task[]) => {
     fields = fields.map((field) => field.clean());
 
     // index field info by field id for easy access
-    const fieldsMap = objArrayToMapIndexedByValue(fields, "id");
+    const fieldsMap = objArrToKeyIndexedMap(fields, "id");
     //
 
     // add field data for fields on task
     tasks.forEach((task) => {
         // if task has fields with stored values
         if (task.fields?.length) {
-            const taskFieldsMap = objArrayToMapIndexedByValue(
-                task.fields,
-                "id"
-            );
+            const taskFieldsMap = objArrToKeyIndexedMap(task.fields, "id");
             task.fields = fields.map(({ id }) => {
                 const value = taskFieldsMap.get(id);
                 return { id, value: value ?? null, details: fieldsMap.get(id) };
@@ -51,10 +48,7 @@ const AddTaskRelatedData = async (tasks: Task[]) => {
 
 //* Create Task */
 export async function createTask(
-    createTaskProps: ModelRequired<
-        Task,
-        "collectionId" | "creatorId" | "title" | "category"
-    >
+    createTaskProps: ModelRequired<Task, "collectionId" | "creatorId" | "title" | "category">
 ) {
     const fields = await getTaskCollectionFields(createTaskProps.collectionId);
     const newTask = new Task({
@@ -117,9 +111,7 @@ export async function getCategoryTasks({
 
     const tasks = await getAllTaskCollectionTasks(collectionId);
     // find any tasks whose category matches
-    const tasksMatchingCategory = tasks.filter(
-        (task) => taskCategoryName === task.category
-    );
+    const tasksMatchingCategory = tasks.filter((task) => taskCategoryName === task.category);
 
     return [tasksMatchingCategory, taskCollection];
 }
@@ -131,9 +123,7 @@ export async function getTaskAssignedByUser(userId: string) {
     // get all tasks from assignments
     const tasks = await Promise.all(
         assignments.map(async (assignment) => {
-            const task = await indexBy(TaskId)
-                .exact(assignment.taskId)
-                .get(Task);
+            const task = await indexBy(TaskId).exact(assignment.taskId).get(Task);
             return task;
         })
     );
@@ -148,9 +138,7 @@ export async function getTaskAssignedToUser(userId: string) {
     // get all tasks from assignments
     const tasks = await Promise.all(
         assignments.map(async (assignment) => {
-            const task = await indexBy(TaskId)
-                .exact(assignment.taskId)
-                .get(Task);
+            const task = await indexBy(TaskId).exact(assignment.taskId).get(Task);
             return task;
         })
     );

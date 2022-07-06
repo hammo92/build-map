@@ -20,14 +20,17 @@ export const OrganisationCreator = (creatorId: string) =>
 //model: Organisation */
 export class Organisation extends Model<Organisation> {
     id: string;
+    createdTime: string;
+    createdBy: string;
+    lastEditedTime: string;
+    lastEditedBy: string;
+    archived: boolean;
     name: string;
-    creatorId: string;
-    date: string;
     path: string;
     keys() {
         return [
             indexBy(OrganisationId).exact(this.id),
-            indexBy(OrganisationCreator(this.creatorId)).exact(this.id),
+            indexBy(OrganisationCreator(this.createdBy)).exact(this.id),
         ];
     }
 }

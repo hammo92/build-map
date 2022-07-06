@@ -4,7 +4,12 @@ import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { CleanedCamel } from "type-helpers";
 import { Keys } from "../constants";
-import { createContent, getContent, getProjectContentOfType } from "../queries";
+import {
+    createContent,
+    getContent,
+    getProjectContentOfType,
+    updateContentFields,
+} from "../queries";
 
 export function useCreateContent() {
     const queryClient = useQueryClient();
@@ -31,7 +36,9 @@ export function useCreateContent() {
 }
 
 export function useGetContent(contentId: string) {
-    return useQuery([Keys.GET_CONTENT, contentId], () => getContent(contentId));
+    return useQuery([Keys.GET_CONTENT, contentId], () => getContent(contentId), {
+        //refetchInterval: 1000,
+    });
 }
 
 // get all content entries which use contentTemplate
@@ -47,6 +54,27 @@ export function useGetProjectContentOfType({
     return useQuery(
         Keys.GET_PROJECT_CONTENT_OF_TYPE,
         () => getProjectContentOfType({ projectId, contentTemplateId }),
-        { initialData }
+        {
+            initialData,
+        }
     );
+}
+
+export function useUpdateContentFields() {
+    const queryClient = useQueryClient();
+    const notifications = useNotifications();
+    return useMutation(updateContentFields, {
+        mutationKey: Keys.CREATE_CONTENT,
+        onSuccess: ({ content }) => {
+            //queryClient.invalidateQueries(Keys.GET_PROJECT_CONTENT_OF_TYPE);
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.log(`error`, error?.response?.data);
+            notifications.showNotification({
+                title: "Error",
+                message: error?.response?.data.message,
+                color: "red",
+            });
+        },
+    });
 }

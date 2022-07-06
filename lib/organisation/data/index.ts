@@ -17,13 +17,7 @@ import { params } from "@serverless/cloud";
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
 //* Create organisation */
-export async function createOrganisation({
-    name,
-    userId,
-}: {
-    name: string;
-    userId: string;
-}) {
+export async function createOrganisation({ name, userId }: { name: string; userId: string }) {
     errorIfUndefined({ name, userId });
     const user = await getUserById(userId);
     errorIfUndefined({ user }, "notFound");
@@ -31,8 +25,11 @@ export async function createOrganisation({
     const newOrganisation = new Organisation();
     newOrganisation.name = name;
     newOrganisation.id = uuidv4();
-    newOrganisation.date = new Date().toISOString();
-    newOrganisation.creatorId = userId;
+    newOrganisation.createdTime = new Date().toISOString();
+    newOrganisation.createdBy = userId;
+    newOrganisation.lastEditedTime = new Date().toISOString();
+    newOrganisation.lastEditedBy = userId;
+    newOrganisation.archived = false;
 
     //create organisationUser for creator
     const newOrganisationUser = new OrganisationUser();
@@ -52,9 +49,7 @@ export async function createOrganisation({
 //* Get organisation by id */
 export async function getOrganisationById(organisationId: string) {
     errorIfUndefined({ organisationId });
-    const organisation = await indexBy(OrganisationId)
-        .exact(organisationId)
-        .get(Organisation);
+    const organisation = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
     return organisation;
 }
 
@@ -62,21 +57,15 @@ export async function getOrganisationById(organisationId: string) {
 export async function deleteOrganisationById(organisationId: string) {
     errorIfUndefined({ organisationId });
     // get organisation
-    const organisation = await indexBy(OrganisationId)
-        .exact(organisationId)
-        .get(Organisation);
+    const organisation = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
 
     // get all OrganisationUsers
     const organistionUsers =
-        (await indexBy(OrganisationUsers(organisationId)).get(
-            OrganisationUser
-        )) ?? [];
+        (await indexBy(OrganisationUsers(organisationId)).get(OrganisationUser)) ?? [];
 
     // delete organisation and users
     await Promise.all([
-        ...organistionUsers.map(
-            async (organistionUser) => await organistionUser.delete()
-        ),
+        ...organistionUsers.map(async (organistionUser) => await organistionUser.delete()),
         organisation && organisation.delete(),
     ]);
 
@@ -92,9 +81,7 @@ export async function updateOrganisation({
     name?: string;
 }) {
     errorIfUndefined({ organisationId });
-    const organisation = await indexBy(OrganisationId)
-        .exact(organisationId)
-        .get(Organisation);
+    const organisation = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
 
     errorIfUndefined({ organisation }, "notFound");
 
@@ -108,9 +95,7 @@ export async function updateOrganisation({
 //* Get all organisations created by a user */
 export async function getOrganisationsByCreator(ownerId: string) {
     errorIfUndefined({ ownerId });
-    const organisations = await indexBy(OrganisationCreator(ownerId)).get(
-        Organisation
-    );
+    const organisations = await indexBy(OrganisationCreator(ownerId)).get(Organisation);
     return organisations;
 }
 
@@ -135,9 +120,9 @@ export async function createOrganisationtUser({
 //* Get all users for an organisation */
 export async function getOrganisationUsers(organisationId: string) {
     errorIfUndefined({ organisationId });
-    const organisationUsers = await indexBy(
-        OrganisationUsers(organisationId)
-    ).get(OrganisationUser);
+    const organisationUsers = await indexBy(OrganisationUsers(organisationId)).get(
+        OrganisationUser
+    );
     const users = await Promise.all(
         organisationUsers.map(async ({ userId }) => {
             const user = await indexBy(UserId).exact(userId).get(User);
@@ -150,18 +135,16 @@ export async function getOrganisationUsers(organisationId: string) {
 //* Get all organisationUsers for an organisation */
 export async function getOrganisationOrganisationUsers(organisationId: string) {
     errorIfUndefined({ organisationId });
-    const organisationUsers = await indexBy(
-        OrganisationUsers(organisationId)
-    ).get(OrganisationUser);
+    const organisationUsers = await indexBy(OrganisationUsers(organisationId)).get(
+        OrganisationUser
+    );
     return organisationUsers;
 }
 
 //* Get all organisationUsers for a user */
 export async function getUserOrganisationUsers(userId: string) {
     errorIfUndefined({ userId });
-    const organisationUsers = await indexBy(UserOrganisations(userId)).get(
-        OrganisationUser
-    );
+    const organisationUsers = await indexBy(UserOrganisations(userId)).get(OrganisationUser);
     return organisationUsers;
 }
 
@@ -170,9 +153,7 @@ export async function getUserOrganisations(userId: string) {
     errorIfUndefined({ userId });
     const userOrganisationUserEntries = await getUserOrganisationUsers(userId);
     const organisations = await Promise.all(
-        userOrganisationUserEntries.map(({ organisationId }) =>
-            getOrganisationById(organisationId)
-        )
+        userOrganisationUserEntries.map(({ organisationId }) => getOrganisationById(organisationId))
     );
     return organisations;
 }

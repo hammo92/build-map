@@ -4,14 +4,15 @@ import { useImmerAtom } from "jotai/immer";
 import React from "react";
 
 export const BrushColor = () => {
-    const [{ brushColor, instance, brushWidth }, setImageEditorState] =
+    const [{ brushColor, instance, brushWidth, activeObject }, setImageEditorState] =
         useImmerAtom(imageEditorState);
-    const onChange = (color) => {
+    const onChange = (color: string) => {
         instance.setBrush({ color, width: brushWidth });
 
         setImageEditorState((i) => {
             i.brushColor = color;
         });
+        activeObject && instance.changeShape(activeObject, { stroke: color });
     };
     return <ColorPopover value={brushColor} onChange={onChange} />;
 };

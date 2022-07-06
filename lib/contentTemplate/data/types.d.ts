@@ -1,5 +1,11 @@
 import { FieldType } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
-import { SelectProps, TextInputProps, CheckboxProps, MultiSelectProps, NumberInputProps } from "@mantine/core";
+import {
+    SelectProps,
+    TextInputProps,
+    CheckboxProps,
+    MultiSelectProps,
+    NumberInputProps,
+} from "@mantine/core";
 import { Required } from "utility-types";
 
 export interface ContentTemplateFieldBase<T extends FieldType> {
@@ -13,11 +19,13 @@ export interface ContentTemplateFieldBase<T extends FieldType> {
         editableBy?: "all" | "issuer" | "recipient";
         visibleTo?: "all" | "issuer" | "recipient";
     };
+    createdBy: string;
+    lastEditedTime: string;
+    lastEditedBy: string;
 }
 
 export type ContentTemplateFieldCheckbox = ContentTemplateFieldBase<"checkbox"> & {
-    defaultValue?: CheckboxProps["defaultValue"];
-    defaultChecked?: CheckboxProps["defaultChecked"];
+    defaultValue?: boolean;
 };
 
 export type ContentTemplateFieldComponent = ContentTemplateFieldBase<"component"> & {
@@ -25,25 +33,27 @@ export type ContentTemplateFieldComponent = ContentTemplateFieldBase<"component"
 };
 
 export type ContentTemplateFieldDate = ContentTemplateFieldBase<"date"> & {
+    subtype: "dateTime" | "date" | "time";
     defaultValue?: any;
 };
 
 export type ContentTemplateFieldEmail = ContentTemplateFieldBase<"email"> & {
-    defaultValue?: TextInputProps["defaultValue"];
+    defaultValue?: string;
 };
 
 export type ContentTemplateFieldImage = ContentTemplateFieldBase<"image"> & {
+    subtype: "single" | "multiple";
     defaultValue?: any;
 };
 
 export type ContentTemplateFieldMultiSelect = ContentTemplateFieldBase<"multiSelect"> & {
     data?: string[];
-    defaultValue?: MultiSelectProps["defaultValue"];
+    defaultValue?: string[];
 };
 
 export type ContentTemplateFieldNumber = ContentTemplateFieldBase<"number"> & {
     subtype: "integer" | "decimal" | "float";
-    defaultValue?: NumberInputProps["defaultValue"];
+    defaultValue?: number;
     min?: NumberInputProps["min"];
     max?: NumberInputProps["max"];
 };
@@ -53,13 +63,13 @@ export type ContentTemplateFieldRichText = ContentTemplateFieldBase<"richText"> 
 };
 
 export type ContentTemplateFieldSelect = ContentTemplateFieldBase<"select"> & {
-    data?: string[];
-    defaultValue?: SelectProps["defaultValue"];
+    data?: string;
+    defaultValue?: string;
 };
 
 export type ContentTemplateFieldText = ContentTemplateFieldBase<"text"> & {
     subtype: "shortText" | "longText";
-    defaultValue?: TextInputProps["defaultValue"];
+    defaultValue?: string;
 };
 
 export type ContentTemplateField =
@@ -84,7 +94,9 @@ const isTemplateComponentField = (
 ): field is ContentTemplateFieldComponent => {
     field.type === "component";
 };
-const isEmailField = (field: Required<Partial<ContentTemplateField>, "type">): field is ContentTemplateFieldEmail => {
+const isEmailField = (
+    field: Required<Partial<ContentTemplateField>, "type">
+): field is ContentTemplateFieldEmail => {
     field.type === "email";
 };
 const isTemplateImageField = (

@@ -49,6 +49,8 @@ export const AdvancedFieldsNumber = () => {
     }, [subtype]);
 
     // remove insignificant trailing zeroes from float
+    //! Currently strips all trailing zeroes, need solution
+    //Todo improve formatter to run on blur
     const formatter = (value: string | undefined) => {
         if (value) {
             if (subtype === "float" && value.split(".")?.[1]?.length > 1) {

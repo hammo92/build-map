@@ -1,5 +1,4 @@
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { ContentTemplateField } from "@lib/contentTemplate/data/types";
 import { useNotifications } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -48,9 +47,13 @@ export function useGetContentTemplate(
     contentTemplateId: string,
     initialData?: { contentTemplate: Required<CleanedCamel<ContentTemplate>, "id" | "name"> }
 ) {
-    return useQuery([Keys.GET_CONTENT_TYPE, contentTemplateId], () => getContentTemplate(contentTemplateId), {
-        initialData,
-    });
+    return useQuery(
+        [Keys.GET_CONTENT_TYPE, contentTemplateId],
+        () => getContentTemplate(contentTemplateId),
+        {
+            initialData,
+        }
+    );
 }
 
 export function useUpdateContentTemplate() {
@@ -127,9 +130,13 @@ export function useGetOrganisationContentTemplates(
     organisationId: string,
     initialData?: { contentTemplates: CleanedCamel<ContentTemplate>[] }
 ) {
-    return useQuery(Keys.GET_ORGANISATION_CONTENT_TYPES, () => getOrganisationContentTemplates(organisationId), {
-        initialData,
-    });
+    return useQuery(
+        Keys.GET_ORGANISATION_CONTENT_TYPES,
+        () => getOrganisationContentTemplates(organisationId),
+        {
+            initialData,
+        }
+    );
 }
 
 export function useCreateContentTemplateField() {
@@ -191,7 +198,9 @@ export function useUpdateContentTemplateField() {
 
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
-                const fieldIndex = contentTemplate.fields.findIndex(({ id }) => id === fieldProperties.id);
+                const fieldIndex = contentTemplate.fields.findIndex(
+                    ({ id }) => id === fieldProperties.id
+                );
 
                 const { type, id, ...rest } = fieldProperties;
 
@@ -284,7 +293,11 @@ export function useReorderContentTemplateFields() {
 
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
-                const updatedContentTemplateFields = moveInArray(contentTemplate!.fields, fromIndex, toIndex);
+                const updatedContentTemplateFields = moveInArray(
+                    contentTemplate!.fields,
+                    fromIndex,
+                    toIndex
+                );
                 contentTemplate.fields = updatedContentTemplateFields;
 
                 // Optimistically update to the new value

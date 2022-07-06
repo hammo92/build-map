@@ -8,22 +8,18 @@ import { useStyles } from "./styles";
 
 interface ContentCardProps {
     content: CleanedCamel<Content>;
+    active?: boolean;
 }
 
-export const ContentCard: FC<ContentCardProps> = ({ content }) => {
+export const ContentCard: FC<ContentCardProps> = ({ content, active }) => {
     const { contentId } = useSnapshot(contentState);
     const { classes } = useStyles();
     return (
         <Card
-            className={`${classes.clickableCard} ${
-                contentId === content.id && classes.active
-            }`}
+            className={`${classes.clickableCard} ${active && classes.active}`}
             onClick={() => (contentState.contentId = content.id)}
         >
-            <Card.Section
-                p="md"
-                sx={(theme) => ({ background: theme.colors.dark[7] })}
-            >
+            <Card.Section p="md" sx={(theme) => ({ background: theme.colors.dark[7] })}>
                 <Group position="apart" noWrap>
                     <Group noWrap>
                         <Text size="lg" lineClamp={1}>
@@ -32,14 +28,8 @@ export const ContentCard: FC<ContentCardProps> = ({ content }) => {
                     </Group>
                     <Badge
                         sx={{ flexShrink: 0 }}
-                        color={
-                            content.status === "published" ? "violet" : "blue"
-                        }
-                        variant={
-                            content.status === "published"
-                                ? "filled"
-                                : "outline"
-                        }
+                        color={content.status === "published" ? "violet" : "blue"}
+                        variant={content.status === "published" ? "filled" : "outline"}
                     >
                         {content.status}
                     </Badge>

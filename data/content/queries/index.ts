@@ -1,4 +1,5 @@
 import { Content } from "@lib/content/data/content.model";
+import { ContentField } from "@lib/content/data/types";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import camelcaseKeys from "camelcase-keys";
 import { apiClient } from "data/config";
@@ -43,4 +44,19 @@ export async function getProjectContentOfType({
         content: CleanedCamel<Content>[];
         contentTemplate: CleanedCamel<ContentTemplate>;
     };
+}
+
+export async function updateContentFields({
+    contentId,
+    fields,
+}: {
+    contentId: string;
+    fields: ContentField[];
+}) {
+    const { data } = await apiClient.patch<{
+        Content: CleanedSnake<Content>;
+    }>(`/content/${contentId}/fields`, {
+        fields,
+    });
+    return camelcaseKeys(data, { deep: true });
 }

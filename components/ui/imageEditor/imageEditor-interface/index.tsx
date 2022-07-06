@@ -1,32 +1,31 @@
-import React, { useEffect, useRef, useState } from "react";
 import {
     faArrowPointer,
     faCrop,
     faPen,
     faRotate,
+    faSave,
     faShapes,
     faText,
 } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ActionIcon, Center, Group } from "@mantine/core";
-import { TextInterface } from "./interface-text";
-import { useImmerAtom } from "jotai/immer";
+import { ActionIcon, Box, Button, Center, Group, SegmentedControl } from "@mantine/core";
 import { imageEditorState } from "@state/imageEditor";
-import { ShapeInterface } from "./interface-shape";
-import { RotateInterface } from "./interface-rotate";
+import { useImmerAtom } from "jotai/immer";
+import { FC, useState } from "react";
+import { base64ToBlob } from "utils/blob";
+import { ImageEditorProps } from "../imageEditor";
 import { CropInterface } from "./interface-crop";
 import { DrawInterface } from "./interface-draw";
 import { HistoryInterface } from "./interface-history";
+import { RotateInterface } from "./interface-rotate";
+import { ShapeInterface } from "./interface-shape";
+import { TextInterface } from "./interface-text";
 
-interface ModeOptionsProps {
-    mode: "TEXT" | "SHAPE" | "CROPPER" | "ROTATE" | "DRAW" | "POINTER";
-}
+export type ModeOptions = "TEXT" | "SHAPE" | "CROPPER" | "ROTATE" | "DRAW" | "POINTER";
 
-const ModeOptions = ({ mode }) => {
-    const [{ instance, brushMode, brushColor, brushWidth }] =
-        useImmerAtom(imageEditorState);
+const ModeOptions = ({ mode }: { mode: ModeOptions }) => {
+    const [{ instance, brushMode, brushColor, brushWidth }] = useImmerAtom(imageEditorState);
     if (instance) {
-        instance.startDrawingMode("TEXT");
         switch (mode) {
             case "TEXT":
                 instance.startDrawingMode("TEXT");
@@ -35,7 +34,7 @@ const ModeOptions = ({ mode }) => {
                 instance.startDrawingMode("SHAPE");
                 return <ShapeInterface />;
             case "CROPPER":
-                instance.startDrawingMode("SHAPE");
+                instance.startDrawingMode("CROPPER");
                 return <CropInterface />;
             case "ROTATE":
                 instance.stopDrawingMode();
@@ -54,8 +53,9 @@ const ModeOptions = ({ mode }) => {
     return null;
 };
 
-export const ImageEditorInterface = ({ children }) => {
-    const [mode, setMode] = useState("TEXT");
+export const ImageEditorInterface: FC<ImageEditorProps> = ({ children, onSave, file }) => {
+    const [{ mode, instance, toBlob }, setImageEditorState] = useImmerAtom(imageEditorState);
+    const [saving, setSaving] = useState(false);
     return (
         <Group
             spacing={0}
@@ -64,34 +64,30 @@ export const ImageEditorInterface = ({ children }) => {
                 borderRadius: theme.radius.sm,
             })}
         >
-            <Group
-                direction="column"
-                sx={(theme) => ({
-                    padding: theme.spacing.sm,
-                })}
-            >
-                <ActionIcon onClick={() => setMode("POINTER")}>
-                    <FontAwesomeIcon icon={faArrowPointer} />
-                </ActionIcon>
-                <ActionIcon onClick={() => setMode("TEXT")}>
-                    <FontAwesomeIcon icon={faText} />
-                </ActionIcon>
-                <ActionIcon onClick={() => setMode("SHAPE")}>
-                    <FontAwesomeIcon icon={faShapes} />
-                </ActionIcon>
-                <ActionIcon onClick={() => setMode("CROPPER")}>
-                    <FontAwesomeIcon icon={faCrop} />
-                </ActionIcon>
-                <ActionIcon onClick={() => setMode("ROTATE")}>
-                    <FontAwesomeIcon icon={faRotate} />
-                </ActionIcon>
-                <ActionIcon onClick={() => setMode("DRAW")}>
-                    <FontAwesomeIcon icon={faPen} />
-                </ActionIcon>
-            </Group>
+            <SegmentedControl
+                value={mode}
+                orientation="vertical"
+                size="md"
+                data={[
+                    { value: "POINTER", label: <FontAwesomeIcon icon={faArrowPointer} /> },
+                    { value: "TEXT", label: <FontAwesomeIcon icon={faText} /> },
+                    { value: "SHAPE", label: <FontAwesomeIcon icon={faShapes} /> },
+                    { value: "CROPPER", label: <FontAwesomeIcon icon={faCrop} /> },
+                    { value: "ROTATE", label: <FontAwesomeIcon icon={faRotate} /> },
+                    { value: "DRAW", label: <FontAwesomeIcon icon={faPen} /> },
+                ]}
+                onChange={(value: ModeOptions) => {
+                    instance.deactivateAll();
+                    setImageEditorState((i) => {
+                        i.mode = value;
+                        i.activeObject = undefined;
+                    });
+                }}
+            />
             <Group direction="column" grow sx={{ flex: "1" }} spacing={0}>
                 <Group
                     position="right"
+                    spacing={0}
                     sx={(theme) => ({
                         "> div": {
                             borderLeft: `1px solid ${theme.colors.dark[6]}`,
@@ -100,10 +96,33 @@ export const ImageEditorInterface = ({ children }) => {
                 >
                     <ModeOptions mode={mode} />
                     <HistoryInterface />
+                    <Box px="sm">
+                        <Button
+                            size="sm"
+                            disabled={saving}
+                            loading={saving}
+                            onClick={async () => {
+                                setSaving(true);
+                                if (!onSave) return;
+                                const dataUrl = instance.toDataURL({ format: "jpg", quality: 0.7 });
+                                console.log("toBlob", toBlob);
+                                //const blob = await fetch(dataUrl).then((res) => res.blob());
+                                const blob = base64ToBlob(dataUrl);
+                                const newFile = new File(
+                                    [blob],
+                                    `${file.name.replace(/\.[^/.]+$/, "")}.png`
+                                );
+                                setSaving(false);
+                                onSave(newFile);
+                            }}
+                            color="blue"
+                            variant="filled"
+                        >
+                            Save
+                        </Button>
+                    </Box>
                 </Group>
-                <Center sx={(theme) => ({ background: theme.colors.dark[9] })}>
-                    {children}
-                </Center>
+                <Center sx={(theme) => ({ background: theme.colors.dark[9] })}>{children}</Center>
             </Group>
         </Group>
     );

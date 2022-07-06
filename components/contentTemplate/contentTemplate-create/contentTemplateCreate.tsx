@@ -10,12 +10,21 @@ import { FC } from "react";
 import { CleanedCamel } from "type-helpers";
 
 interface ContentTemplateCreateProps {
+    /** Whether the content is a collection or a component */
     type: ContentTemplate["type"];
+
+    /** Called when create form is submitted */
     onCreate?: (template: CleanedCamel<ContentTemplate>) => void;
+
+    /** The id of the current organisation */
     organisationId: string;
 }
 
-const ContentTemplateCreateForm: FC<ContentTemplateCreateProps> = ({ type, onCreate, organisationId }) => {
+const ContentTemplateCreateForm: FC<ContentTemplateCreateProps> = ({
+    type,
+    onCreate,
+    organisationId,
+}) => {
     const modals = useModals();
     const { mutateAsync, isLoading } = useCreateContentTemplate();
 
@@ -63,7 +72,11 @@ const ContentTemplateCreateForm: FC<ContentTemplateCreateProps> = ({ type, onCre
     );
 };
 
-export const ContentTemplateCreate: FC<ContentTemplateCreateProps> = ({ type, onCreate, organisationId }) => {
+export const ContentTemplateCreate: FC<ContentTemplateCreateProps> = ({
+    type,
+    onCreate,
+    organisationId,
+}) => {
     const modals = useModals();
 
     const openCreateModal = () =>
@@ -72,7 +85,13 @@ export const ContentTemplateCreate: FC<ContentTemplateCreateProps> = ({ type, on
             id: "contentTemplateCreateModal",
             closeOnClickOutside: false,
             size: "xl",
-            children: <ContentTemplateCreateForm type={type} onCreate={onCreate} organisationId={organisationId} />,
+            children: (
+                <ContentTemplateCreateForm
+                    type={type}
+                    onCreate={onCreate}
+                    organisationId={organisationId}
+                />
+            ),
         });
     return (
         <ActionIcon onClick={() => openCreateModal()} variant={"filled"} color="blue">

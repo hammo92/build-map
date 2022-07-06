@@ -1,6 +1,10 @@
+import { params } from "@serverless/cloud";
 import axios from "axios";
+import { Oso } from "oso-cloud";
 import { indexBy } from "serverless-cloud-data-utils";
 import { v4 as uuidv4 } from "uuid";
+import { getUserById } from "../../../lib/user/data";
+import { errorIfUndefined } from "../../../lib/utils";
 import { Address } from "../../../types/common";
 import { User, UserId } from "../../user/data/user.model";
 import {
@@ -12,10 +16,6 @@ import {
     ProjectUsers,
     UserProjects,
 } from "./projectModel";
-import { params } from "@serverless/cloud";
-import { getUserById } from "../../../lib/user/data";
-import { errorNotFound, errorIfUndefined } from "../../../lib/utils";
-import { Oso } from "oso-cloud";
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
 //* Create project */
@@ -59,9 +59,7 @@ export async function createProject({
             data: {
                 result: { latitude, longitude },
             },
-        } = await axios.get(
-            `https://api.postcodes.io/postcodes/${address.postcode}`
-        );
+        } = await axios.get(`https://api.postcodes.io/postcodes/${address.postcode}`);
         newProject.address.latitude = latitude;
         newProject.address.longitude = longitude;
     }
@@ -109,9 +107,7 @@ export async function updateProject({
             data: {
                 result: { latitude, longitude },
             },
-        } = await axios.get(
-            `https://api.postcodes.io/postcodes/${address.postcode}`
-        );
+        } = await axios.get(`https://api.postcodes.io/postcodes/${address.postcode}`);
         project.address.latitude = latitude;
         project.address.longitude = longitude;
     }
@@ -128,8 +124,7 @@ export async function deleteProjectById(projectId: string) {
     errorIfUndefined({ project }, "notFound");
 
     // get all ProjectUsers
-    const projectUsers =
-        (await indexBy(ProjectUsers(projectId)).get(ProjectUser)) ?? [];
+    const projectUsers = (await indexBy(ProjectUsers(projectId)).get(ProjectUser)) ?? [];
 
     const deleteUserPromises = projectUsers.flatMap(async (projectUser) => {
         const deleteUserPromise = projectUser.delete();
@@ -187,9 +182,7 @@ export async function removeUserFromProject({
     userId: string;
 }) {
     errorIfUndefined({ projectId, userId });
-    const projectUser = await indexBy(UserProjects(userId))
-        .exact(projectId)
-        .get(ProjectUser);
+    const projectUser = await indexBy(UserProjects(userId)).exact(projectId).get(ProjectUser);
     if (!projectUser) {
         throw new Error("No user found");
     }
@@ -206,18 +199,13 @@ export async function getUserProjectUsers(userId: string) {
 
 //* Get all projects for a user */
 export async function getUserProjects(userId: string) {
-    const canRead = await oso.list(
-        new User({ id: userId }),
-        "read",
-        "Project"!
-    );
+    const canRead = await oso.list(new User({ id: userId }), "read", "Project"!);
     console.log("canRead", canRead);
     errorIfUndefined({ userId });
     const projectUsers = await indexBy(UserProjects(userId)).get(ProjectUser);
     const projects = await Promise.all(
         projectUsers.map(
-            async ({ projectId }) =>
-                await indexBy(ProjectId).exact(projectId).get(Project)
+            async ({ projectId }) => await indexBy(ProjectId).exact(projectId).get(Project)
         )
     );
     return projects;
@@ -226,18 +214,14 @@ export async function getUserProjects(userId: string) {
 //* Get all projectUsers for a project */
 export async function getProjectProjectUsers(projectId: string) {
     errorIfUndefined({ projectId });
-    const projectUsers = await indexBy(ProjectUsers(projectId)).get(
-        ProjectUser
-    );
+    const projectUsers = await indexBy(ProjectUsers(projectId)).get(ProjectUser);
     return projectUsers;
 }
 
 //* Get all users for a project */
 export async function getProjectUsers(projectId: string) {
     errorIfUndefined({ projectId });
-    const projectUsers = await indexBy(ProjectUsers(projectId)).get(
-        ProjectUser
-    );
+    const projectUsers = await indexBy(ProjectUsers(projectId)).get(ProjectUser);
     const users = await Promise.all(
         projectUsers.map(async ({ userId }) => {
             const user = await indexBy(UserId).exact(userId).get(User);

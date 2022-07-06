@@ -120,7 +120,7 @@ function ContentTemplatePage({ organisationId, initialData }: ContentTemplatePag
                                               />
                                           </a>
                                       ))
-                                : "No content templates Found"}
+                                : "No content templates found"}
                         </Group>
                     </Grid.Col>
                     <Grid.Col span={9} px="md" py="sm">

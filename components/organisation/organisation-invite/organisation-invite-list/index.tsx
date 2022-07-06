@@ -6,12 +6,10 @@ import { OrganisationInviteListSkeleton } from "./organisation-invite-list-skele
 
 export const OrganisationInviteList = () => {
     const { data, isLoading } = useGetMyInvites();
-    console.log("isLoading :>> ", isLoading);
     if (data) {
         const pendingInvitations = data.invitations.filter(
-            (invitation) => !invitation.invitation.redeemed,
+            (invitation) => !invitation.invitation.redeemed
         );
-        console.log("pendingInvitations :>> ", pendingInvitations);
         if (pendingInvitations.length) {
             return (
                 <Group direction="column">

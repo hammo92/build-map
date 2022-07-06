@@ -12,7 +12,6 @@ export const FieldProperties: FC<{
     action: "edit" | "create";
     isSubmitting?: boolean;
 }> = ({ initialData, onCancel, onSubmit, isSubmitting, action }) => {
-    console.log("isSubmitting", isSubmitting);
     return (
         <SmartForm onSubmit={onSubmit} formName="fieldBasicDetails" defaultValues={initialData}>
             <SmartForm.TextInput hidden name="type" />
@@ -25,7 +24,12 @@ export const FieldProperties: FC<{
                 </Tabs.Tab>
             </Tabs>
             <Group grow mt="md">
-                <Button variant="light" color="gray" onClick={onCancel && onCancel} disabled={isSubmitting}>
+                <Button
+                    variant="light"
+                    color="gray"
+                    onClick={onCancel && onCancel}
+                    disabled={isSubmitting}
+                >
                     {action === "create" ? "Back" : "Cancel"}
                 </Button>
                 <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>

@@ -19,7 +19,7 @@ export const getFieldDefaults = (type: FieldType): ContentTemplateField => {
         case "number":
             return { ...sharedDefaults, type: "number", subtype: "integer" };
         case "checkbox":
-            return { ...sharedDefaults, type: "checkbox", defaultValue: "false" };
+            return { ...sharedDefaults, type: "checkbox", defaultValue: false };
         default:
             return { ...sharedDefaults, type };
     }

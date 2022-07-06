@@ -37,122 +37,100 @@ export const contentTemplates = () => {
     });
 
     //* Get contentTemplate */
-    api.get(
-        `/contentTemplates/:contentTemplateId`,
-        async function (req: any, res: any) {
-            const { contentTemplateId } = req.params;
+    api.get(`/contentTemplates/:contentTemplateId`, async function (req: any, res: any) {
+        const { contentTemplateId } = req.params;
 
-            try {
-                const contentTemplate = await getContentTemplateById(
-                    contentTemplateId
-                );
-                return res.status(200).send({
-                    contentTemplate: contentTemplate && contentTemplate.clean(),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+        try {
+            const contentTemplate = await getContentTemplateById(contentTemplateId);
+            return res.status(200).send({
+                contentTemplate: contentTemplate && contentTemplate.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Update contentTemplate  */
-    api.patch(
-        `/contentTemplates/:contentTemplateId`,
-        async function (req: any, res: any) {
-            const { contentTemplateId } = req.params;
-            const { name, status, icon } = req.body;
-
-            try {
-                const contentTemplate = await updateContentTemplate({
-                    contentTemplateId,
-                    name,
-                    status,
-                    icon,
-                });
-                return res.status(200).send({
-                    contentTemplate: contentTemplate && contentTemplate.clean(),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.patch(`/contentTemplates/:contentTemplateId`, async function (req: any, res: any) {
+        const { contentTemplateId } = req.params;
+        const { name, status, icon } = req.body;
+        const { user } = req;
+        try {
+            const contentTemplate = await updateContentTemplate({
+                contentTemplateId,
+                name,
+                status,
+                icon,
+                userId: user.id,
+            });
+            return res.status(200).send({
+                contentTemplate: contentTemplate && contentTemplate.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Delete contentTemplate */
-    api.delete(
-        `/contentTemplates/:contentTemplateId`,
-        async function (req: any, res: any) {
-            const { contentTemplateId } = req.params;
-            try {
-                const contentTemplate = await deleteContentTemplateById(
-                    contentTemplateId
-                );
-                return res.status(200).send({
-                    contentTemplate: contentTemplate && contentTemplate.clean(),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.delete(`/contentTemplates/:contentTemplateId`, async function (req: any, res: any) {
+        const { contentTemplateId } = req.params;
+        try {
+            const contentTemplate = await deleteContentTemplateById(contentTemplateId);
+            return res.status(200).send({
+                contentTemplate: contentTemplate && contentTemplate.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Get organsation contentTemplates */
-    api.get(
-        `/organisations/:organisationId/contentTemplates`,
-        async function (req: any, res: any) {
-            try {
-                const organisationId = req.params.organisationId;
-                const contentTemplates = await getOrganisationContentTemplates(
-                    organisationId
-                );
-                return res.status(200).send({
-                    contentTemplates: contentTemplates.length
-                        ? contentTemplates.map((contentTemplate) =>
-                              contentTemplate.clean()
-                          )
-                        : [],
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.get(`/organisations/:organisationId/contentTemplates`, async function (req: any, res: any) {
+        try {
+            const organisationId = req.params.organisationId;
+            const contentTemplates = await getOrganisationContentTemplates(organisationId);
+            return res.status(200).send({
+                contentTemplates: contentTemplates.length
+                    ? contentTemplates.map((contentTemplate) => contentTemplate.clean())
+                    : [],
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Create contentTemplate Field */
-    api.post(
-        "/contentTemplates/:contentTemplateId/fields",
-        async function (req: any, res: any) {
-            const { fieldProperties } = req.body;
-            const { contentTemplateId } = req.params;
-            try {
-                const { user } = req;
-                const contentTemplate = await createContentTemplateField({
-                    contentTemplateId,
-                    fieldProperties,
-                });
-                return res.status(200).send({
-                    contentTemplate: contentTemplate && contentTemplate.clean(),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.post("/contentTemplates/:contentTemplateId/fields", async function (req: any, res: any) {
+        const { fieldProperties } = req.body;
+        const { contentTemplateId } = req.params;
+        try {
+            const { user } = req;
+            const contentTemplate = await createContentTemplateField({
+                contentTemplateId,
+                fieldProperties,
+            });
+            return res.status(200).send({
+                contentTemplate: contentTemplate && contentTemplate.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Update contentTemplate Field */
     api.patch(

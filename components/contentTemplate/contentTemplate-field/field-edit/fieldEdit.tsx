@@ -20,7 +20,6 @@ export const FieldEdit: FC<FieldEditProps> = ({ field }) => {
     const { contentTemplateId } = useSnapshot(contentTemplateState);
     const { mutateAsync, isLoading } = useUpdateContentTemplateField();
     const onSubmit = async (values: any) => {
-        console.log("values", values);
         await mutateAsync({
             fieldProperties: values,
             contentTemplateId: contentTemplateId,

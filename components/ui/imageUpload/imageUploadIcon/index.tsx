@@ -1,8 +1,9 @@
-import { faBan, faImage, faUpload } from "@fortawesome/pro-regular-svg-icons";
+import { faBan, faImage, faCloudArrowUp } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useMantineTheme } from "@mantine/core";
+import { MantineTheme, useMantineTheme } from "@mantine/core";
+import { DropzoneStatus } from "@mantine/dropzone";
 
-function getIconColor(status, theme) {
+function getIconColor(status: DropzoneStatus, theme: MantineTheme) {
     return status.accepted
         ? theme.colors[theme.primaryColor][6]
         : status.rejected
@@ -12,14 +13,12 @@ function getIconColor(status, theme) {
         : theme.black;
 }
 
-export const ImageUploadIcon = ({ status, ...props }) => {
+export const ImageUploadIcon = ({ status }: { status: DropzoneStatus }) => {
     const theme = useMantineTheme();
     return (
         <FontAwesomeIcon
-            icon={
-                status.accepted ? faImage : status.rejected ? faBan : faUpload
-            }
-            size="4x"
+            icon={status.accepted ? faImage : status.rejected ? faBan : faCloudArrowUp}
+            size="2x"
             color={getIconColor(status, theme)}
         />
     );

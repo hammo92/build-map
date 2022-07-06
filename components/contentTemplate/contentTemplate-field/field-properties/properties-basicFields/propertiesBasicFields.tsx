@@ -7,7 +7,8 @@ import { useSnapshot } from "valtio";
 import { FieldType } from "../../field-options/fieldsDefinitions";
 import { BasicFieldsCommon } from "./basicFields-common";
 import { BasicFieldsComponent } from "./basicFields-component";
-import { BasicFieldsSelect } from "./basicFields-select/basicFieldsSelect";
+import { BasicFieldsMultiSelect } from "./basicFields-multiSelect";
+import { BasicFieldsSelect } from "./basicFields-select";
 
 const FieldTypeBaseFields: FC<{ type: FieldType }> = ({ type }) => {
     switch (type) {
@@ -15,6 +16,8 @@ const FieldTypeBaseFields: FC<{ type: FieldType }> = ({ type }) => {
             return <BasicFieldsSelect />;
         case "component":
             return <BasicFieldsComponent />;
+        case "multiSelect":
+            return <BasicFieldsMultiSelect />;
         default:
             return null;
     }

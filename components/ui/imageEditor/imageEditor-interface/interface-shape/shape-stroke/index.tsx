@@ -1,21 +1,24 @@
-import { Box, Slider } from "@mantine/core";
-import { imageEditorState } from "@state/imageEditor";
+import { BasicSlider } from "@components/ui/basicSlider";
+import { Box } from "@mantine/core";
+import { imageEditorState, shapeParamsAtom } from "@state/imageEditor";
+import { useAtom } from "jotai";
 import { useImmerAtom } from "jotai/immer";
-import React from "react";
 
 export const ShapeStroke = () => {
-    const [{ strokeWidth }, setStrokeWidth] = useImmerAtom(imageEditorState);
-    console.log("outside function :>> ", strokeWidth);
+    const [imageEditor, setImageEditorState] = useImmerAtom(imageEditorState);
+    const { shape, instance, activeObject } = imageEditor;
+    const [shapeParams] = useAtom(shapeParamsAtom);
     const onChange = (value: number) => {
-        setStrokeWidth((i) => {
+        setImageEditorState((i) => {
             i.strokeWidth = value;
         });
-        console.log("inside function :>> ", strokeWidth);
+        instance.setDrawingShape(shape, shapeParams);
+        activeObject && instance.changeShape(activeObject, { strokeWidth: value });
     };
 
     return (
-        <Box sx={{ minWidth: "80px" }}>
-            <Slider value={strokeWidth} onChange={onChange} />
+        <Box sx={{ width: "80px" }}>
+            <BasicSlider value={imageEditor.strokeWidth} onChange={onChange} />
         </Box>
     );
 };

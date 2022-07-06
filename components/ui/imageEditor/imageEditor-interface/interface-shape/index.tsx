@@ -1,9 +1,9 @@
 import { faFillDrip, faSquare } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Group } from "@mantine/core";
-import React from "react";
 import { ShapeColor } from "./shape-color";
 import { ShapeSelect } from "./shape-select";
+import { ShapeStroke } from "./shape-stroke";
 
 export const ShapeInterface = () => {
     return (
@@ -26,10 +26,9 @@ export const ShapeInterface = () => {
                     <FontAwesomeIcon icon={faSquare} />
                     <ShapeColor type="stroke" />
                 </Group>
-                {/* <Group spacing="xs">
-                    <Text size="sm">Stoke Width</Text>
-                    <WidthSlider />
-                </Group> */}
+                <Group spacing="xs">
+                    <ShapeStroke />
+                </Group>
             </Group>
         </Group>
     );

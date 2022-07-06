@@ -9,7 +9,7 @@ export const DeleteButton = () => {
     const [{ instance, activeObject }] = useImmerAtom(imageEditorState);
     return (
         <ActionIcon
-            onClick={() => instance.removeActiveObject()}
+            onClick={() => activeObject && instance.removeActiveObject()}
             disabled={!activeObject}
             size="lg"
         >

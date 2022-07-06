@@ -1,3 +1,4 @@
+import { ValueOf } from "type-fest";
 import { KeyPath } from "type-helpers";
 
 export const reorderArray = (array: any[], from: number, to: number) => {
@@ -42,12 +43,21 @@ export const chunkArray = (array: any[], chunkSize: number) => {
 export const removeDuplicatesFromArray = (array: any[]) => [...new Set(array)];
 
 //* Convert array to object with array items indexed by key */
-export function objArrayToMapIndexedByValue<T>(array: T[], key: KeyPath<T>) {
-    const path = key.split(".");
+export function objArrToKeyIndexedMap<T, X extends keyof T>(array: T[], key: X): Map<T[X], T> {
     const map = new Map();
     array.forEach((obj) => {
-        const value = path.reduce((acc, step) => acc[step], obj);
-        map.set(value, obj);
+        map.set(obj[key], obj);
     });
     return map;
+}
+
+export function objArrayToHashmap<T, X extends keyof T>(array: T[], path: X): { [key: string]: T } {
+    const hashmap = array.reduce((prev, currObj) => {
+        const key = currObj[path];
+        if (typeof key === "string") {
+            return { ...prev, [key]: currObj };
+        }
+        return prev;
+    }, {});
+    return { ...hashmap };
 }

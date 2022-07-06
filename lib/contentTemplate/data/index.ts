@@ -8,11 +8,11 @@ import { User } from "../../user/data/user.model";
 import { errorRequiredPropsUndefined, errorIfUndefined } from "../../utils";
 import {
     ContentTemplate,
-    ContentTemplateField,
     ContentTemplateId,
     ContentTemplateOrganisation,
 } from "./contentTemplate.model";
 import { IconPickerIcon } from "@components/ui/iconPicker/types";
+import { ContentTemplateField } from "./types";
 
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
@@ -55,6 +55,9 @@ export async function createContentTemplate({
     newContentTemplate.type = type;
     newContentTemplate.id = uuidv4();
     newContentTemplate.date = new Date().toISOString();
+    newContentTemplate.createdBy = userId;
+    newContentTemplate.lastEditedTime = new Date().toISOString();
+    newContentTemplate.lastEditedBy = userId;
     newContentTemplate.organisationId = organisationId;
     newContentTemplate.fields = [];
     console.log("type", type);
@@ -79,9 +82,9 @@ export async function getContentTemplateById(contentTemplateId: string) {
 //* Get Organisation's contentTemplates */
 export async function getOrganisationContentTemplates(organisationId: string) {
     errorIfUndefined({ organisationId });
-    const contentTemplates = await indexBy(
-        ContentTemplateOrganisation(organisationId)
-    ).get(ContentTemplate);
+    const contentTemplates = await indexBy(ContentTemplateOrganisation(organisationId)).get(
+        ContentTemplate
+    );
     return contentTemplates;
 }
 
@@ -106,13 +109,15 @@ export async function updateContentTemplate({
     name,
     status,
     icon,
+    userId,
 }: {
     contentTemplateId: string;
     name?: string;
     status?: "draft" | "published";
     icon?: IconPickerIcon;
+    userId: string;
 }) {
-    errorIfUndefined({ contentTemplateId });
+    errorIfUndefined({ contentTemplateId, userId });
     const contentTemplate = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
@@ -126,6 +131,8 @@ export async function updateContentTemplate({
     if (icon) {
         contentTemplate.icon = icon;
     }
+    contentTemplate.lastEditedTime = new Date().toISOString();
+    contentTemplate.lastEditedBy = userId;
     await contentTemplate!.save();
     return contentTemplate;
 }
@@ -137,11 +144,7 @@ export async function createContentTemplateField(props: {
 }) {
     errorRequiredPropsUndefined({
         props,
-        propPaths: [
-            "contentTemplateId",
-            "fieldProperties.name",
-            "fieldProperties.type",
-        ],
+        propPaths: ["contentTemplateId", "fieldProperties.name", "fieldProperties.type"],
     });
 
     const { contentTemplateId, fieldProperties } = props;

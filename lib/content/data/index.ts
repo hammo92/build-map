@@ -1,8 +1,11 @@
+import { getAssetById } from "../../../lib/asset/data";
 import { indexBy } from "serverless-cloud-data-utils";
+import { ModelRequired } from "type-helpers";
 import { v4 as uuidv4 } from "uuid";
 import { getContentTemplateById } from "../../contentTemplate/data";
-import { errorIfUndefined } from "../../utils";
+import { errorIfUndefined, errorRequiredPropsUndefined } from "../../utils";
 import { Content, ContentByTypeForProject, ContentId } from "./content.model";
+import { ContentField } from "./types";
 
 //* Create content */
 export async function createContent({
@@ -25,16 +28,28 @@ export async function createContent({
     newContent.projectId = projectId;
     newContent.status = "draft";
     newContent.id = uuidv4();
+    newContent.createdBy = userId;
+    newContent.lastEditedTime = new Date().toISOString();
+    newContent.lastEditedBy = userId;
     newContent.date = new Date().toISOString();
     newContent.fields = contentTemplate.fields.map((field) => {
-        const values = [];
-        if (field?.defaultValue) {
-            values.push([field?.defaultValue]);
-        }
-        return { ...field, values };
+        return {
+            ...field,
+            ...(field.defaultValue && { value: field?.defaultValue }),
+            id: uuidv4(),
+            templateFieldId: field.id,
+        };
     });
     await newContent.save();
     return { newContent, contentTemplate };
+}
+
+async function fetchLinkedContentPromises(field: ContentField) {
+    if (field.type === "image" && field?.value?.length) {
+        const assets = await Promise.all(field.value.map((assetId) => getAssetById(assetId)));
+        return { ...field, assets };
+    }
+    return field;
 }
 
 //* Get content by id */
@@ -44,9 +59,11 @@ export async function getContentById(contentId: string) {
     if (!content) {
         throw new Error("Content not found");
     }
-    const contentTemplate = await getContentTemplateById(
-        content.contentTemplateId
+    /*const fieldsWithContent = await Promise.all(
+        content.fields.map(async (field) => await fetchLinkedContentPromises(field))
     );
+    content.fields = fieldsWithContent;*/
+    const contentTemplate = await getContentTemplateById(content.contentTemplateId);
     return { content, contentTemplate };
 }
 
@@ -67,4 +84,29 @@ export async function getProjectContentOfType({
         ContentByTypeForProject({ contentTemplateId, projectId })
     ).get(Content);
     return { content: contentOfType, contentTemplate };
+}
+
+//* Update content fields */
+export async function updateContentFields(props: {
+    contentId: string;
+    fields: ContentField[];
+    userId: string;
+}) {
+    const { contentId, fields, userId } = props;
+    errorIfUndefined({ contentId, userId, fields });
+
+    const { content } = await getContentById(contentId);
+    if (!content) throw new Error("No content found");
+
+    content.fields = fields.length
+        ? fields.map((field) => ({
+              ...field,
+              lastEditedBy: userId,
+              lastEditedAt: new Date().toISOString(),
+          }))
+        : fields;
+    content.lastEditedTime = new Date().toISOString();
+    content.lastEditedBy = userId;
+    await content.save();
+    return content;
 }

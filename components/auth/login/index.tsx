@@ -24,7 +24,6 @@ export const Login = () => {
     return (
         <form
             onSubmit={form.onSubmit(async ({ email, password }) => {
-                console.log("submitted");
                 await mutateAsync({
                     email,
                     password,
@@ -32,11 +31,7 @@ export const Login = () => {
                 router.push("/");
             })}
         >
-            <TextInput
-                required
-                label="Email"
-                {...form.getInputProps("email")}
-            />
+            <TextInput required label="Email" {...form.getInputProps("email")} />
             <Space h="sm" />
             <PasswordInput
                 placeholder="Password"

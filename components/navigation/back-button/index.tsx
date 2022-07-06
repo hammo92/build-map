@@ -9,7 +9,6 @@ import { useSnapshot } from "valtio";
 export const BackButton = () => {
     const { previousPage } = useSnapshot(commonState);
     const router = useRouter();
-    console.log(`previousPage`, previousPage);
     if (previousPage.url) {
         return (
             <UnstyledButton onClick={() => router.push(previousPage.url)}>
