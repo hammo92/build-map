@@ -1,25 +1,28 @@
+import { Organisation } from "@lib/organisation/data/organisation.model";
+import { User } from "@lib/user/data/user.model";
+import camelcaseKeys from "camelcase-keys";
 import { apiClient } from "data/config";
+import { CleanedSnake } from "type-helpers";
 
 export async function createOrganisation({ name }: { name: string }) {
-    const { data } = await apiClient.post(`/organisations`, {
+    const { data } = await apiClient.post<{
+        organisation: CleanedSnake<Organisation>;
+    }>(`/organisations`, {
         name,
     });
-    return data;
+    return camelcaseKeys(data, { deep: true });
 }
 
 export async function getMyOrganisations() {
-    const { data } = await apiClient.get(`me/organisations`);
-    console.log("data", data);
-    return data;
+    const { data } = await apiClient.get<{
+        organisations: CleanedSnake<Organisation>[];
+    }>(`me/organisations`);
+    return camelcaseKeys(data, { deep: true });
 }
 
-export async function getOrganisationUsers({
-    organisationId,
-}: {
-    organisationId: string;
-}) {
-    const { data } = await apiClient.get(
-        `/organisations/${organisationId}/users`
-    );
-    return data;
+export async function getOrganisationUsers({ organisationId }: { organisationId: string }) {
+    const { data } = await apiClient.get<{
+        users: CleanedSnake<User>[];
+    }>(`/organisations/${organisationId}/users`);
+    return camelcaseKeys(data, { deep: true });
 }

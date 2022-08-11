@@ -1,23 +1,28 @@
 import { Login, Register } from "@components/auth";
+import { Center, Stack, Tabs, Title } from "@mantine/core";
+import { useState } from "react";
 import Div100vh from "react-div-100vh";
-import { Center, Group, Tabs, Title } from "@mantine/core";
-import React, { useState } from "react";
+
 const Authenticate = () => {
-    const [activeTab, setActiveTab] = useState(0);
     return (
         <Div100vh>
             <Center style={{ height: "100%" }}>
-                <Group direction="column">
+                <Stack>
                     <Title order={2}>Welcome to Build Map</Title>
-                    <Tabs active={activeTab} onTabChange={setActiveTab}>
-                        <Tabs.Tab label="Login">
+                    <Tabs>
+                        <Tabs.List>
+                            <Tabs.Tab value="login">Login</Tabs.Tab>
+                            <Tabs.Tab value="register">Register</Tabs.Tab>
+                        </Tabs.List>
+
+                        <Tabs.Panel value="login">
                             <Login />
-                        </Tabs.Tab>
-                        <Tabs.Tab label="Register">
+                        </Tabs.Panel>
+                        <Tabs.Panel value="register">
                             <Register />
-                        </Tabs.Tab>
+                        </Tabs.Panel>
                     </Tabs>
-                </Group>
+                </Stack>
             </Center>
         </Div100vh>
     );

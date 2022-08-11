@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Badge, Card, Group, Text, ThemeIcon } from "@mantine/core";
+import { Badge, Card, Group, Stack, Text, ThemeIcon } from "@mantine/core";
 import { FC } from "react";
 import { CleanedCamel } from "type-helpers";
 import { useStyles } from "./styles";
@@ -34,9 +34,9 @@ export const ContentTemplateCard: FC<ContentTemplateCardProps> = ({ contentTempl
                 </Group>
             </Card.Section>
             <Card.Section p="md">
-                <Group direction="column" grow spacing="xs">
+                <Stack spacing="xs">
                     <Text>{`${contentTemplate.fields.length} fields`}</Text>
-                </Group>
+                </Stack>
             </Card.Section>
         </Card>
     );

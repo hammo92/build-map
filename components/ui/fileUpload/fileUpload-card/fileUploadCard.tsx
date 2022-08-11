@@ -11,6 +11,7 @@ import {
     Text,
     Center,
     ThemeIcon,
+    Stack,
 } from "@mantine/core";
 import { mimeCategory } from "utils/asset";
 import { FileUploadPreview } from "../fileUpload-preview";
@@ -99,14 +100,14 @@ export const FileUploadCard = ({
                 </Card.Section>
                 <Card.Section p="sm">
                     <Group position="apart" align="flex-start" noWrap>
-                        <Group direction="column" spacing={0}>
+                        <Stack spacing={0}>
                             <Text size="md" lineClamp={1}>
                                 {file.name}
                             </Text>
                             <Text color="dimmed" size="sm" sx={{ textTransform: "uppercase" }}>
                                 {ext}
                             </Text>
-                        </Group>
+                        </Stack>
                         <Badge my="xs" sx={{ flexShrink: 0 }}>
                             {mimeCategory(ext)}
                         </Badge>

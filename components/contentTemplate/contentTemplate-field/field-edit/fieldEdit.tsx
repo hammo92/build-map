@@ -1,10 +1,10 @@
 import { FIELD_TYPES } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
 import { IconTitle } from "@components/ui/iconTitle/iconTitle";
-import { useUpdateContentTemplateField } from "@data/contentTemplate/hooks";
+import { useUpdateProperty } from "@data/contentTemplate/hooks";
 import { faEdit } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ContentTemplateField } from "@lib/contentTemplate/data/types";
-import { ActionIcon, Group, Modal } from "@mantine/core";
+import { Property } from "@lib/contentTemplate/data/types";
+import { ActionIcon, Group, Modal, Stack } from "@mantine/core";
 import { contentTemplateState } from "@state/contentTemplate";
 import { FC, useState } from "react";
 import { splitCamel } from "utils/stringTransform";
@@ -12,16 +12,16 @@ import { useSnapshot } from "valtio";
 import { FieldProperties } from "../field-properties";
 
 interface FieldEditProps {
-    field: ContentTemplateField;
+    field: Property;
 }
 
 export const FieldEdit: FC<FieldEditProps> = ({ field }) => {
     const [opened, setOpened] = useState(false);
     const { contentTemplateId } = useSnapshot(contentTemplateState);
-    const { mutateAsync, isLoading } = useUpdateContentTemplateField();
+    const { mutateAsync, isLoading } = useUpdateProperty();
     const onSubmit = async (values: any) => {
         await mutateAsync({
-            fieldProperties: values,
+            fieldProperties: { ...values, id: field.id },
             contentTemplateId: contentTemplateId,
         });
         setOpened(false);
@@ -37,11 +37,11 @@ export const FieldEdit: FC<FieldEditProps> = ({ field }) => {
                 title={
                     <IconTitle
                         icon={FIELD_TYPES[field.type]["icon"]}
-                        title={`Update ${splitCamel(field.type)} Field`}
+                        title={`Update ${splitCamel(field.type)} Property`}
                     />
                 }
             >
-                <Group direction="column" grow>
+                <Stack>
                     <FieldProperties
                         initialData={field}
                         onSubmit={onSubmit}
@@ -49,7 +49,7 @@ export const FieldEdit: FC<FieldEditProps> = ({ field }) => {
                         isSubmitting={isLoading}
                         onCancel={() => setOpened(false)}
                     />
-                </Group>
+                </Stack>
             </Modal>
             <ActionIcon onClick={() => setOpened(true)}>
                 <FontAwesomeIcon icon={faEdit} />

@@ -1,6 +1,6 @@
 import { useRegister } from "@data/authentication/hooks";
 import { Button, PasswordInput, Space, TextInput } from "@mantine/core";
-import { useForm } from "@mantine/hooks";
+import { useForm } from "@mantine/form";
 import { useRouter } from "next/router";
 import React from "react";
 export const Register = () => {
@@ -11,15 +11,11 @@ export const Register = () => {
             password: "",
             email: "",
         },
-        validationRules: {
-            name: (value) => value.length > 2,
-            email: (value) => /^\S+@\S+$/.test(value),
-            password: (value) => value.length > 6,
-        },
-        errorMessages: {
-            name: "provided name is too short",
-            email: "Please enter a valid email",
-            password: "Your password must be 6 characters or longer",
+        validate: {
+            name: (value) => (value.length > 2 ? null : "provided name is too short"),
+            email: (value) => (/^\S+@\S+$/.test(value) ? null : "Please enter a valid email"),
+            password: (value) =>
+                value.length > 6 ? null : "Your password must be 6 characters or longer",
         },
     });
     const { mutateAsync } = useRegister();
@@ -34,17 +30,9 @@ export const Register = () => {
                 router.push("/");
             })}
         >
-            <TextInput
-                required
-                label="Full Name"
-                {...form.getInputProps("name")}
-            />
+            <TextInput required label="Full Name" {...form.getInputProps("name")} />
             <Space h="sm" />
-            <TextInput
-                required
-                label="Email"
-                {...form.getInputProps("email")}
-            />
+            <TextInput required label="Email" {...form.getInputProps("email")} />
             <Space h="sm" />
             <PasswordInput
                 placeholder="Password"

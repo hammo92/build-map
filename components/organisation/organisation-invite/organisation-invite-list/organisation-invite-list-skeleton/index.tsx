@@ -1,10 +1,10 @@
-import { Skeleton, Group } from "@mantine/core";
+import { Skeleton, Stack } from "@mantine/core";
 
 export const OrganisationInviteListSkeleton = () => {
     return (
-        <Group direction="column" grow>
+        <Stack>
             <Skeleton height={90} />
             <Skeleton height={90} />
-        </Group>
+        </Stack>
     );
 };

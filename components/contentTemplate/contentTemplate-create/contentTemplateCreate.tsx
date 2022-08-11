@@ -1,13 +1,13 @@
 import { SmartForm } from "@components/smartForm";
 import { IconPickerIcon } from "@components/ui/iconPicker/types";
 import { useCreateContentTemplate } from "@data/contentTemplate/hooks";
-import { faPlus } from "@fortawesome/pro-regular-svg-icons";
+import { faMinus, faPlus } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { ActionIcon, Box, Button, Group } from "@mantine/core";
-import { useModals } from "@mantine/modals";
 import { FC } from "react";
 import { CleanedCamel } from "type-helpers";
+import { openModal, closeAllModals, closeModal } from "@mantine/modals";
 
 interface ContentTemplateCreateProps {
     /** Whether the content is a collection or a component */
@@ -25,7 +25,6 @@ const ContentTemplateCreateForm: FC<ContentTemplateCreateProps> = ({
     onCreate,
     organisationId,
 }) => {
-    const modals = useModals();
     const { mutateAsync, isLoading } = useCreateContentTemplate();
 
     const onSubmit = async (values: { name: string; icon: IconPickerIcon }) => {
@@ -39,7 +38,7 @@ const ContentTemplateCreateForm: FC<ContentTemplateCreateProps> = ({
             {
                 onSuccess: ({ newContentTemplate }) => {
                     onCreate && onCreate(newContentTemplate);
-                    modals.closeModal("contentTemplateCreateModal");
+                    closeModal("contentTemplateCreateModal");
                 },
             }
         );
@@ -58,7 +57,7 @@ const ContentTemplateCreateForm: FC<ContentTemplateCreateProps> = ({
                 <Group position="right" mt="md" grow>
                     <Button
                         disabled={isLoading}
-                        onClick={() => modals.closeModal("contentTemplateCreateModal")}
+                        onClick={() => closeModal("contentTemplateCreateModal")}
                         color="gray"
                     >
                         Cancel
@@ -77,12 +76,10 @@ export const ContentTemplateCreate: FC<ContentTemplateCreateProps> = ({
     onCreate,
     organisationId,
 }) => {
-    const modals = useModals();
-
     const openCreateModal = () =>
-        modals.openModal({
+        openModal({
             title: `Create New ${type === "collection" ? "Template" : "Component"}`,
-            id: "contentTemplateCreateModal",
+            //id: "contentTemplateCreateModal",
             closeOnClickOutside: false,
             size: "xl",
             children: (

@@ -8,7 +8,9 @@ import {
     faListDropdown,
     faParagraph,
     faSquareCheck,
+    faTableCellsLarge,
     faText,
+    faUser,
 } from "@fortawesome/pro-regular-svg-icons";
 import { FieldTypeProps } from "./contentTemplateTypes";
 
@@ -22,7 +24,9 @@ export type FieldType =
     | "number"
     | "richText"
     | "select"
-    | "text";
+    | "text"
+    | "relation"
+    | "person";
 
 // object key must match type
 export const FIELD_TYPES: { [type: string]: FieldTypeProps } = {
@@ -142,8 +146,54 @@ export const FIELD_TYPES: { [type: string]: FieldTypeProps } = {
         type: "component",
         description: "A custom component",
         label: "Component",
+        icon: faTableCellsLarge,
+    },
+    relation: {
+        type: "relation",
+        description: "refer to another content entry",
+        label: "Relation",
         icon: faLink,
+        //subtypes: [
+        // {
+        //     type: "oneWaySingle",
+        //     description: "Refer to another content entry",
+        //     label: "One way single",
+        // },
+        // {
+        //     type: "oneWayMultiple",
+        //     description: "Refer to multiple content entries",
+        //     label: "One way multiple",
+        // },
+        // {
+        //     type: "oneToOne",
+        //     description: "Refer to and be referenced by a content entry",
+        //     label: "One to one",
+        // },
+        // {
+        //     type: "oneToMany",
+        //     description: "Refer to many entries each referencing back",
+        //     label: "One to many",
+        // },
+        // {
+        //     type: "manyToOne",
+        //     description: "Referenced by many entries",
+        //     label: "Many to one",
+        // },
+        // {
+        //     type: "manyToMany",
+        //     description: "Refer to and referenced by multiple entries",
+        //     label: "Many to many",
+        // },
+        // ],
+    },
+    person: {
+        type: "person",
+        description: "refer to a person",
+        label: "Person",
+        icon: faUser,
     },
 };
 
-export const FIELD_OPTIONS = Object.keys(FIELD_TYPES).map((key) => FIELD_TYPES[key as keyof typeof FIELD_TYPES]);
+export const FIELD_OPTIONS = Object.keys(FIELD_TYPES).map(
+    (key) => FIELD_TYPES[key as keyof typeof FIELD_TYPES]
+);

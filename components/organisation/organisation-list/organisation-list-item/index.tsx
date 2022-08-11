@@ -1,6 +1,6 @@
 import { faArrowRight } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ActionIcon, Card, Group, Text } from "@mantine/core";
+import { ActionIcon, Card, Group, Stack, Text } from "@mantine/core";
 import React from "react";
 import { useRouter } from "next/router";
 
@@ -18,9 +18,9 @@ export const OrganisationListItem = ({ organisation }) => {
             onClick={() => router.push(`/organisations/${organisation.id}`)}
         >
             <Group position="apart">
-                <Group direction="column" spacing="xs">
+                <Stack spacing="xs">
                     <Text transform="capitalize">{organisation.name}</Text>
-                </Group>
+                </Stack>
                 <ActionIcon>
                     <FontAwesomeIcon icon={faArrowRight} />
                 </ActionIcon>

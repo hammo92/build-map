@@ -2,7 +2,7 @@ import { params } from "@serverless/cloud";
 import axios from "axios";
 import { Oso } from "oso-cloud";
 import { indexBy } from "serverless-cloud-data-utils";
-import { v4 as uuidv4 } from "uuid";
+import { ulid } from "ulid";
 import { getUserById } from "../../../lib/user/data";
 import { errorIfUndefined } from "../../../lib/utils";
 import { Address } from "../../../types/common";
@@ -49,7 +49,7 @@ export async function createProject({
     if (jobNumber) {
         newProject.jobNumber = jobNumber;
     }
-    newProject.id = uuidv4();
+    newProject.id = ulid();
     newProject.date = new Date().toISOString();
     newProject.isActive = true;
 
@@ -70,7 +70,7 @@ export async function createProject({
     newProjectUser.userId = userId;
     newProjectUser.roleId = "none";
     await Promise.all([
-        oso.addRole(user, "writer", newProject),
+        //oso.addRole(user, "writer", newProject),
         newProject.save(),
         newProjectUser.save(),
     ]);
@@ -126,15 +126,16 @@ export async function deleteProjectById(projectId: string) {
     // get all ProjectUsers
     const projectUsers = (await indexBy(ProjectUsers(projectId)).get(ProjectUser)) ?? [];
 
-    const deleteUserPromises = projectUsers.flatMap(async (projectUser) => {
+    const deleteUserPromises = projectUsers.flatMap((projectUser) => {
         const deleteUserPromise = projectUser.delete();
-        const removePermissionPromise = oso.deleteRole(
+        /*const removePermissionPromise = oso.deleteRole(
             new User({ id: projectUser.userId }),
             "writer",
             project!
-        );
-        return [deleteUserPromise, removePermissionPromise];
+        );*/
+        return [deleteUserPromise];
     });
+    console.log("deleteUserPromises", deleteUserPromises);
     // delete project and projectUsers
     await Promise.all([...deleteUserPromises, project!.delete()]);
 
@@ -199,8 +200,8 @@ export async function getUserProjectUsers(userId: string) {
 
 //* Get all projects for a user */
 export async function getUserProjects(userId: string) {
-    const canRead = await oso.list(new User({ id: userId }), "read", "Project"!);
-    console.log("canRead", canRead);
+    /*const canRead = await oso.list(new User({ id: userId }), "read", "Project"!);*/
+
     errorIfUndefined({ userId });
     const projectUsers = await indexBy(UserProjects(userId)).get(ProjectUser);
     const projects = await Promise.all(

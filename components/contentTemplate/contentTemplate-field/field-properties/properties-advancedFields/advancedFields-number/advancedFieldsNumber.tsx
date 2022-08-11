@@ -1,6 +1,6 @@
 import { SmartForm } from "@components/smartForm";
-import { Checkbox, Group, NumberInputProps } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { Checkbox, Group, NumberInputProps, Stack } from "@mantine/core";
+import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { capitalise } from "utils/stringTransform";
 
@@ -13,7 +13,7 @@ const ValueLimiter = (props: ValueLimiterProps) => {
     const { getValues, setValue } = useFormContext();
     const [active, setActive] = useState(getValues(limitType));
     return (
-        <Group direction="column" spacing="sm" grow>
+        <Stack spacing="sm">
             <Checkbox
                 checked={active}
                 onChange={(event) => {
@@ -24,29 +24,25 @@ const ValueLimiter = (props: ValueLimiterProps) => {
                 label={`${capitalise(limitType)}imum Value`}
             />
             <SmartForm.NumberInput name={limitType} {...rest} disabled={!active} />
-        </Group>
+        </Stack>
     );
 };
 
 export const AdvancedFieldsNumber = () => {
     const { watch } = useFormContext();
     const subtype = watch("subtype");
-    const [precision, setPrecision] = useState<NumberInputProps["precision"]>();
-    const min = watch("min");
-    const max = watch("max");
-    useEffect(() => {
+    const precision = () => {
         switch (subtype) {
             case "integer":
-                setPrecision(0);
-                break;
+                return 0;
             case "decimal":
-                setPrecision(2);
-                break;
+                return 2;
             case "float":
-                setPrecision(10);
-                break;
+                return 10;
         }
-    }, [subtype]);
+    };
+    const min = watch("min");
+    const max = watch("max");
 
     // remove insignificant trailing zeroes from float
     //! Currently strips all trailing zeroes, need solution
@@ -63,8 +59,8 @@ export const AdvancedFieldsNumber = () => {
     };
     return (
         <SmartForm.FieldGroup cols={2}>
-            <ValueLimiter max={max} precision={precision} formatter={formatter} limitType="min" />
-            <ValueLimiter min={min} precision={precision} formatter={formatter} limitType="max" />
+            <ValueLimiter max={max} precision={precision()} formatter={formatter} limitType="min" />
+            <ValueLimiter min={min} precision={precision()} formatter={formatter} limitType="max" />
         </SmartForm.FieldGroup>
     );
 };

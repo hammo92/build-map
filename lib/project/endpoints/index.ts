@@ -90,7 +90,7 @@ export const projects = () => {
             const { user } = req;
             const projects = await getProjectsByCreator(user.id);
             return res.status(200).send({
-                projects: projects.map((project) => project.clean()),
+                projects: projects && projects.map((project) => project.clean()),
             });
         } catch (error: any) {
             console.log(error);
@@ -101,23 +101,20 @@ export const projects = () => {
     });
 
     //* Get all projects for an organisation */
-    api.get(
-        `/org/:organisationId/projects`,
-        async function (req: any, res: any) {
-            try {
-                const organisationId = req.params.organisationId;
-                const projects = await getProjectsByOrgId(organisationId);
-                return res.status(200).send({
-                    projects: projects.map((project) => project.clean()),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.get(`/org/:organisationId/projects`, async function (req: any, res: any) {
+        try {
+            const organisationId = req.params.organisationId;
+            const projects = await getProjectsByOrgId(organisationId);
+            return res.status(200).send({
+                projects: projects && projects.map((project) => project.clean()),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Get all projects for logged in User */
     api.get(`/me/projects`, async function (req: any, res: any) {
@@ -127,8 +124,7 @@ export const projects = () => {
             // map projectUser entries to return all projects for user
             return res.status(200).send({
                 projects:
-                    projects.length &&
-                    projects.map((project) => project!.clean()),
+                    projects.length && projects && projects.map((project) => project!.clean()),
             });
         } catch (error: any) {
             console.log(error);
@@ -146,7 +142,7 @@ export const projects = () => {
                 userId: req.body.userId,
             });
             return res.status(200).send({
-                projectUser: projectUser.clean(),
+                projectUser: projectUser && projectUser.clean(),
             });
         } catch (error: any) {
             console.log(error);
@@ -161,11 +157,7 @@ export const projects = () => {
         try {
             const users = await getProjectUsers(req.params.projectId);
             return res.status(200).send({
-                users:
-                    users.length &&
-                    users.map((user) =>
-                        user!.clean(["hashedPassword", "salt"])
-                    ),
+                users: users.length && users.map((user) => user!.clean(["hashedPassword", "salt"])),
             });
         } catch (error: any) {
             console.log(error);
@@ -176,23 +168,20 @@ export const projects = () => {
     });
 
     //* Delete project user */
-    api.delete(
-        "/projects/:projectId/users",
-        async function (req: any, res: any) {
-            try {
-                const projectUser = await removeUserFromProject({
-                    projectId: req.params.projectId,
-                    userId: req.body.userId,
-                });
-                return res.status(200).send({
-                    projectUser: projectUser.clean(),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.delete("/projects/:projectId/users", async function (req: any, res: any) {
+        try {
+            const projectUser = await removeUserFromProject({
+                projectId: req.params.projectId,
+                userId: req.body.userId,
+            });
+            return res.status(200).send({
+                projectUser: projectUser && projectUser.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 };

@@ -1,24 +1,28 @@
 import { Content } from "@lib/content/data/content.model";
-import { useNotifications } from "@mantine/notifications";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { showNotification } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { CleanedCamel } from "type-helpers";
 import { Keys } from "../constants";
 import {
     createContent,
+    deleteContent,
     getContent,
-    getProjectContentOfType,
+    getContentOfTemplate,
     updateContentFields,
+    updateContentFromTemplate,
+    updateContentStatus,
+    updateContentValues,
 } from "../queries";
 
 export function useCreateContent() {
     const queryClient = useQueryClient();
-    const notifications = useNotifications();
     return useMutation(createContent, {
         mutationKey: Keys.CREATE_CONTENT,
         onSuccess: ({ newContent }) => {
             queryClient.invalidateQueries(Keys.GET_PROJECT_CONTENT_OF_TYPE);
-            notifications.showNotification({
+            showNotification({
                 title: `Success`,
                 message: `Created new content successfully`,
                 color: "green",
@@ -26,7 +30,7 @@ export function useCreateContent() {
         },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
-            notifications.showNotification({
+            showNotification({
                 title: "Error",
                 message: error?.response?.data.message,
                 color: "red",
@@ -35,9 +39,58 @@ export function useCreateContent() {
     });
 }
 
-export function useGetContent(contentId: string) {
+export function useGetContent(
+    contentId: string,
+    initialData?: {
+        content?: CleanedCamel<Content>;
+        contentTemplate?: CleanedCamel<ContentTemplate>;
+    }
+) {
     return useQuery([Keys.GET_CONTENT, contentId], () => getContent(contentId), {
         //refetchInterval: 1000,
+        initialData,
+    });
+}
+
+export function useDeleteContent() {
+    const queryClient = useQueryClient();
+    return useMutation(deleteContent, {
+        onMutate: async (contentId) => {
+            const queryId = Keys.GET_PROJECT_CONTENT_OF_TYPE;
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries(queryId);
+            // Snapshot the previous value
+            const currentData = queryClient.getQueryData<{
+                content: CleanedCamel<Content>[];
+            }>(queryId);
+
+            if (currentData?.content) {
+                // Optimistically update to the new value
+                queryClient.setQueryData(queryId, () => {
+                    return {
+                        ...currentData,
+                        content: currentData.content.filter(({ id }) => id !== contentId),
+                    };
+                });
+            }
+        },
+        onSettled: (data) => {
+            queryClient.invalidateQueries(Keys.GET_PROJECT_CONTENT_OF_TYPE);
+            queryClient.invalidateQueries([Keys.GET_CONTENT, data?.content.id]);
+            showNotification({
+                title: `Content deleted`,
+                message: `Content Template deleted successfully`,
+                color: "green",
+            });
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.log(`error`, error?.response?.data);
+            showNotification({
+                title: "Error",
+                message: error?.response?.data.message,
+                color: "red",
+            });
+        },
     });
 }
 
@@ -49,28 +102,106 @@ export function useGetProjectContentOfType({
 }: {
     projectId: string;
     contentTemplateId: string;
-    initialData?: { content: CleanedCamel<Content>[] };
+    initialData?: {
+        content: CleanedCamel<Content>[];
+        contentTemplate: CleanedCamel<ContentTemplate>;
+    };
 }) {
     return useQuery(
-        Keys.GET_PROJECT_CONTENT_OF_TYPE,
-        () => getProjectContentOfType({ projectId, contentTemplateId }),
+        [Keys.GET_PROJECT_CONTENT_OF_TYPE, contentTemplateId],
+        () => getContentOfTemplate({ projectId, contentTemplateId }),
         {
             initialData,
         }
     );
 }
 
-export function useUpdateContentFields() {
+export function useUpdateContentStatus() {
     const queryClient = useQueryClient();
-    const notifications = useNotifications();
-    return useMutation(updateContentFields, {
-        mutationKey: Keys.CREATE_CONTENT,
-        onSuccess: ({ content }) => {
-            //queryClient.invalidateQueries(Keys.GET_PROJECT_CONTENT_OF_TYPE);
+    return useMutation(updateContentStatus, {
+        onMutate: async ({ contentId, status }) => {
+            const queryId = [Keys.GET_CONTENT, contentId];
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries(queryId);
+            // Snapshot the previous value
+            const currentData = queryClient.getQueryData<{
+                content: CleanedCamel<Content>;
+                contentTemplate: CleanedCamel<ContentTemplate>;
+            }>(queryId);
+
+            if (currentData?.content) {
+                // Optimistically update to the new value
+                queryClient.setQueryData(queryId, () => {
+                    return {
+                        content: { ...currentData.content, status },
+                        contentTemplate: currentData.contentTemplate,
+                    };
+                });
+            }
+        },
+        onSettled: (data) => {
+            queryClient.invalidateQueries(Keys.GET_PROJECT_CONTENT_OF_TYPE);
+            queryClient.invalidateQueries([Keys.GET_CONTENT, data?.content.id]);
         },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
-            notifications.showNotification({
+            showNotification({
+                title: "Error",
+                message: error?.response?.data.message,
+                color: "red",
+            });
+        },
+    });
+}
+
+export function useUpdateContentValues() {
+    const queryClient = useQueryClient();
+    return useMutation(updateContentValues, {
+        mutationKey: Keys.CREATE_CONTENT,
+        onSuccess: (data) => {
+            queryClient.invalidateQueries(Keys.GET_PROJECT_CONTENT_OF_TYPE);
+            queryClient.invalidateQueries([Keys.GET_CONTENT, data?.content.id]);
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.log(`error`, error?.response?.data);
+            showNotification({
+                title: "Error",
+                message: error?.response?.data.message,
+                color: "red",
+            });
+        },
+    });
+}
+
+export function useUpdateContentFields() {
+    const queryClient = useQueryClient();
+    return useMutation(updateContentFields, {
+        mutationKey: Keys.CREATE_CONTENT,
+        onSuccess: (data) => {
+            queryClient.invalidateQueries(Keys.GET_PROJECT_CONTENT_OF_TYPE);
+            queryClient.invalidateQueries([Keys.GET_CONTENT, data?.content.id]);
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.log(`error`, error?.response?.data);
+            showNotification({
+                title: "Error",
+                message: error?.response?.data.message,
+                color: "red",
+            });
+        },
+    });
+}
+
+export function useUpdateContentFromTemplate() {
+    const queryClient = useQueryClient();
+    return useMutation(updateContentFromTemplate, {
+        onSuccess: (data) => {
+            queryClient.invalidateQueries(Keys.GET_PROJECT_CONTENT_OF_TYPE);
+            queryClient.invalidateQueries([Keys.GET_CONTENT, data?.content.id]);
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.log(`error`, error?.response?.data);
+            showNotification({
                 title: "Error",
                 message: error?.response?.data.message,
                 color: "red",

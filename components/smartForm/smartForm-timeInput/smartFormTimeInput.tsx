@@ -7,8 +7,17 @@ type SmartFormTimeProps = SmartFormInputBaseProps & TimeInputProps;
 
 export const SmartFormTimeInput = (props: SmartFormTimeProps) => {
     return (
-        <SmartFormDefaultController {...props} converter={(value) => dayjs(value).toDate()}>
-            <TimeInput />
+        <SmartFormDefaultController
+            {...props}
+            converter={(value) => value && dayjs(value).toDate()}
+        >
+            <TimeInput
+                styles={{
+                    disabled: {
+                        color: "#ffffff",
+                    },
+                }}
+            />
         </SmartFormDefaultController>
     );
 };

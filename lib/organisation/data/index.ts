@@ -1,7 +1,6 @@
 import { getUserById } from "../../user/data";
 import { errorIfUndefined } from "../../utils";
 import { indexBy } from "serverless-cloud-data-utils";
-import { v4 as uuidv4 } from "uuid";
 import { User, UserId } from "../../user/data/user.model";
 import {
     Organisation,
@@ -14,6 +13,7 @@ import {
 
 import { Oso } from "oso-cloud";
 import { params } from "@serverless/cloud";
+import { ulid } from "ulid";
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
 //* Create organisation */
@@ -24,7 +24,7 @@ export async function createOrganisation({ name, userId }: { name: string; userI
     // create organisation
     const newOrganisation = new Organisation();
     newOrganisation.name = name;
-    newOrganisation.id = uuidv4();
+    newOrganisation.id = ulid();
     newOrganisation.createdTime = new Date().toISOString();
     newOrganisation.createdBy = userId;
     newOrganisation.lastEditedTime = new Date().toISOString();
@@ -38,7 +38,7 @@ export async function createOrganisation({ name, userId }: { name: string; userI
     newOrganisationUser.roleId = "none";
 
     await Promise.all([
-        oso.addRole(user, "owner", newOrganisation),
+        //oso.addRole(user, "owner", newOrganisation),
         newOrganisation.save(),
         newOrganisationUser.save(),
     ]);
@@ -100,7 +100,7 @@ export async function getOrganisationsByCreator(ownerId: string) {
 }
 
 //* Create organisation user */
-export async function createOrganisationtUser({
+export async function createOrganisationUser({
     organisationId,
     userId,
 }: {

@@ -1,14 +1,12 @@
 import { SmartForm } from "@components/smartForm";
-import { Grid, Group, SegmentedControl, Text } from "@mantine/core";
-import { contentTemplateState } from "@state/contentTemplate";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { useSnapshot } from "valtio";
 
 export const AdvancedFieldsCommon = () => {
-    const { fieldProperties, updateFieldProperties } = useSnapshot(contentTemplateState);
     const { setValue, getValues } = useFormContext();
-    const [disabled, setDisabled] = useState(["issuer", "recipient"].includes(getValues("permissions.visibleTo")));
+    const [disabled, setDisabled] = useState(
+        ["issuer", "recipient"].includes(getValues("permissions.visibleTo"))
+    );
     return (
         <>
             <SmartForm.SegmentedControl

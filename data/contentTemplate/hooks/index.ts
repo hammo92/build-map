@@ -1,5 +1,8 @@
+import { TitleEdit } from "@components/contentTemplate/contentTemplate-title/title-edit";
+import { content } from "@lib/content/endpoints";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { useNotifications } from "@mantine/notifications";
+import { Property } from "@lib/contentTemplate/data/types";
+import { showNotification } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { CleanedCamel } from "type-helpers";
@@ -9,24 +12,24 @@ import { Keys } from "../constants";
 import {
     ContentTemplateResponse,
     createContentTemplate,
-    createContentTemplateField,
+    createProperty,
     deleteContentTemplate,
-    deleteContentTemplateField,
+    deleteProperty,
     getContentTemplate,
     getOrganisationContentTemplates,
-    reorderContentTemplateFields,
+    reorderProperties,
     updateContentTemplate,
-    updateContentTemplateField,
+    updateProperty,
 } from "../queries";
 
 export function useCreateContentTemplate() {
     const queryClient = useQueryClient();
-    const notifications = useNotifications();
+
     return useMutation(createContentTemplate, {
         mutationKey: Keys.CREATE_CONTENT_TYPE,
         onSuccess: ({ newContentTemplate }) => {
             queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
-            notifications.showNotification({
+            showNotification({
                 title: `${newContentTemplate.name} created`,
                 message: `Created new content template successfully`,
                 color: "green",
@@ -34,7 +37,7 @@ export function useCreateContentTemplate() {
         },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
-            notifications.showNotification({
+            showNotification({
                 title: "Error",
                 message: error?.response?.data.message,
                 color: "red",
@@ -45,7 +48,7 @@ export function useCreateContentTemplate() {
 
 export function useGetContentTemplate(
     contentTemplateId: string,
-    initialData?: { contentTemplate: Required<CleanedCamel<ContentTemplate>, "id" | "name"> }
+    initialData?: { contentTemplate: CleanedCamel<ContentTemplate> }
 ) {
     return useQuery(
         [Keys.GET_CONTENT_TYPE, contentTemplateId],
@@ -58,10 +61,10 @@ export function useGetContentTemplate(
 
 export function useUpdateContentTemplate() {
     const queryClient = useQueryClient();
-    const notifications = useNotifications();
+
     return useMutation(updateContentTemplate, {
         mutationKey: Keys.UPDATE_CONTENT_TYPE,
-        onMutate: async ({ contentTemplateId, name, status }) => {
+        onMutate: async ({ contentTemplateId, name, status, icon, title }) => {
             const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
@@ -69,6 +72,7 @@ export function useUpdateContentTemplate() {
             // Snapshot the previous value
             const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
 
+            // optimistically update value locally
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
                 if (name) {
@@ -76,6 +80,12 @@ export function useUpdateContentTemplate() {
                 }
                 if (status) {
                     contentTemplate.status = status;
+                }
+                if (icon) {
+                    contentTemplate.icon = icon;
+                }
+                if (title) {
+                    contentTemplate.title = title;
                 }
 
                 // Optimistically update to the new value
@@ -88,7 +98,7 @@ export function useUpdateContentTemplate() {
         },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
-            notifications.showNotification({
+            showNotification({
                 title: "Error",
                 message: error?.response?.data.message,
                 color: "red",
@@ -104,12 +114,12 @@ export function useUpdateContentTemplate() {
 
 export function useDeleteContentTemplate() {
     const queryClient = useQueryClient();
-    const notifications = useNotifications();
+
     return useMutation(deleteContentTemplate, {
         mutationKey: Keys.DELETE_CONTENT_TYPE,
         onSuccess: (data) => {
             queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
-            notifications.showNotification({
+            showNotification({
                 title: `${data.contentTemplate.name} deleted`,
                 message: `Content Template deleted successfully`,
                 color: "green",
@@ -117,7 +127,7 @@ export function useDeleteContentTemplate() {
         },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
-            notifications.showNotification({
+            showNotification({
                 title: "Error",
                 message: error?.response?.data.message,
                 color: "red",
@@ -139,10 +149,10 @@ export function useGetOrganisationContentTemplates(
     );
 }
 
-export function useCreateContentTemplateField() {
+export function useCreateProperty() {
     const queryClient = useQueryClient();
-    const notifications = useNotifications();
-    return useMutation(createContentTemplateField, {
+
+    return useMutation(createProperty, {
         mutationKey: Keys.CREATE_CONTENT_TYPE_FIELD,
         onMutate: async ({ contentTemplateId, fieldProperties }) => {
             const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
@@ -153,8 +163,10 @@ export function useCreateContentTemplateField() {
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
                 // add new field to end with placeholder default values
-                //Todo Fix typings
-                contentTemplate.fields.push({ ...fieldProperties, id: "placeHolder" });
+                contentTemplate.fields.push({
+                    ...(fieldProperties as Property),
+                    id: "placeHolder",
+                });
 
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {
@@ -169,13 +181,14 @@ export function useCreateContentTemplateField() {
         },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
-            notifications.showNotification({
+            showNotification({
                 title: "Error",
                 message: error?.response?.data.message,
                 color: "red",
             });
         },
         onSettled: (data) => {
+            console.log("settled");
             queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
             // also force refresh of organisation content templates as this will need to update
             queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
@@ -183,10 +196,10 @@ export function useCreateContentTemplateField() {
     });
 }
 
-export function useUpdateContentTemplateField() {
+export function useUpdateProperty() {
     const queryClient = useQueryClient();
-    const notifications = useNotifications();
-    return useMutation(updateContentTemplateField, {
+
+    return useMutation(updateProperty, {
         mutationKey: Keys.UPDATE_CONTENT_TYPE_FIELD,
         onMutate: async ({ contentTemplateId, fieldProperties }) => {
             const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
@@ -222,7 +235,7 @@ export function useUpdateContentTemplateField() {
         },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
-            notifications.showNotification({
+            showNotification({
                 title: "Error",
                 message: error?.response?.data.message,
                 color: "red",
@@ -234,10 +247,10 @@ export function useUpdateContentTemplateField() {
     });
 }
 
-export function useDeleteContentTemplateField() {
+export function useDeleteProperty() {
     const queryClient = useQueryClient();
-    const notifications = useNotifications();
-    return useMutation(deleteContentTemplateField, {
+
+    return useMutation(deleteProperty, {
         mutationKey: Keys.DELETE_CONTENT_TYPE_FIELD,
         onMutate: async ({ contentTemplateId, fieldId }) => {
             const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
@@ -264,8 +277,8 @@ export function useDeleteContentTemplateField() {
         },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
-            notifications.showNotification({
-                title: "Could not reorder fields",
+            showNotification({
+                title: "Could not delete field",
                 message: error?.response?.data.message,
                 color: "red",
             });
@@ -278,10 +291,9 @@ export function useDeleteContentTemplateField() {
     });
 }
 
-export function useReorderContentTemplateFields() {
-    const notifications = useNotifications();
+export function useReorderProperties() {
     const queryClient = useQueryClient();
-    return useMutation(reorderContentTemplateFields, {
+    return useMutation(reorderProperties, {
         mutationKey: Keys.DELETE_CONTENT_TYPE_FIELD,
         onMutate: async ({ contentTemplateId, fromIndex, toIndex }) => {
             const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
@@ -293,12 +305,8 @@ export function useReorderContentTemplateFields() {
 
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
-                const updatedContentTemplateFields = moveInArray(
-                    contentTemplate!.fields,
-                    fromIndex,
-                    toIndex
-                );
-                contentTemplate.fields = updatedContentTemplateFields;
+                const updatedProperties = moveInArray(contentTemplate!.fields, fromIndex, toIndex);
+                contentTemplate.fields = updatedProperties;
 
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {
@@ -313,7 +321,7 @@ export function useReorderContentTemplateFields() {
         },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
-            notifications.showNotification({
+            showNotification({
                 title: "Could not reorder fields",
                 message: error?.response?.data.message,
                 color: "red",

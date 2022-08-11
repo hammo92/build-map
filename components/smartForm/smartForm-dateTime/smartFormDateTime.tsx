@@ -7,7 +7,10 @@ type SmartFormDateTimeProps = SmartFormInputBaseProps & DateTimeProps;
 
 export const SmartFormDateTime = (props: SmartFormDateTimeProps) => {
     return (
-        <SmartFormDefaultController {...props} converter={(value) => dayjs(value).toDate()}>
+        <SmartFormDefaultController
+            {...props}
+            converter={(value) => value && dayjs(value).toDate()}
+        >
             <DateTime />
         </SmartFormDefaultController>
     );

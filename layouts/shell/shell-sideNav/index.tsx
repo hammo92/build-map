@@ -1,7 +1,7 @@
 import { SideBar } from "@components/navigation";
-import { Header, HeaderProps } from "@components/navigation/header";
+import { HeaderProps } from "@components/navigation/header";
 import { Box, Group } from "@mantine/core";
-import React, { ReactElement, FC } from "react";
+import { FC, ReactElement } from "react";
 import Div100vh from "react-div-100vh";
 
 interface LayoutShellSideNavProps {
@@ -19,9 +19,7 @@ export const LayoutShellSideNav: FC<LayoutShellSideNavProps> = ({
             <Group
                 sx={(theme) => ({
                     backgroundColor:
-                        theme.colorScheme === "dark"
-                            ? theme.colors.dark[8]
-                            : theme.colors.gray[0],
+                        theme.colorScheme === "dark" ? theme.colors.dark[8] : theme.colors.gray[0],
                     height: "100%",
                 })}
                 spacing={0}

@@ -1,23 +1,79 @@
-import { Keys } from "@data/contentTemplate/constants";
-import { ContentTemplateResponse } from "@data/contentTemplate/queries";
+import { IconPicker } from "@components/ui/iconPicker";
+import { IconPickerIcon } from "@components/ui/iconPicker/types";
+import { useUpdateContentTemplate } from "@data/contentTemplate/hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ThemeIcon } from "@mantine/core";
-import { contentTemplateState } from "@state/contentTemplate";
-import { useQueryClient } from "react-query";
-import { useSnapshot } from "valtio";
-import { IconEdit } from "./icon-edit/iconEdit";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { ActionIcon, Button, Group, Modal, Stack, ThemeIcon } from "@mantine/core";
+import { useState } from "react";
+import { CleanedCamel } from "type-helpers";
 
-export const ContentTemplateIcon = () => {
-    const { contentTemplateId, hasEditPermission } = useSnapshot(contentTemplateState);
-    const queryClient = useQueryClient();
-    const data = queryClient.getQueryData<ContentTemplateResponse>([Keys.GET_CONTENT_TYPE, contentTemplateId]);
+export const ContentTemplateIcon = ({
+    contentTemplate,
+    editable,
+}: {
+    contentTemplate: CleanedCamel<ContentTemplate>;
+    editable?: boolean;
+}) => {
+    const [icon, setIcon] = useState<IconPickerIcon>(contentTemplate.icon);
+    const [opened, setOpened] = useState(false);
+    const { mutateAsync, isLoading } = useUpdateContentTemplate();
 
-    if (data?.contentTemplate?.icon && hasEditPermission) return <IconEdit defaultValue={data.contentTemplate.icon} />;
-    else if (data?.contentTemplate?.icon)
-        return (
-            <ThemeIcon color={data?.contentTemplate?.icon.color}>
-                <FontAwesomeIcon icon={data?.contentTemplate.icon.icon} />
-            </ThemeIcon>
-        );
-    return null;
+    const previewIcon = (
+        <ThemeIcon color={icon?.color} variant="filled" size={36}>
+            {icon?.icon ? <FontAwesomeIcon icon={icon?.icon} size="lg" /> : ""}
+        </ThemeIcon>
+    );
+
+    const onCancel = () => {
+        setIcon(contentTemplate.icon);
+        setOpened(false);
+    };
+
+    const onConfirm = async () => {
+        if (icon.icon && icon.color) {
+            await mutateAsync({
+                contentTemplateId: contentTemplate.id,
+                icon,
+            });
+            setOpened(false);
+        }
+    };
+
+    return (
+        <>
+            <ActionIcon
+                color={icon?.color}
+                variant="filled"
+                size={36}
+                onClick={() => {
+                    editable && setOpened(true);
+                }}
+            >
+                {icon?.icon ? <FontAwesomeIcon icon={icon?.icon} size="lg" /> : ""}
+            </ActionIcon>
+            <Modal
+                opened={opened}
+                onClose={onCancel}
+                size="lg"
+                title={
+                    <Group>
+                        {previewIcon}
+                        <p>Select icon and colour</p>
+                    </Group>
+                }
+            >
+                <Stack>
+                    <IconPicker value={icon} onChange={setIcon} />
+                    <Group grow>
+                        <Button color="gray" onClick={onCancel} disabled={isLoading}>
+                            Cancel
+                        </Button>
+                        <Button onClick={onConfirm} disabled={isLoading} loading={isLoading}>
+                            Update
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
+        </>
+    );
 };

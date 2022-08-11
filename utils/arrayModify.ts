@@ -9,7 +9,7 @@ export const reorderArray = (array: any[], from: number, to: number) => {
     return clone;
 };
 
-export const commaListToArray = (list: string) => {
+export const commaListToArray = (list: string | undefined) => {
     if (!list || !list.length) return [];
     const values = list.split(",");
     const trimmed = values.map((value) => value.trim());
@@ -60,4 +60,8 @@ export function objArrayToHashmap<T, X extends keyof T>(array: T[], path: X): { 
         return prev;
     }, {});
     return { ...hashmap };
+}
+
+export function arraySymmetricDiff<T>(arr1: T[], arr2: T[]): T[] {
+    return arr1.filter((x) => !arr2.includes(x)).concat(arr2.filter((x) => !arr1.includes(x)));
 }

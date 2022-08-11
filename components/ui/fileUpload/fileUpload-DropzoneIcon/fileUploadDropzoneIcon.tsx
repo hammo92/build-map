@@ -1,26 +1,26 @@
-import { faBan, faCheckCircle, faCloudArrowUp } from "@fortawesome/pro-regular-svg-icons";
+import {
+    faBan,
+    faCheckCircle,
+    faCloudArrowUp,
+    faTimesCircle,
+} from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MantineTheme, useMantineTheme } from "@mantine/core";
-import { DropzoneStatus } from "@mantine/dropzone";
 
-function getIconColor(status: DropzoneStatus, theme: MantineTheme) {
-    return status.accepted
-        ? theme.colors[theme.primaryColor][6]
-        : status.rejected
-        ? theme.colors.red[6]
-        : theme.colorScheme === "dark"
-        ? theme.colors.dark[0]
-        : theme.black;
+type DropzoneStatus = "accept" | "reject" | "idle";
+
+function getIconProps(status: DropzoneStatus, theme: MantineTheme) {
+    switch (status) {
+        case "accept":
+            return { color: theme.colors[theme.primaryColor][6], icon: faCheckCircle };
+        case "reject":
+            return { color: theme.colors.red[6], icon: faBan };
+        case "idle":
+            return { color: theme.colors.dark[0], icon: faCloudArrowUp };
+    }
 }
 
 export const FileUploadDropzoneIcon = ({ status }: { status: DropzoneStatus }) => {
-    console.log("status", status);
     const theme = useMantineTheme();
-    return (
-        <FontAwesomeIcon
-            icon={status.accepted ? faCheckCircle : status.rejected ? faBan : faCloudArrowUp}
-            size="2x"
-            color={getIconColor(status, theme)}
-        />
-    );
+    return <FontAwesomeIcon {...getIconProps(status, theme)} size="2x" />;
 };

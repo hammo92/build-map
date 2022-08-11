@@ -2,14 +2,10 @@ import { errorIfUndefined } from "@lib/utils";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import { indexBy } from "serverless-cloud-data-utils";
-import { v4 as uuidv4 } from "uuid";
+import { ulid } from "ulid";
 import { getTaskCollectionFields } from "..";
 import { DEFAULTS } from "../defaults";
-import {
-    deleteTask,
-    getAllTaskCollectionTasks,
-    getCategoryTasks,
-} from "../functions";
+import { deleteTask, getAllTaskCollectionTasks, getCategoryTasks } from "../functions";
 import { TaskCollection, TaskCollectionId } from "../models/";
 import { fieldTypesToValidate, TaskField } from "../models/taskField.model";
 dayjs.extend(isBetween);
@@ -25,11 +21,9 @@ const AddTaskRelatedData = async (taskCollection: TaskCollection) => {
 };
 
 //* Create task collection */
-export async function createTaskCollection(
-    createTaskCollectionProps?: Partial<TaskCollection>
-) {
+export async function createTaskCollection(createTaskCollectionProps?: Partial<TaskCollection>) {
     const taskCollection = new TaskCollection({
-        id: uuidv4(),
+        id: ulid(),
         categories: DEFAULTS.categories,
         date: new Date().toISOString(),
         ...createTaskCollectionProps,
@@ -38,7 +32,7 @@ export async function createTaskCollection(
     // create default fields
     const fields = DEFAULTS.fields.map((field, i) => {
         const taskField = new TaskField({
-            id: uuidv4(),
+            id: ulid(),
             active: true,
             sortIndex: i,
             collectionId: taskCollection.id,
@@ -49,10 +43,7 @@ export async function createTaskCollection(
     });
 
     // save taskCollection and fields
-    await Promise.all([
-        taskCollection.save(),
-        ...fields.map((field) => field.save()),
-    ]);
+    await Promise.all([taskCollection.save(), ...fields.map((field) => field.save())]);
     return taskCollection;
 }
 
@@ -65,9 +56,7 @@ export async function getTaskCollection({
     withAssociatedData?: boolean;
 }) {
     errorIfUndefined({ collectionId });
-    const taskCollection = await indexBy(TaskCollectionId)
-        .exact(collectionId)
-        .get(TaskCollection);
+    const taskCollection = await indexBy(TaskCollectionId).exact(collectionId).get(TaskCollection);
     if (!taskCollection) {
         throw new Error("No task collection found");
     }
@@ -98,10 +87,7 @@ export async function updateTaskCategory({
     }
 
     // remove category from taskCollection
-    taskCollection.categories?.splice(
-        taskCollection.categories.indexOf(taskCategoryName),
-        1
-    );
+    taskCollection.categories?.splice(taskCollection.categories.indexOf(taskCategoryName), 1);
 
     // move or delete tasks
     if (keepTasks) {
@@ -115,9 +101,7 @@ export async function updateTaskCategory({
             })
         );
     } else {
-        await Promise.all(
-            categoryTasks.map(async (task) => await deleteTask(task.id))
-        );
+        await Promise.all(categoryTasks.map(async (task) => await deleteTask(task.id)));
     }
 
     await taskCollection.save();
@@ -146,9 +130,7 @@ export async function renameTaskCategory({
 
     if (taskCollection.categories) {
         // update category name in task collection
-        taskCollection.categories[
-            taskCollection.categories.indexOf(taskCategoryName)
-        ] = newName;
+        taskCollection.categories[taskCollection.categories.indexOf(taskCategoryName)] = newName;
     }
 
     // update category name in category tasks

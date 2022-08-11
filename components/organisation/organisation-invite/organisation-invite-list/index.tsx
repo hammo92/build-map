@@ -1,5 +1,5 @@
 import { useGetMyInvites } from "@data/invitation/hooks";
-import { Group, Text } from "@mantine/core";
+import { Group, Stack, Text } from "@mantine/core";
 import React from "react";
 import { OrganisationInviteListItem } from "./organisation-invite-list-item";
 import { OrganisationInviteListSkeleton } from "./organisation-invite-list-skeleton";
@@ -12,7 +12,7 @@ export const OrganisationInviteList = () => {
         );
         if (pendingInvitations.length) {
             return (
-                <Group direction="column">
+                <Stack>
                     {pendingInvitations.map(({ invitation, org }) => (
                         <OrganisationInviteListItem
                             key={invitation.id}
@@ -20,7 +20,7 @@ export const OrganisationInviteList = () => {
                             org={org}
                         />
                     ))}
-                </Group>
+                </Stack>
             );
         }
         return <Text>No Pending Invitations Found</Text>;

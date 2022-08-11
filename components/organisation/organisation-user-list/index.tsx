@@ -4,7 +4,6 @@ import React from "react";
 
 export const OrganisationUserList = ({ organisationId }) => {
     const { data } = useGetOrganisationUsers({ organisationId });
-    console.log("data :>> ", data);
     if (data) {
         return <UserList users={data.users} />;
     }

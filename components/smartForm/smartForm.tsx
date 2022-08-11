@@ -1,5 +1,6 @@
 import { DevTool } from "@hookform/devtools";
 import { FormProvider, SubmitHandler, useForm, UseFormProps } from "react-hook-form";
+import { SmartFormBooleanSegmentedControl } from "./smartForm-booleanSegmentedControl";
 import { SmartFormCheckbox } from "./smartForm-checkbox";
 import { SmartFormChips } from "./smartForm-chips";
 import { SmartFormColorInput } from "./smartForm-colorInput";
@@ -7,6 +8,7 @@ import { SmartFormColorPicker } from "./smartForm-colorPicker";
 import { SmartFormProvider } from "./smartForm-context";
 import { SmartFormDatePicker } from "./smartForm-datePicker";
 import { SmartFormDateTime } from "./smartForm-dateTime";
+import { SmartFormEditableList } from "./smartForm-editableList";
 import { SmartFormFieldGroup } from "./smartForm-fieldGroup";
 import { SmartFormIconPicker } from "./smartForm-iconPicker";
 import { SmartFormImages } from "./smartForm-images";
@@ -31,6 +33,25 @@ interface SmartFormProps<FormValues> extends UseFormProps {
     defaultValues?: any;
     children: JSX.Element[] | JSX.Element;
     submitMethod?: "manual" | "onChange";
+    submitType?: "all" | "dirty";
+    readOnly?: boolean;
+}
+
+function dirtyValues<FormValues>(
+    dirtyFields: Record<keyof FormValues, FormValues[keyof FormValues]> | boolean,
+    values: FormValues
+): FormValues | void {
+    if (dirtyFields === true) {
+        return values;
+    }
+    if (dirtyFields === false) return;
+    const dirtyKeys = Object.keys(dirtyFields) as (keyof FormValues)[];
+    return Object.fromEntries(
+        dirtyKeys.map((key) => [
+            key,
+            dirtyValues(dirtyFields[key], values[key as keyof FormValues]),
+        ])
+    ) as unknown as FormValues;
 }
 
 export const SmartForm = <FormValues,>({
@@ -40,17 +61,26 @@ export const SmartForm = <FormValues,>({
     onSubmit,
     disableSubmit,
     isSubmitting,
-    submitMethod,
+    submitMethod = "manual",
+    submitType = "all",
+    readOnly,
 }: SmartFormProps<FormValues>) => {
     const methods = useForm({
         defaultValues,
     });
-    const { control, handleSubmit, reset } = methods;
-
+    const { control, handleSubmit, reset, formState } = methods;
+    const submit = (values: any) => {
+        if (submitType === "dirty") {
+            onSubmit(dirtyValues(formState.dirtyFields, values));
+        } else {
+            onSubmit(values);
+        }
+        reset(values);
+    };
     return (
         <FormProvider {...methods}>
-            <SmartFormProvider onSubmit={onSubmit} submitMethod={submitMethod}>
-                <form onSubmit={handleSubmit(onSubmit)}>
+            <SmartFormProvider onSubmit={submit} submitMethod={submitMethod} readOnly={readOnly}>
+                <form onSubmit={handleSubmit(submit)}>
                     <input type="hidden" name="form-name" value={formName} />
                     {children}
                 </form>
@@ -60,12 +90,14 @@ export const SmartForm = <FormValues,>({
     );
 };
 
+SmartForm.BooleanSegmentedControl = SmartFormBooleanSegmentedControl;
 SmartForm.Checkbox = SmartFormCheckbox;
 SmartForm.Chips = SmartFormChips;
 SmartForm.ColorInput = SmartFormColorInput;
 SmartForm.ColorPicker = SmartFormColorPicker;
 SmartForm.DatePicker = SmartFormDatePicker;
 SmartForm.DateTime = SmartFormDateTime;
+SmartForm.EditableList = SmartFormEditableList;
 SmartForm.Images = SmartFormImages;
 SmartForm.JsonInput = SmartFormJsonInput;
 SmartForm.MultiSelect = SmartFormMultiSelect;

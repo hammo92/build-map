@@ -2,7 +2,7 @@ import { FIELD_TYPES } from "@components/contentTemplate/contentTemplate-field/f
 import { IconTitle } from "@components/ui/iconTitle/iconTitle";
 import { faGripVertical } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ContentTemplateField } from "@lib/contentTemplate/data/types";
+import { Property } from "@lib/contentTemplate/data/types";
 import { Card, Center, Group } from "@mantine/core";
 import { FC } from "react";
 import { splitCamel } from "utils/stringTransform";
@@ -10,13 +10,14 @@ import { FieldDelete } from "../field-delete";
 import { FieldEdit } from "../field-edit";
 
 interface FieldCardProps {
-    field: ContentTemplateField;
+    field: Property;
     index?: number;
     withDrag?: boolean;
     withActions?: boolean;
+    leftContent?: React.ReactNode;
 }
 
-const fieldSubtitle = (field: ContentTemplateField) => {
+const fieldSubtitle = (field: Property) => {
     const typeString = splitCamel(field.type);
     switch (field.type) {
         case "number":
@@ -28,14 +29,15 @@ const fieldSubtitle = (field: ContentTemplateField) => {
     }
 };
 
-export const FieldCard: FC<FieldCardProps> = ({ field, index, withDrag = true, withActions = true }) => {
+export const FieldCard: FC<FieldCardProps> = ({
+    field,
+    index,
+    withDrag = true,
+    withActions = true,
+    leftContent,
+}) => {
     return (
-        <Card
-            sx={(theme) => ({
-                borderRadius: theme.radius.md,
-            })}
-            //onClick={() => (fieldTemplateState.activeIndex = index)}
-        >
+        <Card>
             <Card.Section
                 p="md"
                 sx={(theme) => ({
@@ -43,13 +45,12 @@ export const FieldCard: FC<FieldCardProps> = ({ field, index, withDrag = true, w
                 })}
             >
                 <Group position="apart">
-                    {withDrag ? (
+                    {withDrag && (
                         <Center>
                             <FontAwesomeIcon icon={faGripVertical} />
                         </Center>
-                    ) : (
-                        ""
                     )}
+                    {leftContent !== undefined && leftContent}
                     <Group
                         sx={{
                             flex: "1",
@@ -62,13 +63,11 @@ export const FieldCard: FC<FieldCardProps> = ({ field, index, withDrag = true, w
                             icon={FIELD_TYPES[field.type].icon}
                         />
                     </Group>
-                    {withActions ? (
+                    {withActions && (
                         <Group>
                             <FieldEdit field={field} />
                             <FieldDelete field={field} />
                         </Group>
-                    ) : (
-                        ""
                     )}
                 </Group>
             </Card.Section>

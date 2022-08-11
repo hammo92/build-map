@@ -1,9 +1,16 @@
-import { api, params } from "@serverless/cloud";
+import { ContentTemplateHistoryEntry } from "@lib/contentTemplate/data/contentTemplate.model";
+import { api, events } from "@serverless/cloud";
 import {
+    contentAndTemplateDifference,
     createContent,
+    deleteContentById,
     getContentById,
-    getProjectContentOfType,
+    getContentOfTemplate,
+    handleContentTemplateChange,
     updateContentFields,
+    UpdateContentFromTemplate,
+    updateContentStatus,
+    updateContentValues,
 } from "../data";
 
 export const content = () => {
@@ -47,13 +54,12 @@ export const content = () => {
         }
     });
 
-    //* Update content fields*/
-    api.patch(`/content/:contentId/fields`, async function (req: any, res: any) {
+    //* Delete content by id*/
+    api.delete(`/content/:contentId`, async function (req: any, res: any) {
         const { contentId } = req.params;
-        const { fields } = req.body;
-        const { user } = req;
+        console.log("contentId", contentId);
         try {
-            const content = await updateContentFields({ contentId, fields, userId: user.id });
+            const content = await deleteContentById(contentId);
             return res.status(200).send({
                 content: content && content.clean(),
             });
@@ -65,13 +71,89 @@ export const content = () => {
         }
     });
 
-    //* Get all content of type for project */
+    //* Update content status*/
+    api.patch(`/content/:contentId/status`, async function (req: any, res: any) {
+        const { contentId } = req.params;
+        const { status } = req.body;
+        const { user } = req;
+        try {
+            const content = await updateContentStatus({ contentId, status, userId: user.id });
+            return res.status(200).send({
+                content: content && content.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
+        }
+    });
+
+    //* Update content values*/
+    api.patch(`/content/:contentId/values`, async function (req: any, res: any) {
+        const { contentId } = req.params;
+        const { values } = req.body;
+        const { user } = req;
+        try {
+            const content = await updateContentValues({ contentId, values, userId: user.id });
+            return res.status(200).send({
+                content: content && content.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
+        }
+    });
+
+    //* Update content fields*/
+    api.patch(`/content/:contentId/fields`, async function (req: any, res: any) {
+        const { contentId } = req.params;
+        const { updates, deletions } = req.body;
+        const { user } = req;
+        try {
+            const content = await updateContentFields({
+                contentId,
+                updates,
+                deletions,
+                userId: user.id,
+            });
+            return res.status(200).send({
+                content: content && content.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
+        }
+    });
+
+    //* Update content to latest Template*/
+    api.patch(`/content/:contentId/patchFromTemplate`, async function (req: any, res: any) {
+        const { contentId } = req.params;
+        const { user } = req;
+        try {
+            const content = await UpdateContentFromTemplate({ contentId, userId: user.id });
+            return res.status(200).send({
+                content: content && content.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
+        }
+    });
+
+    //* Get all content for contentTemplate for project */
     api.get(
         `/projects/:projectId/contentTemplates/:contentTemplateId`,
         async function (req: any, res: any) {
             try {
                 const { projectId, contentTemplateId } = req.params;
-                const { content, contentTemplate } = await getProjectContentOfType({
+                const { content, contentTemplate } = await getContentOfTemplate({
                     contentTemplateId,
                     projectId,
                 });
@@ -85,6 +167,24 @@ export const content = () => {
                     message: error.message,
                 });
             }
+        }
+    );
+
+    events.on(
+        "contentTemplate.updated",
+        async ({
+            body,
+        }: {
+            body: {
+                historyEntry: ContentTemplateHistoryEntry;
+                templateId: string;
+            };
+        }) => {
+            //setContentOutdated(body);
+            // console.time();
+            // contentAndTemplateDifference({ templateId: body.templateId });
+            // console.timeEnd();
+            handleContentTemplateChange(body);
         }
     );
 };

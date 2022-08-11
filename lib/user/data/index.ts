@@ -1,14 +1,10 @@
-import { data, params, Request } from "@serverless/cloud";
+import { params, Request } from "@serverless/cloud";
 import crypto from "crypto";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { indexBy } from "serverless-cloud-data-utils";
 import util from "util";
 import { v5 as uuidv5 } from "uuid";
-/*import {
-    OrganisationUser,
-    UserOrganisations,
-} from "../../organisation/data/organisation.model";
-import { ProjectUser, UserProjects } from "../../project/data/projectModel";*/
+import { errorIfUndefined } from "../../utils";
 import { User, UserId } from "./user.model";
 
 const pbkdf2 = util.promisify(crypto.pbkdf2);
@@ -16,7 +12,6 @@ const pbkdf2 = util.promisify(crypto.pbkdf2);
 const TOKEN_SECRET = params.TOKEN_SECRET;
 
 export const USER_UUID_NAMESPACE = "9738E54D-3350-402B-9849-35F0ECEB772C";
-import { errorIfUndefined } from "../../utils";
 
 //* Create user token */
 export async function createUserToken({
@@ -68,6 +63,8 @@ export async function createUser({
         }
     });
     errorIfUndefined([email, name, password]);
+
+    //Todo: allow continue and trigger validation email
     // Check email isn't already in use
     const user = await getUserByEmail(email);
     if (user) {
@@ -79,15 +76,17 @@ export async function createUser({
 
     /* encrypt password */
     const salt = crypto.randomBytes(16).toString();
-    const hashedPassword = (
-        await pbkdf2(password, salt, 310000, 32, "sha256")
-    ).toString();
+    const hashedPassword = (await pbkdf2(password, salt, 310000, 32, "sha256")).toString();
 
     const newUser = new User();
     newUser.id = id;
     newUser.name = name;
     newUser.email = email;
     newUser.nickname = name.split(" ")[0];
+    newUser.createdBy = id;
+    newUser.createdTime = new Date().toISOString();
+    newUser.lastEditedBy = id;
+    newUser.lastEditedTime = new Date().toISOString();
     newUser.salt = salt;
     newUser.hashedPassword = hashedPassword;
     await newUser.save();
@@ -116,9 +115,7 @@ export async function updateUser({
     if (password) {
         /* encrypt password */
         const salt = crypto.randomBytes(16).toString();
-        const hashedPassword = (
-            await pbkdf2(password, salt, 310000, 32, "sha256")
-        ).toString();
+        const hashedPassword = (await pbkdf2(password, salt, 310000, 32, "sha256")).toString();
         user.salt = salt;
         user.hashedPassword = hashedPassword;
     }
@@ -135,6 +132,8 @@ export async function updateUser({
         user.nicknameManuallySet = true;
     }
 
+    user.lastEditedBy = userId;
+    user.lastEditedTime = new Date().toISOString();
     await user.save();
     return user;
 }

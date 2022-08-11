@@ -1,6 +1,6 @@
-import { InputWrapper, InputWrapperProps } from "@mantine/core";
-import { RichTextEditorProps } from "@mantine/rte";
-import React, { forwardRef } from "react";
+import { Input, InputWrapperProps } from "@mantine/core";
+import { Editor, RichTextEditorProps } from "@mantine/rte";
+import React, { forwardRef, useRef } from "react";
 import { SmartFormDefaultController } from "../smartForm-defaultController";
 import { SmartFormInputBaseProps } from "../types";
 import RichTextEditor from "@components/ui/richText";
@@ -23,8 +23,9 @@ const WrappedRichText = forwardRef(
             labelProps,
             ...rest
         } = props;
+        const editorRef = useRef<Editor>();
         return (
-            <InputWrapper
+            <Input.Wrapper
                 label={label}
                 error={error}
                 required={required}
@@ -37,8 +38,24 @@ const WrappedRichText = forwardRef(
                 size={props.size}
                 sx={{ display: "flex", flexDirection: "column" }}
             >
-                <RichTextEditor {...rest} />
-            </InputWrapper>
+                <RichTextEditor
+                    {...rest}
+                    controls={[
+                        ["bold", "italic", "underline", "strike", "clean"],
+                        ["h1", "h2", "h3", "h4"],
+                        ["unorderedList", "orderedList"],
+                        ["link", "video", "blockquote", "code"],
+                        ["alignLeft", "alignCenter", "alignRight"],
+                        ["sup", "sub"],
+                    ]}
+                    onImageUpload={(file: File) =>
+                        new Promise((resolve, reject) => {
+                            console.log(file);
+                            resolve("not allowed");
+                        })
+                    }
+                />
+            </Input.Wrapper>
         );
     }
 );

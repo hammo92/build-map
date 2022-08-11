@@ -1,33 +1,26 @@
-import { Button, Space, TextInput } from "@mantine/core";
-import { useForm } from "@mantine/hooks";
-import { organisationState } from "@state";
 import { useCreateOrganisation } from "@data/organisation/hooks";
-import { useRouter } from "next/router";
-import React from "react";
-export const CreateOrganisation = () => {
-    const router = useRouter();
+import { organisations } from "@lib/organisation/endpoints";
+import { Button, Space, TextInput } from "@mantine/core";
+import { useForm } from "@mantine/form";
+export const CreateOrganisation = ({ onCreate }: { onCreate?: () => void }) => {
     const form = useForm({
         initialValues: {
             name: "",
         },
     });
-    const { mutateAsync } = useCreateOrganisation();
+    const { mutateAsync, isLoading } = useCreateOrganisation();
     return (
         <form
             onSubmit={form.onSubmit(async ({ name }) => {
-                await mutateAsync({
+                const organisation = await mutateAsync({
                     name,
                 });
-                //router.push("/");
+                organisation && onCreate && onCreate();
             })}
         >
-            <TextInput
-                required
-                label="Organisation Name"
-                {...form.getInputProps("name")}
-            />
+            <TextInput required label="Organisation Name" {...form.getInputProps("name")} />
             <Space h="sm" />
-            <Button type="submit" fullWidth>
+            <Button type="submit" fullWidth loading={isLoading} disabled={isLoading}>
                 Create
             </Button>
         </form>

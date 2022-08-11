@@ -2,7 +2,7 @@ import { useDeleteProject } from "@data/projects/hooks";
 import { faArrowRight, faTrash } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Project } from "@lib/project/data/projectModel";
-import { ActionIcon, Card, Group, Text } from "@mantine/core";
+import { ActionIcon, Card, Group, Stack, Text } from "@mantine/core";
 import { useRouter } from "next/router";
 import React, { FC } from "react";
 import { CleanedCamel } from "type-helpers";
@@ -22,15 +22,17 @@ export const ProjectListItem: FC<ProjectListItemProps> = ({ project }) => {
                 width: "100%",
                 background: theme.colors.dark[5],
             })}
-            onClick={() => router.push(`/projects/${project.id}`)}
         >
             <Group position="apart">
-                <Group direction="column" spacing="xs">
+                <Stack spacing="xs">
                     <Text transform="capitalize">{project.name}</Text>
-                </Group>
+                </Stack>
                 <Group>
                     <ActionIcon>
-                        <FontAwesomeIcon icon={faArrowRight} />
+                        <FontAwesomeIcon
+                            icon={faArrowRight}
+                            onClick={() => router.push(`/projects/${project.id}`)}
+                        />
                     </ActionIcon>
                     <ActionIcon
                         onClick={() =>

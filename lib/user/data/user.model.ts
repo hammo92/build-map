@@ -17,6 +17,10 @@ export class User extends Model<User> {
     nickname: string;
     nicknameManuallySet: boolean;
     salt: string;
+    createdTime: string;
+    createdBy: string;
+    lastEditedTime: string;
+    lastEditedBy: string;
     keys() {
         return [indexBy(UserId).exact(this.id)];
     }

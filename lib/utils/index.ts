@@ -1,8 +1,11 @@
 import { Model } from "serverless-cloud-data-utils";
 import { KeyPath, StripModel } from "type-helpers";
 
-// throw an error with the property name/names which are missing
-export function errorIfUndefined(props: { [key: string]: any }, errorType: "notProvided" | "notFound" = "notProvided") {
+/** throw an error with the property name/names which are missing */
+export function errorIfUndefined(
+    props: { [key: string]: any },
+    errorType: "notProvided" | "notFound" = "notProvided"
+) {
     const missingList: string[] = [];
     let errorString;
     switch (errorType) {
@@ -21,7 +24,9 @@ export function errorIfUndefined(props: { [key: string]: any }, errorType: "notP
         }
     });
     if (missingList.length) {
-        throw new Error(`${errorString}${missingList.length > 1 ? "s" : ""} "${missingList.join(", ")}"`);
+        throw new Error(
+            `${errorString}${missingList.length > 1 ? "s" : ""} "${missingList.join(", ")}"`
+        );
     }
 }
 
@@ -42,12 +47,17 @@ export function errorRequiredPropsUndefined<T, U extends { [key: string]: any }>
     });
     if (missingList.length) {
         throw new Error(
-            `Please provide required argument${missingList.length > 1 ? "s" : ""} "${missingList.join(", ")}"`
+            `Please provide required argument${
+                missingList.length > 1 ? "s" : ""
+            } "${missingList.join(", ")}"`
         );
     }
 }
 
-export function updateModelWithObject<T extends Model<T>>(model: Model<T>, props: Partial<StripModel<Model<T>>>) {
+export function updateModelWithObject<T extends Model<T>>(
+    model: Model<T>,
+    props: Partial<StripModel<Model<T>>>
+) {
     Object(props).keys.map((key: string) => {
         model[key as keyof typeof model] = props[key as keyof typeof props];
     });

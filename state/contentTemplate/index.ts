@@ -1,6 +1,5 @@
-import { ContentTemplateField } from "@lib/contentTemplate/data/types";
+import { Property } from "@lib/contentTemplate/data/types";
 import { proxy } from "valtio";
-
 
 export interface ContentTemplateStateProps {
     hasEditPermission: boolean;

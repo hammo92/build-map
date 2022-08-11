@@ -1,21 +1,22 @@
 import { AssetListProps } from "@components/asset/asset-list";
 import { AssetManager, AssetManagerProps } from "@components/asset/asset-manager";
-import { InputWrapper, InputWrapperProps } from "@mantine/core";
+import { Input, InputWrapperProps } from "@mantine/core";
 import { forwardRef } from "react";
 import { SmartFormDefaultController } from "../smartForm-defaultController";
 import { SmartFormInputBaseProps } from "../types";
 
 type SmartFormImagesProps = SmartFormInputBaseProps &
-    AssetManagerProps &
+    Omit<AssetManagerProps, "assetIds"> &
     Omit<InputWrapperProps, "children">;
 
 const WrappedAssetManager = forwardRef(
     (
-        props: AssetListProps &
+        props: Omit<AssetListProps, "assetIds"> &
             Omit<InputWrapperProps, "children" | "onChange"> & {
                 onChange?: (ids: string[]) => void;
                 defaultValue?: string[];
                 value?: string[];
+                readOnly?: boolean;
             },
         ref
     ) => {
@@ -32,10 +33,11 @@ const WrappedAssetManager = forwardRef(
             value,
             defaultValue,
             onChange,
+            readOnly,
             ...rest
         } = props;
         return (
-            <InputWrapper
+            <Input.Wrapper
                 label={label}
                 error={error}
                 required={required}
@@ -51,10 +53,11 @@ const WrappedAssetManager = forwardRef(
                 <AssetManager
                     onChange={onChange}
                     defaultValue={defaultValue}
-                    assetIds={value}
+                    editable={!readOnly}
+                    assetIds={value ?? []}
                     {...rest}
                 />
-            </InputWrapper>
+            </Input.Wrapper>
         );
     }
 );
@@ -64,7 +67,7 @@ WrappedAssetManager.displayName = "WrappedAssetManager";
 export const SmartFormImages = (props: SmartFormImagesProps) => {
     return (
         <SmartFormDefaultController {...props}>
-            <WrappedAssetManager {...props} />
+            <WrappedAssetManager />
         </SmartFormDefaultController>
     );
 };

@@ -4,7 +4,7 @@ import { buildIndex, indexBy, Model, timekey } from "serverless-cloud-data-utils
 //namespace asset:${assetId} */
 export const AssetId = buildIndex({ namespace: `asset` });
 
-// To get all assets for a user filterable by type //
+// To get all assets created by a user filterable by type //
 //namespace user_${userId}:assets:type
 export const UserAssetsWithTypeFilter = ({ userId }: { userId: string }) =>
     buildIndex({

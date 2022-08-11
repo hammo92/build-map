@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useModals } from "@mantine/modals";
-import { ActionIcon, Button, Group, TextInput } from "@mantine/core";
+import { ActionIcon, Button, Group, Stack, TextInput } from "@mantine/core";
 import { useSnapshot } from "valtio";
 import { contentTemplateState } from "@state/contentTemplate";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -31,11 +31,8 @@ const ModalContents = () => {
         fieldProperties ? modals.closeAll() : setLoading(false);
     };
     return (
-        <Group grow direction="column">
-            <TextInput
-                value={name}
-                onChange={(event) => setName(event.currentTarget.value)}
-            />
+        <Stack>
+            <TextInput value={name} onChange={(event) => setName(event.currentTarget.value)} />
             <Group grow>
                 <Button
                     variant="light"
@@ -49,7 +46,7 @@ const ModalContents = () => {
                     Update
                 </Button>
             </Group>
-        </Group>
+        </Stack>
     );
 };
 
@@ -59,7 +56,7 @@ export const TitleEdit = () => {
     const openTitleModal = () =>
         modals.openModal({
             title: "Update content template name",
-            id: "contentTemplateNameModal",
+            //id: "contentTemplateNameModal",
             closeOnClickOutside: false,
             size: "xl",
 

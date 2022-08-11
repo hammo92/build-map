@@ -6,12 +6,12 @@ import { CleanedCamel } from "type-helpers";
 import { useStyles } from "./styles";
 
 interface AssetImageProps {
-    asset: CleanedCamel<Asset>;
+    assetId: string;
     height?: number;
 }
 
-export const AssetImage = ({ asset, height = 150 }: AssetImageProps) => {
-    const { data } = useGetImageUrl({ assetId: asset.id, height });
+export const AssetImage = ({ assetId, height = 150 }: AssetImageProps) => {
+    const { data } = useGetImageUrl({ assetId, height });
     const { classes } = useStyles();
     return (
         <Group
@@ -21,11 +21,7 @@ export const AssetImage = ({ asset, height = 150 }: AssetImageProps) => {
                 height,
             }}
         >
-            {data?.url ? (
-                <Image src={data?.url} alt={asset.filename} height={height} />
-            ) : (
-                <Loader />
-            )}
+            {data?.url ? <Image src={data?.url} alt={assetId} height={height} /> : <Loader />}
         </Group>
     );
 };

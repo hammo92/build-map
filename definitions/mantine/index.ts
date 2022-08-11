@@ -17,9 +17,9 @@ export const theme = {
     },
     fontFamilyMonospace: "relative-mono-11-pitch-pro, Menlo, monospace",
     headings: {
-        fontFamily:
-            "relative-medium-pro, Roboto, system-ui, -apple-system, BlinkMacSystemFont",
+        fontFamily: "relative-medium-pro, Roboto, system-ui, -apple-system, BlinkMacSystemFont",
     },
-    fontFamily:
-        "relative-book-pro, Roboto, system-ui, -apple-system, BlinkMacSystemFont",
+    defaultRadius: "sm",
+    //primaryShade: 8,
+    fontFamily: "relative-book-pro, Roboto, system-ui, -apple-system, BlinkMacSystemFont",
 };

@@ -16,12 +16,11 @@ export type StripModel<T> = Omit<
     | "UNSAFE_shadowKeysUnbounded"
     | "__shadowSnapshots"
     | "secondaries"
+    | "saveWithHistory"
 >;
 
 // set all to partial except provided keys
-export type ModelRequired<T, K extends keyof StripModel<T>> = StripModel<
-    Required<Partial<T>, K>
->;
+export type ModelRequired<T, K extends keyof StripModel<T>> = StripModel<Required<Partial<T>, K>>;
 
 // set all to partial except provided keys
 export type ModelPick<
@@ -73,11 +72,7 @@ export type KeyPath<T, D extends number = 10> = [D] extends [never]
     : T extends object
     ? {
           [K in keyof T]-?: K extends string | number
-              ?
-                    | `${K}`
-                    | (KeyPath<T[K], Prev[D]> extends infer R
-                          ? Join<K, R>
-                          : never)
+              ? `${K}` | (KeyPath<T[K], Prev[D]> extends infer R ? Join<K, R> : never)
               : never;
       }[keyof T]
     : "";

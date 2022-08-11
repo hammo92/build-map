@@ -1,8 +1,9 @@
 import { SmartForm } from "@components/smartForm";
 import { ContentFieldImage } from "@lib/content/data/types";
+import { PropertyImage } from "@lib/contentTemplate/data/types";
 import { IMAGE_MIME_TYPE } from "@mantine/dropzone";
 
-export const FieldsImage = ({ field }: { field: ContentFieldImage }) => {
+export const FieldsImage = ({ field }: { field: ContentFieldImage | PropertyImage }) => {
     const { subtype } = field;
     if (subtype === "single")
         return <SmartForm.Images name={field.id} label={field.name} accept={IMAGE_MIME_TYPE} />;

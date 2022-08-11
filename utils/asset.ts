@@ -24,8 +24,8 @@ export type MimeCategory =
     | "msPowerpoint"
     | "file";
 
-export const mimeCategory = (identifier: string): MimeCategory => {
-    const mimeType = mime.lookup(identifier);
+export const mimeCategory = (identifier?: string): MimeCategory => {
+    const mimeType = identifier ? mime.lookup(identifier) : "file";
     switch (true) {
         case IMAGE_MIME_TYPE.includes(mimeType as typeof IMAGE_MIME_TYPE[number]):
             return "image";

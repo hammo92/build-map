@@ -4,17 +4,23 @@ import { SubmitHandler } from "react-hook-form";
 interface SmartFormContextProps {
     onSubmit: SubmitHandler<any>;
     submitMethod?: "manual" | "onChange";
+    readOnly?: boolean;
+}
+
+interface SmartFormProviderProps extends SmartFormContextProps {
+    children: React.ReactNode;
 }
 
 const SmartFormContext = React.createContext<SmartFormContextProps | undefined>(undefined);
 
-const SmartFormProvider: React.FC<SmartFormContextProps> = ({
+const SmartFormProvider = ({
     children,
     onSubmit,
     submitMethod = "manual",
-}) => {
+    readOnly = false,
+}: SmartFormProviderProps) => {
     return (
-        <SmartFormContext.Provider value={{ onSubmit, submitMethod }}>
+        <SmartFormContext.Provider value={{ onSubmit, submitMethod, readOnly }}>
             {children}
         </SmartFormContext.Provider>
     );

@@ -1,53 +1,44 @@
-import { useNotifications } from "@mantine/notifications";
+import { Project } from "@lib/project/data/projectModel";
+import { showNotification } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import { CleanedCamel } from "type-helpers";
 
 import { Keys } from "../constants";
-import {
-    createProject,
-    deleteProject,
-    getMyProjects,
-    getOrgProjects,
-} from "../queries";
+import { createProject, deleteProject, getMyProjects, getOrgProjects } from "../queries";
 
 export function useCreateProject() {
     const queryClient = useQueryClient();
-    const notifications = useNotifications();
+
     return useMutation(createProject, {
         mutationKey: Keys.CREATE_PROJECT,
-        /*onMutate: async (newProject) => {
+        onMutate: async ({ name }) => {
+            console.log("name", name);
+            const queryId = Keys.GET_MY_PROJECTS;
+
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-            await queryClient.cancelQueries(Keys.GET_MY_PROJECTS);
+            await queryClient.cancelQueries(queryId);
+
             // Snapshot the previous value
-            const previousProjects = queryClient.getQueryData(
-                Keys.GET_MY_PROJECTS
-            );
-            // Optimistically update to the new value
-            queryClient.setQueryData(Keys.GET_MY_PROJECTS, (old) => [
-                ...old,
-                newProject,
-            ]);
-            // Return a context object with the snapshotted value
-            return { previousProjects };
-        },*/
-        onSuccess: ({ project }) => {
-            queryClient.invalidateQueries(Keys.GET_MY_PROJECTS);
-            notifications.showNotification({
-                title: `${project.name} created`,
-                message: `Successfully setup new project`,
-                color: "green",
-            });
+            const currentData = queryClient.getQueryData<{
+                projects: CleanedCamel<Project>[];
+            }>(queryId);
+            console.log("currentData", currentData);
+
+            if (currentData?.projects) {
+                const { projects } = currentData;
+
+                // Optimistically update to the new value
+                queryClient.setQueryData(queryId, () => ({
+                    projects: [...projects, { name }],
+                }));
+            }
         },
-        onError: (
-            error: AxiosError<{ message: string }>,
-            newProject,
-            context
-        ) => {
-            /*queryClient.setQueryData(
-                Keys.GET_MY_PROJECTS,
-                context.previousProjects
-            );*/
-            notifications.showNotification({
+        onSettled: (data) => {
+            queryClient.invalidateQueries(Keys.GET_MY_PROJECTS);
+        },
+        onError: (error: AxiosError<{ message: string }>, newProject, context) => {
+            showNotification({
                 title: "Error",
                 message: error?.response?.data.message,
                 color: "red",
@@ -58,12 +49,32 @@ export function useCreateProject() {
 
 export function useDeleteProject() {
     const queryClient = useQueryClient();
-    const notifications = useNotifications();
+
     return useMutation(deleteProject, {
         mutationKey: Keys.DELETE_PROJECT,
+        onMutate: async ({ projectId }) => {
+            const queryId = Keys.GET_MY_PROJECTS;
+
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries(queryId);
+
+            // Snapshot the previous value
+            const currentData = queryClient.getQueryData<{
+                projects: CleanedCamel<Project>[];
+            }>(queryId);
+
+            if (currentData?.projects) {
+                const { projects } = currentData;
+
+                // Optimistically update to the new value
+                queryClient.setQueryData(queryId, () => ({
+                    projects: [...projects.filter(({ id }) => id !== projectId)],
+                }));
+            }
+        },
         onSuccess: ({ project }) => {
             queryClient.invalidateQueries(Keys.GET_MY_PROJECTS);
-            notifications.showNotification({
+            showNotification({
                 title: `${project.name}  deleted`,
                 message: `Successfully deleted project`,
                 color: "green",
@@ -71,7 +82,7 @@ export function useDeleteProject() {
         },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
-            notifications.showNotification({
+            showNotification({
                 title: "Error",
                 message: error?.response?.data.message,
                 color: "red",
@@ -84,11 +95,7 @@ export function useGetMyProjects() {
     return useQuery(Keys.GET_MY_PROJECTS, getMyProjects);
 }
 
-export function useGetOrgProjects({
-    organisationId,
-}: {
-    organisationId: string;
-}) {
+export function useGetOrgProjects({ organisationId }: { organisationId: string }) {
     return useQuery([Keys.GET_MY_PROJECTS, organisationId], () =>
         getOrgProjects({ organisationId })
     );

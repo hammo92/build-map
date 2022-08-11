@@ -24,6 +24,8 @@
             "@styles": ["styles"],
             "@components/*": ["components/*"],
             "@components": ["components"],
+            "@public/*": ["public/*"],
+            "@public": ["public"],
             "@layout/*": ["layout/*"],
             "@layout": ["layout"],
             "@views/*": ["layout/*"],

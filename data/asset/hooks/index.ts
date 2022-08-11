@@ -17,7 +17,7 @@ export function useGetAsset({
     assetId: string;
     initialData?: CleanedCamel<Asset>;
 }) {
-    return useQuery(Keys.GET_ASSET, () => getAsset({ assetId }), {
+    return useQuery([Keys.GET_ASSET, assetId], () => getAsset({ assetId }), {
         //refetchInterval: 1000,
         initialData: {
             asset: initialData,

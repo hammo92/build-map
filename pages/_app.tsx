@@ -1,5 +1,5 @@
 import { theme } from "@definitions/mantine";
-import { MantineProvider } from "@mantine/core";
+import { Global, MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -7,7 +7,7 @@ import "../styles/globals.css";
 import type { ReactElement, ReactNode } from "react";
 import type { NextPage } from "next";
 import type { AppProps } from "next/app";
-
+import { styles } from "@definitions/mantine/styles";
 
 type NextPageWithLayout = NextPage & {
     getLayout?: (page: ReactElement) => ReactNode;
@@ -32,11 +32,10 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                     ...theme,
                     colorScheme: "dark",
                 }}
+                styles={styles}
             >
                 <NotificationsProvider>
-                    <ModalsProvider>
-                        {getLayout(<Component {...pageProps} />)}
-                    </ModalsProvider>
+                    <ModalsProvider>{getLayout(<Component {...pageProps} />)}</ModalsProvider>
                 </NotificationsProvider>
             </MantineProvider>
         </QueryClientProvider>

@@ -1,6 +1,6 @@
 import { errorIfUndefined } from "@lib/utils";
 import { indexBy } from "serverless-cloud-data-utils";
-import { v4 as uuidv4 } from "uuid";
+import { ulid } from "ulid";
 import { getAllTaskCollectionTasks, getTaskCollection } from "..";
 import { ModelPick, ModelRequired } from "../../../../type-helpers";
 import {
@@ -13,17 +13,12 @@ import {
 
 //* Create taskField */
 export async function createTaskField(
-    createTaskFieldProps: ModelRequired<
-        TaskField,
-        "title" | "type" | "collectionId"
-    >
+    createTaskFieldProps: ModelRequired<TaskField, "title" | "type" | "collectionId">
 ) {
     const { title, type, collectionId } = createTaskFieldProps;
     errorIfUndefined({ title, type, collectionId });
 
-    const taskCollectionFields = await getTaskCollectionFields(
-        createTaskFieldProps.collectionId
-    );
+    const taskCollectionFields = await getTaskCollectionFields(createTaskFieldProps.collectionId);
 
     // find highest sortIndex
     const highestIndexField = taskCollectionFields.reduce((acc, val) =>
@@ -31,11 +26,9 @@ export async function createTaskField(
     );
 
     const taskField = new TaskField({
-        id: uuidv4(),
+        id: ulid(),
         active: true,
-        validateOnChange: fieldTypesToValidate.includes(
-            createTaskFieldProps.type
-        ),
+        validateOnChange: fieldTypesToValidate.includes(createTaskFieldProps.type),
         sortIndex: highestIndexField.sortIndex + 1,
         ...createTaskFieldProps,
     });
@@ -53,9 +46,7 @@ export async function getTaskFieldById(fieldId: string) {
 
 //* Get taskCollectionFields
 export async function getTaskCollectionFields(collectionId: string) {
-    const taskFields = await indexBy(TaskCollectionFields(collectionId)).get(
-        TaskField
-    );
+    const taskFields = await indexBy(TaskCollectionFields(collectionId)).get(TaskField);
     return taskFields;
 }
 
@@ -63,14 +54,10 @@ export async function getTaskCollectionFields(collectionId: string) {
 export async function updateTaskField({
     field,
 }: {
-    field: ModelPick<
-        TaskField,
-        "id" | "active" | "description" | "options",
-        "id"
-    >;
+    field: ModelPick<TaskField, "id" | "active" | "description" | "options", "id">;
 }) {
     if (!field.id) {
-        throw new Error("Field not found");
+        throw new Error("Property not found");
     }
     const storedField = await getTaskFieldById(field.id);
     if (!storedField) throw new Error("No field found");
@@ -84,9 +71,7 @@ export async function updateTaskField({
                 tasks.map((task) => {
                     // check that field with matching id has value that is valid option
                     // if not set value to null and save
-                    const taskField = task.fields.find(
-                        ({ id }) => id == field.id
-                    );
+                    const taskField = task.fields.find(({ id }) => id == field.id);
                     if (!field.options?.includes(taskField?.value)) {
                         if (taskField?.value) {
                             taskField.value = null;
@@ -132,7 +117,7 @@ export async function updateTaskField({
     return storedField;
 }
 
-//* Change Field order
+//* Change Property order
 export async function changeFieldOrder({
     collectionId,
     currentIndex,
@@ -142,14 +127,10 @@ export async function changeFieldOrder({
     currentIndex: number;
     newIndex: number;
 }) {
-    const taskFields = await indexBy(TaskCollectionFields(collectionId)).get(
-        TaskField
-    );
+    const taskFields = await indexBy(TaskCollectionFields(collectionId)).get(TaskField);
 
     // Check field exists with index
-    if (
-        !taskFields.filter(({ sortIndex }) => sortIndex === currentIndex).length
-    ) {
+    if (!taskFields.filter(({ sortIndex }) => sortIndex === currentIndex).length) {
         throw new Error("No task at this index");
     }
 
@@ -185,7 +166,7 @@ export async function changeFieldOrder({
     return taskFields;
 }
 
-//* Remove TaskCollection Field
+//* Remove TaskCollection Property
 export async function removeTaskField({
     collectionId,
     taskFieldId,
@@ -193,9 +174,7 @@ export async function removeTaskField({
     collectionId: string;
     taskFieldId: string;
 }) {
-    const taskFields = await indexBy(TaskCollectionFields(collectionId)).get(
-        TaskField
-    );
+    const taskFields = await indexBy(TaskCollectionFields(collectionId)).get(TaskField);
     const tasks = await getAllTaskCollectionTasks(collectionId);
     const fieldToRemove = taskFields.find((field) => field.id === taskFieldId);
     // update indexes on fields with higher sortIndex
@@ -208,9 +187,7 @@ export async function removeTaskField({
 
     // remove field from tasks
     const taskUpdatePromises = tasks.map((task) => {
-        const matchingFieldIndex = task.fields.findIndex(
-            (field) => field.id === fieldToRemove.id
-        );
+        const matchingFieldIndex = task.fields.findIndex((field) => field.id === fieldToRemove.id);
         if (matchingFieldIndex) {
             task.fields.splice(matchingFieldIndex, 1);
             return task.save();
@@ -218,10 +195,6 @@ export async function removeTaskField({
     });
 
     // remove field in all tasks
-    await Promise.all([
-        fieldToRemove.delete(),
-        ...fieldUpdatePromises,
-        ...taskUpdatePromises,
-    ]);
+    await Promise.all([fieldToRemove.delete(), ...fieldUpdatePromises, ...taskUpdatePromises]);
     return fieldToRemove;
 }

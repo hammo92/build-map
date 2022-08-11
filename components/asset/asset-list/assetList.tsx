@@ -4,7 +4,7 @@ import { MantineSize, SimpleGrid } from "@mantine/core";
 import { CleanedCamel } from "type-helpers";
 
 export interface CheckableAssetListPropsBase {
-    assets?: CleanedCamel<Asset>[];
+    assetIds: string[];
     size?: MantineSize;
     cols?: number;
 }
@@ -17,7 +17,7 @@ interface CheckableAssetListProps extends CheckableAssetListPropsBase {
 }
 
 interface NonCheckableAssetListProps extends CheckableAssetListPropsBase {
-    selectable?: never;
+    selectable?: false;
     selected?: never;
     select?: never;
     deselect?: never;
@@ -26,7 +26,7 @@ interface NonCheckableAssetListProps extends CheckableAssetListPropsBase {
 export type AssetListProps = CheckableAssetListProps | NonCheckableAssetListProps;
 
 export const AssetList = ({
-    assets,
+    assetIds,
     selectable,
     selected,
     select,
@@ -35,29 +35,29 @@ export const AssetList = ({
     cols = 4,
     ...props
 }: AssetListProps) => {
-    if (assets?.length) {
+    if (assetIds?.length) {
         return (
-            <SimpleGrid cols={cols}>
-                {assets.map((asset, i) => {
+            <SimpleGrid cols={cols} p="sm">
+                {assetIds.map((id, i) => {
                     if (selectable) {
                         return (
                             <AssetCard
-                                asset={asset}
-                                key={asset.id}
+                                assetId={id}
+                                key={id}
                                 size={size}
                                 checkable={selectable}
                                 onCheck={(checked) => {
                                     if (checked) {
-                                        select(asset.id);
+                                        select(id);
                                     } else {
-                                        deselect(asset.id);
+                                        deselect(id);
                                     }
                                 }}
-                                checked={selected?.has(asset.id)}
+                                checked={selected?.has(id)}
                             />
                         );
                     } else {
-                        return <AssetCard asset={asset} key={asset.id} size={size} />;
+                        return <AssetCard assetId={id} key={id} size={size} />;
                     }
                 })}
             </SimpleGrid>

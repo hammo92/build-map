@@ -1,9 +1,4 @@
-import {
-    InputWrapper,
-    InputWrapperProps,
-    Slider,
-    SliderProps,
-} from "@mantine/core";
+import { Input, InputWrapperProps, Slider, SliderProps } from "@mantine/core";
 import { forwardRef } from "react";
 import { SmartFormDefaultController } from "../smartForm-defaultController";
 import { SmartFormInputBaseProps } from "../types";
@@ -17,9 +12,7 @@ const WrappedSlider = forwardRef(
     (
         props: SliderProps &
             Omit<InputWrapperProps, "children"> & {
-                sliderLabel?:
-                    | React.ReactNode
-                    | ((value: number) => React.ReactNode);
+                sliderLabel?: React.ReactNode | ((value: number) => React.ReactNode);
             },
         ref
     ) => {
@@ -37,7 +30,7 @@ const WrappedSlider = forwardRef(
             ...rest
         } = props;
         return (
-            <InputWrapper
+            <Input.Wrapper
                 label={label}
                 error={error}
                 required={required}
@@ -51,7 +44,7 @@ const WrappedSlider = forwardRef(
                 sx={{ display: "flex", flexDirection: "column" }}
             >
                 <Slider {...rest} label={sliderLabel} />
-            </InputWrapper>
+            </Input.Wrapper>
         );
     }
 );

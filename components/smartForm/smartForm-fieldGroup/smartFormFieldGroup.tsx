@@ -1,13 +1,11 @@
 import { Grid, SimpleGrid } from "@mantine/core";
-import React, { FC } from "react";
+import React, { FC, ReactNode } from "react";
 
-export const SmartFormFieldGroup: FC<{ cols?: number }> = ({
-    children,
-    cols,
-}) => {
-    return (
-        <SimpleGrid cols={cols} mb="sm">
-            {children}
-        </SimpleGrid>
-    );
+interface SmartFormFieldGroupProps {
+    cols?: number;
+    children: ReactNode;
+}
+
+export const SmartFormFieldGroup = ({ children, cols }: SmartFormFieldGroupProps) => {
+    return <SimpleGrid cols={cols}>{children}</SimpleGrid>;
 };

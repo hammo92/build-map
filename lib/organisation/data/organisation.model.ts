@@ -54,6 +54,10 @@ export const OrganisationUsers = (organisationId: string) =>
 //model: OrganisationUser */
 export class OrganisationUser extends Model<OrganisationUser> {
     organisationId: string;
+    createdTime: string;
+    createdBy: string;
+    lastEditedTime: string;
+    lastEditedBy: string;
     userId: string;
     roleId: string;
     keys() {

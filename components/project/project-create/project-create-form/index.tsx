@@ -1,18 +1,15 @@
 import { useCreateProject } from "@data/projects/hooks";
 import { Button, Space, TextInput } from "@mantine/core";
-import { useForm } from "@mantine/hooks";
+import { useForm } from "@mantine/form";
 import React, { FC } from "react";
 
 interface ProjectCreateProps {
     organisationId: string;
-    onSuccess: () => null;
+    onCreate: () => void;
 }
 
-export const ProjectCreateForm: FC<ProjectCreateProps> = ({
-    organisationId,
-    onSuccess,
-}) => {
-    const { mutateAsync } = useCreateProject();
+export const ProjectCreateForm: FC<ProjectCreateProps> = ({ organisationId, onCreate }) => {
+    const { mutateAsync, isLoading } = useCreateProject();
     const form = useForm({
         initialValues: {
             name: "",
@@ -25,16 +22,14 @@ export const ProjectCreateForm: FC<ProjectCreateProps> = ({
                     name,
                     organisationId,
                 });
-                project && onSuccess();
+                project && onCreate();
             })}
         >
-            <TextInput
-                required
-                label="Project Name"
-                {...form.getInputProps("name")}
-            />
+            <TextInput required label="Project Name" {...form.getInputProps("name")} />
             <Space h="sm" />
-            <Button type="submit">Create</Button>
+            <Button type="submit" loading={isLoading} disabled={isLoading} fullWidth>
+                Create
+            </Button>
         </form>
     );
 };

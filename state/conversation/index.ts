@@ -1,9 +1,6 @@
-import { proxy, subscribe } from "valtio";
-import { derive } from "valtio/utils";
-import { CLOUD_API_URL } from "../config";
-import { setCookies, removeCookies, getCookie } from "cookies-next";
 import { authState } from "@state/auth";
-import { throttle } from "lodash";
+import { proxy } from "valtio";
+import { CLOUD_API_URL } from "../config";
 
 export const conversationState = proxy({
     organisations: undefined,

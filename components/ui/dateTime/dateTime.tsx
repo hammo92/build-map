@@ -1,15 +1,14 @@
-import { extractSystemStyles, Group, InputWrapper, InputWrapperProps, Text } from "@mantine/core";
+import { extractSystemStyles, Group, Input, InputWrapperProps, Text } from "@mantine/core";
 import { DatePicker, DatePickerProps, TimeInput, TimeInputProps } from "@mantine/dates";
-import { useUncontrolled, useUuid } from "@mantine/hooks";
-import React, { forwardRef } from "react";
+import { useId, useUncontrolled } from "@mantine/hooks";
 import dayjs from "dayjs";
-import { useStyles } from "../iconPicker/styles";
+import { forwardRef } from "react";
 
 export type DateTimeProps = Omit<InputWrapperProps, "children"> & {
     DateProps?: Omit<DatePickerProps, "onChange">;
     TimeProps?: Omit<TimeInputProps, "onChange">;
     /** Selected date, required with controlled input */
-    value?: Date | null;
+    value?: Date | undefined;
 
     /** Called when date changes */
     onChange?(value: Date | null): void;
@@ -48,12 +47,11 @@ export const DateTime = forwardRef<HTMLInputElement, DateTimeProps>((props, ref)
     const [_value, setValue] = useUncontrolled<Date>({
         value,
         defaultValue,
-        finalValue: null,
+        finalValue: undefined,
         onChange: onChange!,
-        rule: (val) => val === null || val instanceof Date,
     });
     const { systemStyles, rest } = extractSystemStyles(others);
-    const uuid = useUuid(id);
+    const uuid = useId(id);
 
     const handleChange = (date: Date, type: "date" | "time") => {
         const current = dayjs(_value).isValid() ? dayjs(_value) : dayjs();
@@ -69,7 +67,7 @@ export const DateTime = forwardRef<HTMLInputElement, DateTimeProps>((props, ref)
     };
 
     return (
-        <InputWrapper
+        <Input.Wrapper
             required={required}
             id={uuid}
             label={label}
@@ -96,6 +94,7 @@ export const DateTime = forwardRef<HTMLInputElement, DateTimeProps>((props, ref)
                     clearable={false}
                     required={required}
                     {...props.DateProps}
+                    sx={{ flex: 1 }}
                 />
                 <Text size="sm" color="dimmed">
                     at
@@ -106,9 +105,10 @@ export const DateTime = forwardRef<HTMLInputElement, DateTimeProps>((props, ref)
                     disabled={disabled}
                     required={required}
                     {...props.TimeProps}
+                    sx={{ flex: 1 }}
                 />
             </Group>
-        </InputWrapper>
+        </Input.Wrapper>
     );
 });
 

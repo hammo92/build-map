@@ -1,15 +1,17 @@
 import { Button, Group } from "@mantine/core";
 import { DropzoneProps } from "@mantine/dropzone";
+import { useId } from "@mantine/hooks";
 import { useModals } from "@mantine/modals";
-import uploader, { UploadState } from "@state/uploader/uploader";
-import React from "react";
-import { useSnapshot } from "valtio";
+import Uploader from "@state/uploader/uploader";
+import React, { useEffect, useMemo } from "react";
+import { proxy, useSnapshot } from "valtio";
 import { FileUploadDropzone } from "./fileUpload-Dropzone";
 import { FileUploadList } from "./fileUpload-list";
 
 export type ImageUploadProps = Omit<DropzoneProps, "children" | "onDrop"> & {
     path?: string;
     onUpload: (fileIds: string[]) => void;
+    onCancel?: () => void;
 };
 
 const UploadManager = ({
@@ -17,17 +19,17 @@ const UploadManager = ({
     disabled,
     multiple,
     onUpload,
+    onCancel,
     ...others
 }: Omit<ImageUploadProps, "onDrop">) => {
-    const { uploads, setUploads, addUploads, busy, upload } = useSnapshot(uploader);
+    const modals = useModals();
+    const { uploads, setUploads, addUploads, busy, upload, ...rest } = useSnapshot(Uploader);
     const handleDrop = (files: File[]) => {
         multiple ? addUploads(...files) : setUploads(files);
     };
-
     const notUploaded = uploads.filter(
         ({ percentUploaded, uploading }) => percentUploaded === 0 && !uploading
     );
-
     return (
         <div>
             <FileUploadDropzone
@@ -40,13 +42,13 @@ const UploadManager = ({
                 <>
                     <FileUploadList />
                     <Group position="apart">
-                        <Button color="gray" disabled={busy}>
+                        <Button color="gray" disabled={busy} onClick={onCancel}>
                             Back
                         </Button>
                         <Button
                             disabled={busy || notUploaded.length === 0}
                             loading={busy}
-                            onClick={() => upload()}
+                            onClick={() => upload({ onUpload })}
                         >
                             Upload
                         </Button>
@@ -65,18 +67,21 @@ export const FileUpload: React.FC<ImageUploadProps> = ({
     ...others
 }) => {
     const modals = useModals();
-    UploadState.onUpload = onUpload;
     const openUploadManagerModal = () => {
         modals.openModal({
             size: "xl",
             title: `Add new asset${multiple ? "s" : ""}`,
-            id: "assetManagerModal",
+            //id: "assetManagerModal",
             closeOnClickOutside: false,
+            onClose: () => {
+                Uploader.clearUploads();
+            },
             children: (
                 <UploadManager
-                    onUpload={(assets) => console.log(assets)}
+                    onUpload={onUpload}
                     multiple={multiple}
                     maxSize={maxSize}
+                    onCancel={() => modals.closeModal("assetManagerModal")}
                     {...others}
                 />
             ),

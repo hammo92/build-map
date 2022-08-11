@@ -2,7 +2,7 @@ import {
     FieldType,
     FIELD_TYPES,
 } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
-import { ContentTemplateField } from "@lib/contentTemplate/data/types";
+import { Property } from "@lib/contentTemplate/data/types";
 
 const sharedDefaults = {
     name: "",
@@ -12,7 +12,7 @@ const sharedDefaults = {
     },
 };
 
-export const getFieldDefaults = (type: FieldType): ContentTemplateField => {
+export const getFieldDefaults = (type: FieldType): Property => {
     switch (type) {
         case "text":
             return { ...sharedDefaults, type: "text", subtype: "shortText" };

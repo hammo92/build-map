@@ -1,8 +1,6 @@
 import { indexBy } from "serverless-cloud-data-utils";
-/*import { joinOrganisation } from "../../organisation/data/index";*/
-import { v4 as uuidv4, v5 as uuidv5 } from "uuid";
-import { createOrganisationtUser } from "../../organisation/data";
-//import { createProjectUser } from "../../project/data";
+import { v5 as uuidv5 } from "uuid";
+import { createOrganisationUser } from "../../organisation/data";
 import { USER_UUID_NAMESPACE } from "../../user/data";
 import {
     Invitation,
@@ -13,28 +11,31 @@ import {
     InvitationProject,
 } from "./invitation.model";
 import { User, UserId } from "../../user/data/user.model";
+import { ulid } from "ulid";
 
 //* Create invitation */
 export async function createInvitation({
     email,
     organisationId,
     projectId,
-    creatorId,
+    userId,
 }: {
     email: string;
     organisationId: string;
     projectId: string;
-    creatorId: string;
+    userId: string;
 }) {
     // create invitation
     const newInvitation = new Invitation();
-    newInvitation.id = uuidv4();
+    newInvitation.id = ulid();
     newInvitation.email = email;
     newInvitation.organisationId = organisationId;
-    newInvitation.date = new Date().toISOString();
-    newInvitation.projectId = projectId;
-    newInvitation.creatorId = creatorId;
+    newInvitation.createdTime = new Date().toISOString();
+    newInvitation.createdBy = userId;
+    newInvitation.lastEditedTime = new Date().toISOString();
+    newInvitation.lastEditedBy = userId;
     newInvitation.redeemed = false;
+    newInvitation.projectId = projectId;
     await newInvitation.save();
 
     return newInvitation;
@@ -55,39 +56,33 @@ export async function getInvitationsByEmail(email: string) {
 //* Get invitations by userId */
 export async function getinvitationsByUserId(userId: string) {
     const user = await indexBy(UserId).exact(userId).get(User);
-    const invitations = await indexBy(InvitationEmail(user.email)).get(
-        Invitation
-    );
+    if (!user) throw new Error("No user found");
+    const invitations = await indexBy(InvitationEmail(user.email)).get(Invitation);
     return invitations;
 }
 
 //* Get invitations by organisation */
 export async function getInvitationsByOrganisation(organisationId: string) {
-    const invitations = await indexBy(
-        InvitationOrganisation(organisationId)
-    ).get(Invitation);
+    const invitations = await indexBy(InvitationOrganisation(organisationId)).get(Invitation);
     return invitations;
 }
 
 //* Get invitations by project */
 export async function getInvitationsByProject(projectId: string) {
-    const invitations = await indexBy(InvitationProject(projectId)).get(
-        Invitation
-    );
+    const invitations = await indexBy(InvitationProject(projectId)).get(Invitation);
     return invitations;
 }
 
 //* Get invitations by creator */
 export async function getInvitationsByCreator(creatorId: string) {
-    const invitations = await indexBy(InvitationCreator(creatorId)).get(
-        Invitation
-    );
+    const invitations = await indexBy(InvitationCreator(creatorId)).get(Invitation);
     return invitations;
 }
 
 //* Delete invite by id */
 export async function deleteInvitationById(id: string) {
     const invitation = await indexBy(InvitationId).exact(id).get(Invitation);
+    if (!invitation) throw new Error("No invitation found");
     await invitation.delete();
     return invitation;
 }
@@ -95,17 +90,21 @@ export async function deleteInvitationById(id: string) {
 //* Redeem invitation by id*/
 export async function redeemInvitationById(id: string) {
     const invitation = await indexBy(InvitationId).exact(id).get(Invitation);
+    if (!invitation) throw new Error("No invitation found");
     const { organisationId, email, projectId } = invitation;
 
     // invitation can only be redeemed after sign up, id should be available
     // find id from email
     const userId = await uuidv5(email, USER_UUID_NAMESPACE);
 
-    await createOrganisationtUser({ organisationId, userId });
+    await createOrganisationUser({ organisationId, userId });
+    //Todo: if project is defined on invitation
     // if (invitation.projectId) {
     //     await createProjectUser({ projectId, userId });
     // }
     invitation.redeemed = true;
+    invitation.lastEditedBy = userId;
+    invitation.lastEditedTime = new Date().toISOString();
     await invitation.save();
     return invitation;
 }

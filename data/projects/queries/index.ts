@@ -10,35 +10,26 @@ export async function createProject({
     name: string;
     organisationId: string;
 }) {
-    const { data } = await apiClient.post<{ project: CleanedSnake<Project> }>(
-        `projects`,
-        {
-            name,
-            organisationId,
-        }
-    );
-    return camelcaseKeys(data);
+    const { data } = await apiClient.post<{ project: CleanedSnake<Project> }>(`projects`, {
+        name,
+        organisationId,
+    });
+    return camelcaseKeys(data, { deep: true });
 }
 
 export async function getMyProjects() {
-    const { data } = await apiClient.get<{ projects: CleanedSnake<Project>[] }>(
-        `me/projects`
-    );
-    return data;
+    const { data } = await apiClient.get<{ projects: CleanedSnake<Project>[] }>(`me/projects`);
+    return camelcaseKeys(data, { deep: true });
 }
 
 export async function deleteProject({ projectId }: { projectId: string }) {
     const { data } = await apiClient.delete<{ project: CleanedSnake<Project> }>(
         `/projects/${projectId}`
     );
-    return camelcaseKeys(data);
+    return camelcaseKeys(data, { deep: true });
 }
 
-export async function getOrgProjects({
-    organisationId,
-}: {
-    organisationId: string;
-}) {
+export async function getOrgProjects({ organisationId }: { organisationId: string }) {
     const { data } = await apiClient.get(`/org/${organisationId}/projects`);
-    return camelcaseKeys(data);
+    return camelcaseKeys(data, { deep: true });
 }

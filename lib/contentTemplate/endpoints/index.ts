@@ -2,14 +2,14 @@ import { api, params } from "@serverless/cloud";
 import snakecaseKeys from "snakecase-keys";
 import {
     createContentTemplate,
-    createContentTemplateField,
+    createProperty,
     deleteContentTemplateById,
-    deleteContentTemplateField,
+    deleteProperty,
     getContentTemplateById,
     getOrganisationContentTemplates,
-    reorderContentTemplateFields,
+    reorderProperties,
     updateContentTemplate,
-    updateContentTemplateField,
+    updateProperty,
 } from "../data";
 
 export const contentTemplates = () => {
@@ -56,7 +56,7 @@ export const contentTemplates = () => {
     //* Update contentTemplate  */
     api.patch(`/contentTemplates/:contentTemplateId`, async function (req: any, res: any) {
         const { contentTemplateId } = req.params;
-        const { name, status, icon } = req.body;
+        const { name, status, icon, title } = req.body;
         const { user } = req;
         try {
             const contentTemplate = await updateContentTemplate({
@@ -64,6 +64,7 @@ export const contentTemplates = () => {
                 name,
                 status,
                 icon,
+                title,
                 userId: user.id,
             });
             return res.status(200).send({
@@ -80,6 +81,7 @@ export const contentTemplates = () => {
     //* Delete contentTemplate */
     api.delete(`/contentTemplates/:contentTemplateId`, async function (req: any, res: any) {
         const { contentTemplateId } = req.params;
+        const { user } = req;
         try {
             const contentTemplate = await deleteContentTemplateById(contentTemplateId);
             return res.status(200).send({
@@ -95,8 +97,9 @@ export const contentTemplates = () => {
 
     //* Get organsation contentTemplates */
     api.get(`/organisations/:organisationId/contentTemplates`, async function (req: any, res: any) {
+        const organisationId = req.params.organisationId;
+        const { user } = req;
         try {
-            const organisationId = req.params.organisationId;
             const contentTemplates = await getOrganisationContentTemplates(organisationId);
             return res.status(200).send({
                 contentTemplates: contentTemplates.length
@@ -111,18 +114,20 @@ export const contentTemplates = () => {
         }
     });
 
-    //* Create contentTemplate Field */
+    //* Create contentTemplate Property */
     api.post("/contentTemplates/:contentTemplateId/fields", async function (req: any, res: any) {
         const { fieldProperties } = req.body;
         const { contentTemplateId } = req.params;
+        const { user } = req;
         try {
-            const { user } = req;
-            const contentTemplate = await createContentTemplateField({
+            const { contentTemplate, property } = await createProperty({
                 contentTemplateId,
                 fieldProperties,
+                userId: user.id,
             });
             return res.status(200).send({
                 contentTemplate: contentTemplate && contentTemplate.clean(),
+                property: property && property,
             });
         } catch (error: any) {
             console.log(error);
@@ -132,17 +137,18 @@ export const contentTemplates = () => {
         }
     });
 
-    //* Update contentTemplate Field */
+    //* Update contentTemplate Property */
     api.patch(
         "/contentTemplates/:contentTemplateId/fields/:fieldId",
         async function (req: any, res: any) {
             const { fieldProperties } = req.body;
             const { contentTemplateId, fieldId } = req.params;
+            const { user } = req;
             try {
-                const { user } = req;
-                const contentTemplate = await updateContentTemplateField({
+                const contentTemplate = await updateProperty({
                     contentTemplateId,
                     fieldProperties,
+                    userId: user.id,
                 });
                 return res.status(200).send({
                     contentTemplate: contentTemplate && contentTemplate.clean(),
@@ -156,18 +162,19 @@ export const contentTemplates = () => {
         }
     );
 
-    //* Reorder contentTemplate Field */
+    //* Reorder contentTemplate Property */
     api.post(
         "/contentTemplates/:contentTemplateId/reorderFields",
         async function (req: any, res: any) {
             const { fromIndex, toIndex } = req.body;
             const { contentTemplateId } = req.params;
+            const { user } = req;
             try {
-                const { user } = req;
-                const contentTemplate = await reorderContentTemplateFields({
+                const contentTemplate = await reorderProperties({
                     contentTemplateId,
                     fromIndex,
                     toIndex,
+                    userId: user.id,
                 });
                 return res.status(200).send({
                     contentTemplate: contentTemplate.clean(),
@@ -181,7 +188,7 @@ export const contentTemplates = () => {
         }
     );
 
-    //* Delete contentTemplate Field */
+    //* Delete contentTemplate Property */
     api.delete(
         "/contentTemplates/:contentTemplateId/fields/:fieldId",
         async function (req: any, res: any) {
@@ -189,9 +196,10 @@ export const contentTemplates = () => {
             console.log("req.params", req.params);
             try {
                 const { user } = req;
-                const contentTemplate = await deleteContentTemplateField({
+                const contentTemplate = await deleteProperty({
                     contentTemplateId,
                     fieldId,
+                    userId: user.id,
                 });
                 return res.status(200).send({
                     contentTemplate: contentTemplate && contentTemplate.clean(),

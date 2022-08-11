@@ -1,7 +1,7 @@
-import { useDeleteContentTemplateField } from "@data/contentTemplate/hooks";
+import { useDeleteProperty } from "@data/contentTemplate/hooks";
 import { faTrash } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ContentTemplateField } from "@lib/contentTemplate/data/types";
+import { Property } from "@lib/contentTemplate/data/types";
 import { ActionIcon } from "@mantine/core";
 import { useModals } from "@mantine/modals";
 import { contentTemplateState } from "@state/contentTemplate";
@@ -10,17 +10,17 @@ import { useSnapshot } from "valtio";
 import { FieldCard } from "../field-card";
 
 interface FieldDeleteProps {
-    field: ContentTemplateField;
+    field: Property;
 }
 
 export const FieldDelete: FC<FieldDeleteProps> = ({ field }) => {
     const { contentTemplateId } = useSnapshot(contentTemplateState);
     const modals = useModals();
-    const { mutateAsync } = useDeleteContentTemplateField();
+    const { mutateAsync } = useDeleteProperty();
     const openDeleteModal = () =>
         modals.openConfirmModal({
             title: `Are you sure you want to delete?`,
-            id: "detailsModal",
+            //id: "detailsModal",
             closeOnClickOutside: false,
             closeOnCancel: true,
             size: "xl",

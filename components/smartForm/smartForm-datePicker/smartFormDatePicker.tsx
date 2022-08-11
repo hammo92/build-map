@@ -7,7 +7,10 @@ type SmartFormDatePickerProps = SmartFormInputBaseProps & DatePickerProps;
 
 export const SmartFormDatePicker = (props: SmartFormDatePickerProps) => {
     return (
-        <SmartFormDefaultController {...props} converter={(value) => dayjs(value).toDate()}>
+        <SmartFormDefaultController
+            {...props}
+            converter={(value) => value && dayjs(value).toDate()}
+        >
             <DatePicker />
         </SmartFormDefaultController>
     );

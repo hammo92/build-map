@@ -1,6 +1,7 @@
 import { SmartForm } from "@components/smartForm";
 import { ContentFieldDate } from "@lib/content/data/types";
-export const FieldsDate = ({ field }: { field: ContentFieldDate }) => {
+import { PropertyDate } from "@lib/contentTemplate/data/types";
+export const FieldsDate = ({ field }: { field: ContentFieldDate | PropertyDate }) => {
     switch (field.subtype) {
         case "dateTime":
             return <SmartForm.DateTime name={field.id} label={field.name} />;

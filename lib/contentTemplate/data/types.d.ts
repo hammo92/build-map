@@ -1,4 +1,3 @@
-import { FieldType } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
 import {
     SelectProps,
     TextInputProps,
@@ -8,10 +7,11 @@ import {
 } from "@mantine/core";
 import { Required } from "utility-types";
 
-export interface ContentTemplateFieldBase<T extends FieldType> {
-    id?: string;
+export interface PropertyBase<T extends FieldType> {
+    id: string;
     name: string;
     type: T;
+
     active?: boolean;
     required?: boolean;
     description?: string;
@@ -19,108 +19,89 @@ export interface ContentTemplateFieldBase<T extends FieldType> {
         editableBy?: "all" | "issuer" | "recipient";
         visibleTo?: "all" | "issuer" | "recipient";
     };
+    createdTime: string;
     createdBy: string;
     lastEditedTime: string;
     lastEditedBy: string;
 }
 
-export type ContentTemplateFieldCheckbox = ContentTemplateFieldBase<"checkbox"> & {
+export type PropertyCheckbox = PropertyBase<"checkbox"> & {
     defaultValue?: boolean;
 };
 
-export type ContentTemplateFieldComponent = ContentTemplateFieldBase<"component"> & {
+export type PropertyComponent = PropertyBase<"component"> & {
     defaultValue?: any;
 };
 
-export type ContentTemplateFieldDate = ContentTemplateFieldBase<"date"> & {
+export type PropertyDate = PropertyBase<"date"> & {
     subtype: "dateTime" | "date" | "time";
     defaultValue?: any;
 };
 
-export type ContentTemplateFieldEmail = ContentTemplateFieldBase<"email"> & {
+export type PropertyEmail = PropertyBase<"email"> & {
     defaultValue?: string;
 };
 
-export type ContentTemplateFieldImage = ContentTemplateFieldBase<"image"> & {
+export type PropertyImage = PropertyBase<"image"> & {
     subtype: "single" | "multiple";
     defaultValue?: any;
 };
 
-export type ContentTemplateFieldMultiSelect = ContentTemplateFieldBase<"multiSelect"> & {
-    data?: string[];
+export type PropertyMultiSelect = PropertyBase<"multiSelect"> & {
     defaultValue?: string[];
+    data?: string;
 };
 
-export type ContentTemplateFieldNumber = ContentTemplateFieldBase<"number"> & {
+export type PropertyNumber = PropertyBase<"number"> & {
     subtype: "integer" | "decimal" | "float";
     defaultValue?: number;
     min?: NumberInputProps["min"];
     max?: NumberInputProps["max"];
 };
 
-export type ContentTemplateFieldRichText = ContentTemplateFieldBase<"richText"> & {
+export type PropertyRichText = PropertyBase<"richText"> & {
     defaultValue?: any;
 };
 
-export type ContentTemplateFieldSelect = ContentTemplateFieldBase<"select"> & {
-    data?: string;
+export type PropertySelect = PropertyBase<"select"> & {
     defaultValue?: string;
+    data?: string;
 };
 
-export type ContentTemplateFieldText = ContentTemplateFieldBase<"text"> & {
+export type PropertyText = PropertyBase<"text"> & {
     subtype: "shortText" | "longText";
     defaultValue?: string;
 };
 
-export type ContentTemplateField =
-    | ContentTemplateFieldCheckbox
-    | ContentTemplateFieldComponent
-    | ContentTemplateFieldDate
-    | ContentTemplateFieldImage
-    | ContentTemplateFieldEmail
-    | ContentTemplateFieldMultiSelect
-    | ContentTemplateFieldNumber
-    | ContentTemplateFieldRichText
-    | ContentTemplateFieldSelect
-    | ContentTemplateFieldText;
+export type PropertyRelation = PropertyBase<"relation"> & {
+    defaultValue?: never;
 
-const isTemplateCheckboxField = (
-    field: Required<Partial<ContentTemplateField>, "type">
-): field is ContentTemplateFieldCheckbox => {
-    field.type === "checkbox";
+    // id of related template
+    relatedTo: string;
+
+    isReciprocal?: boolean;
+
+    // id of property on related template
+    reciprocalPropertyId?: string;
+
+    reciprocalPropertyName?: string;
 };
-const isTemplateComponentField = (
-    field: Required<Partial<ContentTemplateField>, "type">
-): field is ContentTemplateFieldComponent => {
-    field.type === "component";
-};
-const isEmailField = (
-    field: Required<Partial<ContentTemplateField>, "type">
-): field is ContentTemplateFieldEmail => {
-    field.type === "email";
-};
-const isTemplateImageField = (
-    field: Required<Partial<ContentTemplateField>, "type">
-): field is ContentTemplateFieldImage => {
-    field.type === "image";
-};
-const isTemplateMultiSelectField = (
-    field: Required<Partial<ContentTemplateField>, "type">
-): field is ContentTemplateFieldMultiSelect => {
-    field.type === "multiSelect";
-};
-const isTemplateNumberField = (
-    field: Required<Partial<ContentTemplateField>, "type">
-): field is ContentTemplateFieldNumber => {
-    field.type === "number";
-};
-const isTemplateTextField = (
-    field: Required<Partial<ContentTemplateField>, "type">
-): field is ContentTemplateFieldText => {
-    field.type === "text";
-};
-const isTemplateSelectField = (
-    field: Required<Partial<ContentTemplateField>, "type">
-): field is ContentTemplateFieldSelect => {
-    field.type === "select";
+
+export type Property =
+    | PropertyCheckbox
+    | PropertyComponent
+    | PropertyDate
+    | PropertyImage
+    | PropertyEmail
+    | PropertyMultiSelect
+    | PropertyNumber
+    | PropertyRichText
+    | PropertySelect
+    | PropertyText
+    | PropertyRelation;
+
+export const isRelationProperty = (
+    field: Required<Partial<Property>, "type">
+): field is PropertyRelation => {
+    field.type === "relation";
 };

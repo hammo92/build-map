@@ -1,9 +1,4 @@
-import {
-    ColorPicker,
-    ColorPickerProps,
-    InputWrapper,
-    InputWrapperProps,
-} from "@mantine/core";
+import { ColorPicker, ColorPickerProps, Input, InputWrapperProps } from "@mantine/core";
 import { forwardRef } from "react";
 import { SmartFormDefaultController } from "../smartForm-defaultController";
 import { SmartFormInputBaseProps } from "../types";
@@ -27,7 +22,7 @@ const WrappedColorPicker = forwardRef(
             ...rest
         } = props;
         return (
-            <InputWrapper
+            <Input.Wrapper
                 label={label}
                 error={error}
                 required={required}
@@ -41,7 +36,7 @@ const WrappedColorPicker = forwardRef(
                 sx={{ display: "flex", flexDirection: "column" }}
             >
                 <ColorPicker {...rest} />
-            </InputWrapper>
+            </Input.Wrapper>
         );
     }
 );

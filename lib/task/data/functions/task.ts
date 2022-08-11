@@ -1,6 +1,6 @@
 import { indexBy } from "serverless-cloud-data-utils";
+import { ulid } from "ulid";
 import { objArrToKeyIndexedMap } from "utils/arrayModify";
-import { v4 as uuidv4 } from "uuid";
 import { getTaskCollectionFields } from "..";
 import { ModelRequired } from "../../../../type-helpers";
 import {
@@ -52,7 +52,7 @@ export async function createTask(
 ) {
     const fields = await getTaskCollectionFields(createTaskProps.collectionId);
     const newTask = new Task({
-        id: uuidv4(),
+        id: ulid(),
         complete: false,
         createdDate: new Date().toISOString(),
         startDate: new Date().toISOString(),

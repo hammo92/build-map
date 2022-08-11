@@ -1,8 +1,6 @@
 import { FIELD_TYPES } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
-import { ContentTemplateField } from "@lib/contentTemplate/data/types";
-export const checkFieldValues = (
-    fieldProperties: Partial<ContentTemplateField>
-) => {
+import { Property } from "@lib/contentTemplate/data/types";
+export const checkFieldValues = (fieldProperties: Partial<Property>) => {
     if (!fieldProperties.type) {
         throw new Error("Type is required");
     }
@@ -22,9 +20,7 @@ export const checkFieldValues = (
     switch (fieldProperties.type) {
         case "select":
             if (!fieldProperties?.data || fieldProperties?.data.length < 1) {
-                throw new Error(
-                    "At least two options are required for a select field"
-                );
+                throw new Error("At least two options are required for a select field");
             }
         default:
             return true;

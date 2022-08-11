@@ -8,7 +8,7 @@ import {
     faText,
 } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ActionIcon, Box, Button, Center, Group, SegmentedControl } from "@mantine/core";
+import { ActionIcon, Box, Button, Center, Group, SegmentedControl, Stack } from "@mantine/core";
 import { imageEditorState } from "@state/imageEditor";
 import { useImmerAtom } from "jotai/immer";
 import { FC, useState } from "react";
@@ -84,7 +84,7 @@ export const ImageEditorInterface: FC<ImageEditorProps> = ({ children, onSave, f
                     });
                 }}
             />
-            <Group direction="column" grow sx={{ flex: "1" }} spacing={0}>
+            <Stack sx={{ flex: "1" }} spacing={0}>
                 <Group
                     position="right"
                     spacing={0}
@@ -123,7 +123,7 @@ export const ImageEditorInterface: FC<ImageEditorProps> = ({ children, onSave, f
                     </Box>
                 </Group>
                 <Center sx={(theme) => ({ background: theme.colors.dark[9] })}>{children}</Center>
-            </Group>
+            </Stack>
         </Group>
     );
 };

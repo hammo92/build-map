@@ -1,11 +1,7 @@
 import { useJoinFromInvite } from "@data/invitation/hooks";
-import {
-    faArrowRight,
-    faCheck,
-    faTimes,
-} from "@fortawesome/pro-regular-svg-icons";
+import { faArrowRight, faCheck, faTimes } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ActionIcon, Card, Group, LoadingOverlay, Text } from "@mantine/core";
+import { ActionIcon, Card, Group, LoadingOverlay, Stack, Text } from "@mantine/core";
 import React from "react";
 
 export const OrganisationInviteListItem = ({ invitation, org }) => {
@@ -20,9 +16,7 @@ export const OrganisationInviteListItem = ({ invitation, org }) => {
         <>
             <LoadingOverlay visible={isLoading} />
             <Card
-                onClick={() =>
-                    !invitationRedeemed && joinOrg(invitation.invitationId)
-                }
+                onClick={() => !invitationRedeemed && joinOrg(invitation.invitationId)}
                 shadow="sm"
                 padding="md"
                 sx={(theme) => ({
@@ -31,24 +25,15 @@ export const OrganisationInviteListItem = ({ invitation, org }) => {
                 })}
             >
                 <Group position="apart">
-                    <Group direction="column" spacing="xs">
+                    <Stack spacing="xs">
                         <Text transform="capitalize">{org.name}</Text>
-                        <Text
-                            size="sm"
-                            color={invitationRedeemed ? "blue" : "orange"}
-                        >
+                        <Text size="sm" color={invitationRedeemed ? "blue" : "orange"}>
                             {invitationRedeemed ? "Joined" : "Pending"}
                         </Text>
-                    </Group>
+                    </Stack>
                     <ActionIcon disabled={invitationRedeemed}>
                         <FontAwesomeIcon
-                            icon={
-                                invitationRedeemed
-                                    ? faCheck
-                                    : isError
-                                    ? faTimes
-                                    : faArrowRight
-                            }
+                            icon={invitationRedeemed ? faCheck : isError ? faTimes : faArrowRight}
                         />
                     </ActionIcon>
                 </Group>

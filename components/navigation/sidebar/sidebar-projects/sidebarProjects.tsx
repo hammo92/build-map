@@ -1,14 +1,14 @@
 import { NavigationList } from "@components/navigation/linkList";
 import { LinkListContentTemplates } from "@components/navigation/linkList/linkList-contentTemplates";
 import { faCompassDrafting, faHouse, faUser } from "@fortawesome/pro-regular-svg-icons";
-import { Group } from "@mantine/core";
+import { Stack } from "@mantine/core";
 import { organisationState } from "@state/organisation";
 import { useSnapshot } from "valtio";
 
 export const SidebarProjects = () => {
     const { activeOrganisation } = useSnapshot(organisationState);
     return (
-        <Group direction="column" spacing="xs" grow>
+        <Stack spacing="xs">
             <NavigationList
                 items={[
                     {
@@ -29,7 +29,9 @@ export const SidebarProjects = () => {
                     },
                 ]}
             />
-            {activeOrganisation.length > 1 && <LinkListContentTemplates organisationId={activeOrganisation} />}
-        </Group>
+            {activeOrganisation.length > 1 && (
+                <LinkListContentTemplates organisationId={activeOrganisation} />
+            )}
+        </Stack>
     );
 };

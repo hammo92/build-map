@@ -8,26 +8,35 @@ type Upload = {
     uploading: boolean;
 };
 
+type callback = (assetIds: string[]) => void;
 export interface UploadStateProps {
     uploads: Upload[];
     busy: boolean;
     errorMessage?: string;
-    uploadSingleFile: ({ file, index, path }: { file: File; index: number; path?: string }) => void;
-    upload: (path?: string) => void;
+    uploadSingleFile: ({
+        file,
+        index,
+        path,
+        onUpload,
+    }: {
+        file: File;
+        index: number;
+        path?: string;
+        onUpload?: callback;
+    }) => void;
+    upload: ({ path, onUpload }: { path?: string; onUpload?: callback }) => void;
     addUploads: (...files: File[]) => void;
     removeUploads: (...indices: number[]) => void;
     setUploads: (files: File[]) => void;
     clearUploads: () => void;
     uploaded: string[];
-    onUpload: (assetIds: string[]) => void;
 }
 
 export const UploadState = proxy<UploadStateProps>({
     uploads: [],
     busy: false,
     uploaded: [],
-    onUpload: ([]) => null,
-    uploadSingleFile: async ({ file, index, path }) => {
+    uploadSingleFile: async ({ file, index, path, onUpload }) => {
         UploadState.busy = true;
         UploadState.uploads[index].uploading = true;
         const { data } = await apiClient.post(
@@ -52,15 +61,17 @@ export const UploadState = proxy<UploadStateProps>({
 
         UploadState.uploads[index].uploading = false;
         UploadState.uploaded = [...UploadState.uploaded, id];
-        UploadState.onUpload(UploadState.uploaded);
+        console.log("onUpload", onUpload);
+        console.log("UploadState.uploaded", UploadState.uploaded);
+        onUpload && onUpload(UploadState.uploaded);
 
         UploadState.busy = UploadState.uploads.filter(({ uploading }) => uploading).length > 0;
     },
 
-    upload: async (path) => {
+    upload: async ({ path, onUpload }) => {
         UploadState.uploads.forEach(({ file, percentUploaded, uploading }, index) => {
             if (percentUploaded === 0 && !uploading) {
-                UploadState.uploadSingleFile({ file, index, path });
+                UploadState.uploadSingleFile({ file, index, path, onUpload });
             }
         });
     },

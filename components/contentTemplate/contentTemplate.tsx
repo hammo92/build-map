@@ -1,41 +1,88 @@
 import { useGetContentTemplate } from "@data/contentTemplate/hooks";
 import { ContentTemplate as ContentTemplateProps } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Container, Group } from "@mantine/core";
+import { Card, Container, Divider, Grid, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import { contentTemplateState } from "@state/contentTemplate";
+import dayjs from "dayjs";
 import Image from "next/image";
 import { CleanedCamel } from "type-helpers";
-import { Required } from "utility-types";
 import Illustration from "../../public/images/tokyo/2.0-04.svg";
 import { FieldCreate } from "./contentTemplate-field/field-create";
 import { FieldList } from "./contentTemplate-field/field-list";
 import { ContentTemplateHeader } from "./contentTemplate-header/contentTemplateHeader";
+import { ContentTemplateHistory } from "./contentTemplate-history";
+import { ContentTemplateTitleSelect } from "./contentTemplate-titleSelect/contentTemplateTitleSelect";
 
 const NoContentTemplates = () => (
     <Container p="md" fluid>
-        <Group direction="column" position="center" grow>
+        <Stack>
             <Container size="sm">
                 <Image src={Illustration} alt="select a form" />
             </Container>
-        </Group>
+        </Stack>
     </Container>
 );
 
 export const ContentTemplate = ({
     contentTemplate,
 }: {
-    contentTemplate: Required<CleanedCamel<ContentTemplateProps>, "id">;
+    contentTemplate: CleanedCamel<ContentTemplateProps>;
 }) => {
     contentTemplateState.contentTemplateId = contentTemplate.id;
     const { data } = useGetContentTemplate(contentTemplate.id, { contentTemplate });
-    return (
-        <Group direction="column" grow>
-            <>
-                <ContentTemplateHeader contentTemplate={data?.contentTemplate ?? contentTemplate} />
-                <FieldList contentTemplate={data?.contentTemplate ?? contentTemplate} />
-                <FieldCreate contentTemplate={data?.contentTemplate ?? contentTemplate} variant={"button"} />
-            </>
-        </Group>
-    );
+    if (data?.contentTemplate) {
+        return (
+            <Stack>
+                <>
+                    <ContentTemplateHeader contentTemplate={data?.contentTemplate} />
+                    <Grid>
+                        <Grid.Col span={9}>
+                            <FieldList contentTemplate={data?.contentTemplate} />
+                            <FieldCreate
+                                contentTemplate={data?.contentTemplate}
+                                variant={"button"}
+                            />
+                        </Grid.Col>
+                        <Grid.Col span={3}>
+                            <Card>
+                                <Card.Section
+                                    p="sm"
+                                    sx={(theme) => ({ background: theme.colors.dark[7] })}
+                                >
+                                    <Title order={4}>Info</Title>
+                                </Card.Section>
+                                <Card.Section p="sm">
+                                    <ContentTemplateTitleSelect
+                                        contentTemplate={data.contentTemplate}
+                                    />
+                                </Card.Section>
+                                <Divider />
+                                <Card.Section p="sm">
+                                    <SimpleGrid cols={2} spacing="sm">
+                                        <Text>Created at:</Text>
+                                        <Text>
+                                            {dayjs(data.contentTemplate.createdTime).format(
+                                                "D/MM/YY HH:mm:ss"
+                                            )}
+                                        </Text>
+                                        <Text>Last Edited:</Text>
+                                        <Text>
+                                            {dayjs(data.contentTemplate.lastEditedTime).format(
+                                                "D/MM/YY HH:mm:ss"
+                                            )}
+                                        </Text>
+                                    </SimpleGrid>
+                                </Card.Section>
+                                <Card.Section withBorder p="sm">
+                                    <ContentTemplateHistory contentTemplate={contentTemplate} />
+                                </Card.Section>
+                            </Card>
+                        </Grid.Col>
+                    </Grid>
+                </>
+            </Stack>
+        );
+    }
+    return null;
 };
 
 ContentTemplate.NullState = NoContentTemplates;

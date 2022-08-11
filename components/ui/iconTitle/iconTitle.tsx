@@ -1,9 +1,7 @@
-import {
-    FontAwesomeIcon,
-    FontAwesomeIconProps,
-} from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon, FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
 import {
     Group,
+    Stack,
     Text,
     TextProps,
     ThemeIcon,
@@ -19,7 +17,7 @@ interface IconTitleProps {
     subtitle?: string;
     titleProps?: TitleProps;
     iconProps?: ThemeIconProps;
-    textProps?: TextProps<"div">;
+    textProps?: TextProps;
 }
 
 export const IconTitle: FC<IconTitleProps> = ({
@@ -35,12 +33,11 @@ export const IconTitle: FC<IconTitleProps> = ({
             <ThemeIcon size={subtitle ? "xl" : "md"} {...iconProps}>
                 <FontAwesomeIcon icon={icon} />
             </ThemeIcon>
-            <Group
-                direction="column"
+            <Stack
                 sx={{ textTransform: "capitalize" }}
                 spacing={0}
+                justify="flex-start"
                 align="flex-start"
-                position="center"
             >
                 <Title order={4} {...titleProps}>
                     {title}
@@ -50,7 +47,7 @@ export const IconTitle: FC<IconTitleProps> = ({
                         {subtitle}
                     </Text>
                 )}
-            </Group>
+            </Stack>
         </Group>
     );
 };

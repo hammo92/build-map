@@ -1,5 +1,5 @@
 import { FieldType } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
-import { Group } from "@mantine/core";
+import { Stack } from "@mantine/core";
 import { FC } from "react";
 import { AdvancedFieldsCheckbox } from "./advancedFields-checkbox";
 import { AdvancedFieldsCommon } from "./advancedFields-common";
@@ -25,10 +25,10 @@ const FieldTypeAdvancedFields = ({ type }: { type: FieldType }) => {
 export const PropertiesAdvancedFields: FC<{ type: FieldType }> = ({ type }) => {
     if (type) {
         return (
-            <Group direction="column" grow spacing="sm">
+            <Stack spacing="sm">
                 <AdvancedFieldsCommon />
                 <FieldTypeAdvancedFields type={type} />
-            </Group>
+            </Stack>
         );
     }
     return null;

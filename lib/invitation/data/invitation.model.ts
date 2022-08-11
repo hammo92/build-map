@@ -45,7 +45,10 @@ export class Invitation extends Model<Invitation> {
     email: string;
     organisationId: string;
     projectId?: string;
-    date: string;
+    createdTime: string;
+    createdBy: string;
+    lastEditedTime: string;
+    lastEditedBy: string;
     redeemed: boolean;
     creatorId: string;
     keys() {

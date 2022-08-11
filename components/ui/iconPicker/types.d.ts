@@ -24,5 +24,4 @@ export interface IconPickerIcon {
 export type BaseIconPickerStylesNames = InputStylesNames | InputWrapperStylesNames;
 
 export type BaseIconPickerProps = InputWrapperBaseProps &
-    InputBaseProps &
     Omit<ComponentPropsWithoutRef<"input">, "value" | "onChange" | "size" | "defaultValue">;

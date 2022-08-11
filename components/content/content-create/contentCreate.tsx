@@ -1,38 +1,37 @@
+import { SmartForm } from "@components/smartForm";
 import { useCreateContent } from "@data/content/hooks";
+import { Content } from "@lib/content/data/content.model";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Box, Button, Group } from "@mantine/core";
-import { useForm } from "@mantine/hooks";
 import { useModals } from "@mantine/modals";
 import { contentTemplateState } from "@state/contentTemplate";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { CleanedCamel } from "type-helpers";
+import { ContentFields } from "../content-fields";
 
 const ContentCreateForm: FC<{
     contentTemplate: CleanedCamel<ContentTemplate>;
     projectId: string;
 }> = ({ contentTemplate, projectId }) => {
     const modals = useModals();
-    const form = useForm({
-        initialValues: {
-            name: "",
-        },
-    });
+
     const { mutateAsync, isLoading } = useCreateContent();
+    const onSubmit = async (values: any) => {
+        console.log("values", values);
+        /*const { newContent } = await mutateAsync({
+            contentTemplateId: contentTemplate.id,
+            projectId,
+        });
+        if (newContent) {
+            //set new contentTemplate as active in state
+            contentTemplateState.contentTemplateId = newContent.id;
+            modals.closeModal("contentTemplateCreateModal");
+        }*/
+    };
     return (
         <Box>
-            <form
-                onSubmit={form.onSubmit(async ({ name }) => {
-                    const { newContent } = await mutateAsync({
-                        contentTemplateId: contentTemplate.id,
-                        projectId,
-                    });
-                    if (newContent) {
-                        //set new contentTemplate as active in state
-                        contentTemplateState.contentTemplateId = newContent.id;
-                        modals.closeModal("contentTemplateCreateModal");
-                    }
-                })}
-            >
+            <SmartForm onSubmit={onSubmit} formName="contentCreate">
+                <ContentFields fields={contentTemplate.fields} />
                 <Group position="right" mt="md" grow>
                     <Button
                         disabled={isLoading}
@@ -45,7 +44,7 @@ const ContentCreateForm: FC<{
                         Submit
                     </Button>
                 </Group>
-            </form>
+            </SmartForm>
         </Box>
     );
 };
@@ -53,8 +52,9 @@ const ContentCreateForm: FC<{
 export const ContentCreate: FC<{
     contentTemplate: CleanedCamel<ContentTemplate>;
     projectId: string;
-}> = ({ contentTemplate, projectId }) => {
-    const modals = useModals();
+    onCreate?: (content: CleanedCamel<Content>) => void;
+}> = ({ contentTemplate, projectId, onCreate }) => {
+    /*const modals = useModals();
 
     const openCreateModal = () =>
         modals.openModal({
@@ -63,9 +63,25 @@ export const ContentCreate: FC<{
             closeOnClickOutside: false,
             size: "xl",
             children: <ContentCreateForm contentTemplate={contentTemplate} projectId={projectId} />,
+        });*/
+    const { mutateAsync, isLoading } = useCreateContent();
+    const onClick = async () => {
+        const { newContent } = await mutateAsync({
+            contentTemplateId: contentTemplate.id,
+            projectId,
         });
+        if (newContent) {
+            onCreate && onCreate(newContent);
+        }
+    };
     return (
-        <Button onClick={() => openCreateModal()} variant={"filled"} color="blue">
+        <Button
+            onClick={onClick}
+            variant={"filled"}
+            color="blue"
+            loading={isLoading}
+            disabled={isLoading}
+        >
             {`Add ${contentTemplate.name}`}
         </Button>
     );

@@ -4,6 +4,9 @@ export const useStyles = createStyles((theme) => ({
     wrapper: {
         position: "relative",
     },
+    card: {
+        background: theme.colors.dark[7],
+    },
     checkbox: {
         position: "absolute",
         left: "5px",

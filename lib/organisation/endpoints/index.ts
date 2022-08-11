@@ -1,6 +1,6 @@
 import { api, params } from "@serverless/cloud";
 import {
-    createOrganisationtUser,
+    createOrganisationUser,
     createOrganisation,
     deleteOrganisationById,
     getOrganisationById,
@@ -33,145 +33,119 @@ export const organisations = () => {
     });
 
     //* Get organsation by id */
-    api.get(
-        `/organisations/:organisationId`,
-        async function (req: any, res: any) {
-            try {
-                const organisationId = req.params.organisationId;
-                const organisation = await getOrganisationById(organisationId);
-                return res.status(200).send({
-                    organisation: organisation && organisation.clean(),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.get(`/organisations/:organisationId`, async function (req: any, res: any) {
+        try {
+            const organisationId = req.params.organisationId;
+            const organisation = await getOrganisationById(organisationId);
+            return res.status(200).send({
+                organisation: organisation && organisation.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Update Organisation */
-    api.patch(
-        `/organisations/:organisationId`,
-        async function (req: any, res: any) {
-            try {
-                const organisationId = req.params.organisationId;
-                const organisation = await updateOrganisation({
-                    organisationId,
-                    name: req.body.name,
-                });
-                return res.status(200).send({
-                    organisation: organisation && organisation.clean(),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.patch(`/organisations/:organisationId`, async function (req: any, res: any) {
+        try {
+            const organisationId = req.params.organisationId;
+            const organisation = await updateOrganisation({
+                organisationId,
+                name: req.body.name,
+            });
+            return res.status(200).send({
+                organisation: organisation && organisation.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Delete organsation by id */
-    api.delete(
-        `/organisations/:organisationId`,
-        async function (req: any, res: any) {
-            try {
-                const organisationId = req.params.organisationId;
-                const organisation = await deleteOrganisationById(
-                    organisationId
-                );
-                return res.status(200).send({
-                    organisation: organisation && organisation.clean(),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.delete(`/organisations/:organisationId`, async function (req: any, res: any) {
+        try {
+            const organisationId = req.params.organisationId;
+            const organisation = await deleteOrganisationById(organisationId);
+            return res.status(200).send({
+                organisation: organisation && organisation.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Create organisation user */
-    api.post(
-        "/organisations/:organisationId/users",
-        async function (req: any, res: any) {
-            try {
-                const organisationUser = await createOrganisationtUser({
-                    organisationId: req.params.organisationId,
-                    userId: req.body.userId,
-                });
-                return res.status(200).send({
-                    organisationUser:
-                        organisationUser && organisationUser.clean(),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.post("/organisations/:organisationId/users", async function (req: any, res: any) {
+        try {
+            const organisationUser = await createOrganisationUser({
+                organisationId: req.params.organisationId,
+                userId: req.body.userId,
+            });
+            return res.status(200).send({
+                organisationUser: organisationUser && organisationUser.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Delete organisation user */
-    api.delete(
-        "/organisations/:organisationId/users",
-        async function (req: any, res: any) {
-            try {
-                const user = await removeUserFromOrganisation({
-                    organisationId: req.params.organisationId,
-                    userId: req.body.userId,
-                });
-                return res.status(200).send({
-                    removed: user && user.clean(),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+    api.delete("/organisations/:organisationId/users", async function (req: any, res: any) {
+        try {
+            const user = await removeUserFromOrganisation({
+                organisationId: req.params.organisationId,
+                userId: req.body.userId,
+            });
+            return res.status(200).send({
+                removed: user && user.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
     //* Get all users for an organisation */
-    api.get(
-        `/organisations/:organisationId/users`,
-        async function (req: any, res: any) {
-            try {
-                const organisationId = req.params.organisationId;
-                const users = await getOrganisationUsers(organisationId);
+    api.get(`/organisations/:organisationId/users`, async function (req: any, res: any) {
+        try {
+            const organisationId = req.params.organisationId;
+            const users = await getOrganisationUsers(organisationId);
 
-                return res.status(200).send({
-                    users:
-                        users.length &&
-                        users.map((user) =>
-                            user!.clean(["salt", "hashedPassword"])
-                        ),
-                });
-            } catch (error: any) {
-                console.log(error);
-                return res.status(403).send({
-                    message: error.message,
-                });
-            }
+            return res.status(200).send({
+                users: users.length && users.map((user) => user!.clean(["salt", "hashedPassword"])),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
         }
-    );
+    });
 
-    //* Get all organistaionUsers for an organisation */
+    //* Get all organisationUsers for an organisation */
     api.get(
-        `/organisations/:organisationId/organistaionUsers`,
+        `/organisations/:organisationId/organisationUsers`,
         async function (req: any, res: any) {
             try {
                 const organisationId = req.params.organisationId;
-                const organisationUsers =
-                    await getOrganisationOrganisationUsers(organisationId);
+                const organisationUsers = await getOrganisationOrganisationUsers(organisationId);
                 return res.status(200).send({
-                    organisationUsers: organisationUsers.map(
-                        (organisationUser) => organisationUser.clean()
+                    organisationUsers: organisationUsers.map((organisationUser) =>
+                        organisationUser.clean()
                     ),
                 });
             } catch (error: any) {
@@ -189,9 +163,7 @@ export const organisations = () => {
             const { user } = req;
             const organisations = await getOrganisationsByCreator(user.id);
             return res.status(200).send({
-                organisations: organisations.map((organisation) =>
-                    organisation.clean()
-                ),
+                organisations: organisations.map((organisation) => organisation.clean()),
             });
         } catch (error: any) {
             console.log(error);

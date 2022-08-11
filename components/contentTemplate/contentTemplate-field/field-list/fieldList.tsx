@@ -1,6 +1,6 @@
-import { useReorderContentTemplateFields } from "@data/contentTemplate/hooks";
+import { useReorderProperties } from "@data/contentTemplate/hooks";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Box, Group, Skeleton } from "@mantine/core";
+import { Box, Group, Skeleton, Stack } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { FC, useEffect } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -8,16 +8,18 @@ import { CleanedCamel } from "type-helpers";
 import { FieldCard } from "../field-card";
 
 const FieldListSkeleton = () => (
-    <Group direction="column" spacing="sm">
+    <Stack spacing="sm">
         <Skeleton height={80} />
         <Skeleton height={80} />
         <Skeleton height={80} />
-    </Group>
+    </Stack>
 );
 
-export const FieldList: FC<{ contentTemplate: CleanedCamel<ContentTemplate> }> = ({ contentTemplate }) => {
+export const FieldList: FC<{ contentTemplate: CleanedCamel<ContentTemplate> }> = ({
+    contentTemplate,
+}) => {
     const [state, { setState, reorder }] = useListState(contentTemplate.fields);
-    const { mutateAsync, error } = useReorderContentTemplateFields();
+    const { mutateAsync, error } = useReorderProperties();
 
     useEffect(() => {
         setState(contentTemplate.fields ?? []);
@@ -27,7 +29,12 @@ export const FieldList: FC<{ contentTemplate: CleanedCamel<ContentTemplate> }> =
         state.map((field, index) => (
             <Draggable key={field.name} index={index} draggableId={field.name}>
                 {(provided, snapshot) => (
-                    <Box {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef} mb="sm">
+                    <Box
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        ref={provided.innerRef}
+                        mb="sm"
+                    >
                         <FieldCard index={index} field={field} key={`field-${index}`} />
                     </Box>
                 )}

@@ -6,21 +6,15 @@ interface ProjectCreateButtonProps {
     organisationId: string;
 }
 
-export const ProjectCreateButton: FC<ProjectCreateButtonProps> = ({
-    organisationId,
-}) => {
+export const ProjectCreateButton: FC<ProjectCreateButtonProps> = ({ organisationId }) => {
     const [open, setOpen] = useState(false);
     return (
         <>
             <Button onClick={() => setOpen(true)}>Add Project</Button>
-            <Modal
-                opened={open}
-                onClose={() => setOpen(false)}
-                title="Create Project"
-            >
+            <Modal opened={open} onClose={() => setOpen(false)} title="Create Project">
                 <ProjectCreateForm
                     organisationId={organisationId}
-                    onSuccess={() => {
+                    onCreate={() => {
                         setOpen(false);
                     }}
                 />

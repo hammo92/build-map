@@ -1,4 +1,4 @@
-import { TextInput, TextInputProps } from "@mantine/core";
+import { createStyles, Text, TextInput, TextInputProps, TextProps } from "@mantine/core";
 import { SmartFormDefaultController } from "../smartForm-defaultController";
 import { SmartFormInputBaseProps } from "../types";
 

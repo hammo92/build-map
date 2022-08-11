@@ -1,15 +1,18 @@
 import { useDeleteContentTemplate } from "@data/contentTemplate/hooks";
 import { faTrash } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { ActionIcon, Paper } from "@mantine/core";
 import { useModals } from "@mantine/modals";
 import { contentTemplateState } from "@state/contentTemplate";
-import React from "react";
-import { useSnapshot } from "valtio";
+import { CleanedCamel } from "type-helpers";
 import { ContentTemplateTitle } from "../contentTemplate-title";
 
-export const ContentTemplateDelete = () => {
-    const { contentTemplateId } = useSnapshot(contentTemplateState);
+export const ContentTemplateDelete = ({
+    contentTemplate,
+}: {
+    contentTemplate: CleanedCamel<ContentTemplate>;
+}) => {
     const modals = useModals();
     const { mutateAsync } = useDeleteContentTemplate();
     const openDeleteModal = () =>
@@ -23,7 +26,7 @@ export const ContentTemplateDelete = () => {
             confirmProps: { color: "red" },
             labels: { confirm: "Delete", cancel: "Cancel" },
             onConfirm: async () => {
-                await mutateAsync(contentTemplateId);
+                await mutateAsync(contentTemplate.id);
                 contentTemplateState.contentTemplateId = "";
                 modals.closeAll();
             },

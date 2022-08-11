@@ -5,16 +5,17 @@ import {
     Button,
     extractSystemStyles,
     Group,
+    Input,
     InputBaseProps,
-    InputWrapper,
     InputWrapperBaseProps,
     Modal,
     Paper,
+    Stack,
     Text,
 } from "@mantine/core";
 import { Dropzone, DropzoneProps, IMAGE_MIME_TYPE } from "@mantine/dropzone";
-import { useListState, useUncontrolled, useUuid } from "@mantine/hooks";
-import React, { ComponentPropsWithoutRef, forwardRef, useState, useEffect } from "react";
+import { useId, useListState, useUncontrolled } from "@mantine/hooks";
+import React, { ComponentPropsWithoutRef, forwardRef, useEffect, useState } from "react";
 import { megabytesToBytes } from "utils/unitConversion";
 import { FilePreview as Preview } from "../filePreview";
 import ImageEditor from "../imageEditor";
@@ -111,15 +112,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = forwardRef(
             defaultValue,
             finalValue: [],
             onChange: onChange!,
-            rule: (val) => typeof val === "object",
         });
         useEffect(() => {
             handleChange(droppedFiles);
         }, [droppedFiles]);
 
-        const uuid = useUuid(id);
+        const uuid = useId(id);
         return (
-            <InputWrapper
+            <Input.Wrapper
                 required={required}
                 id={uuid}
                 label={label}
@@ -149,7 +149,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = forwardRef(
                     >
                         {(status) => (
                             <div style={{ pointerEvents: "none" }}>
-                                <Group position="center" direction="column" grow spacing="sm">
+                                <Stack align="center" spacing="sm">
                                     <ImageUploadIcon status={status} />
 
                                     <Text size="xl" inline align="center">
@@ -163,7 +163,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = forwardRef(
                                             ? `Add as many files as you like, each file should not exceed ${maxSize}mb`
                                             : `Add a file, file should not exceed ${maxSize}mb`}
                                     </Text>
-                                </Group>
+                                </Stack>
                             </div>
                         )}
                     </Dropzone>
@@ -192,7 +192,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = forwardRef(
                         </>
                     ) : null}
                 </div>
-            </InputWrapper>
+            </Input.Wrapper>
         );
     }
 );

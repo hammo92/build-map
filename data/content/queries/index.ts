@@ -1,4 +1,4 @@
-import { Content } from "@lib/content/data/content.model";
+import { Content, ContentStatus } from "@lib/content/data/content.model";
 import { ContentField } from "@lib/content/data/types";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import camelcaseKeys from "camelcase-keys";
@@ -30,7 +30,15 @@ export async function getContent(contentId: string) {
     return camelcaseKeys(data, { deep: true });
 }
 
-export async function getProjectContentOfType({
+export async function deleteContent(contentId: string) {
+    console.log("contentId", contentId);
+    const { data } = await apiClient.delete<{
+        content: CleanedSnake<Content>;
+    }>(`/content/${contentId}`);
+    return camelcaseKeys(data, { deep: true });
+}
+
+export async function getContentOfTemplate({
     contentTemplateId,
     projectId,
 }: {
@@ -46,17 +54,57 @@ export async function getProjectContentOfType({
     };
 }
 
-export async function updateContentFields({
+export async function updateContentStatus({
     contentId,
-    fields,
+    status,
 }: {
     contentId: string;
-    fields: ContentField[];
+    status: ContentStatus;
+}) {
+    const { data } = await apiClient.patch<{
+        Content: CleanedSnake<Content>;
+    }>(`/content/${contentId}/status`, {
+        status,
+    });
+    return camelcaseKeys(data, { deep: true });
+}
+
+export async function updateContentValues({
+    contentId,
+    values,
+}: {
+    contentId: string;
+    values: { [fieldId: string]: ContentField["value"] };
+}) {
+    const { data } = await apiClient.patch<{
+        Content: CleanedSnake<Content>;
+    }>(`/content/${contentId}/values`, {
+        values,
+    });
+    return camelcaseKeys(data, { deep: true });
+}
+
+export async function updateContentFields({
+    contentId,
+    updates,
+    deletions,
+}: {
+    contentId: string;
+    updates?: ContentField[];
+    deletions?: ContentField[];
 }) {
     const { data } = await apiClient.patch<{
         Content: CleanedSnake<Content>;
     }>(`/content/${contentId}/fields`, {
-        fields,
+        updates,
+        deletions,
     });
+    return camelcaseKeys(data, { deep: true });
+}
+
+export async function updateContentFromTemplate({ contentId }: { contentId: string }) {
+    const { data } = await apiClient.patch<{
+        Content: CleanedSnake<Content>;
+    }>(`/content/${contentId}/patchFromTemplate`);
     return camelcaseKeys(data, { deep: true });
 }

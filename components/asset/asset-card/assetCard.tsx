@@ -1,12 +1,23 @@
+import { useGetAsset } from "@data/asset/hooks";
 import { Asset } from "@lib/asset/data/asset.model";
-import { Badge, Box, Card, Checkbox, Group, MantineSize, Text } from "@mantine/core";
+import {
+    Badge,
+    Box,
+    Card,
+    Checkbox,
+    Group,
+    MantineSize,
+    Skeleton,
+    Stack,
+    Text,
+} from "@mantine/core";
 import { CleanedCamel } from "type-helpers";
 import { mimeCategory } from "utils/asset";
 import { AssetPreview } from "../asset-preview";
 import { useStyles } from "./styles";
 
 interface AssetCardPropsBase {
-    asset: CleanedCamel<Asset>;
+    assetId: string;
     size?: MantineSize;
 }
 
@@ -41,30 +52,47 @@ const previewHeight = (size: MantineSize | undefined) => {
     }
 };
 
-export const AssetCard = ({ asset, size, checked = false, checkable, onCheck }: AssetCardProps) => {
+const AssetDetails = ({ filename, ext }: Partial<CleanedCamel<Asset>>) => {
+    return (
+        <Group position="apart" align="flex-start" noWrap>
+            <Stack spacing={0}>
+                <Text size="md" lineClamp={1}>
+                    <Skeleton visible={!filename}>{filename ?? "file.ext"}</Skeleton>
+                </Text>
+                <Text color="dimmed" size="sm" sx={{ textTransform: "uppercase" }}>
+                    <Skeleton visible={!ext}>{ext ?? "ext"}</Skeleton>
+                </Text>
+            </Stack>
+            <Badge my="xs" sx={{ flexShrink: 0 }}>
+                {mimeCategory(ext)}
+            </Badge>
+        </Group>
+    );
+};
+
+export const AssetCard = ({
+    assetId,
+    size,
+    checked = false,
+    checkable,
+    onCheck,
+}: AssetCardProps) => {
     const { classes } = useStyles();
+    const { data } = useGetAsset({ assetId });
     return (
         <div className={classes.wrapper}>
-            <Card>
+            <Card className={classes.card}>
                 <Card.Section>
                     <Box sx={{ position: "relative" }}>
-                        <AssetPreview asset={asset} height={previewHeight(size)} />
+                        <AssetPreview
+                            assetId={assetId}
+                            height={previewHeight(size)}
+                            ext={data?.asset?.ext}
+                        />
                     </Box>
                 </Card.Section>
                 <Card.Section p="sm">
-                    <Group position="apart" align="flex-start" noWrap>
-                        <Group direction="column" spacing={0}>
-                            <Text size="md" lineClamp={1}>
-                                {asset.filename}
-                            </Text>
-                            <Text color="dimmed" size="sm" sx={{ textTransform: "uppercase" }}>
-                                {asset.ext}
-                            </Text>
-                        </Group>
-                        <Badge my="xs" sx={{ flexShrink: 0 }}>
-                            {mimeCategory(asset.ext)}
-                        </Badge>
-                    </Group>
+                    <AssetDetails {...data?.asset} />
                 </Card.Section>
             </Card>
             {checkable && (

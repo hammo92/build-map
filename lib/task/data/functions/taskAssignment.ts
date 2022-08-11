@@ -1,11 +1,7 @@
 import { indexBy } from "serverless-cloud-data-utils";
+import { ulid } from "ulid";
 import { ModelRequired } from "../../../../type-helpers";
-import { v4 as uuidv4 } from "uuid";
-import {
-    AssignmentForTask,
-    TaskAssignment,
-    ActiveAssignment,
-} from "../../data/models";
+import { AssignmentForTask, TaskAssignment, ActiveAssignment } from "../../data/models";
 
 //* Get ActiveAssignment */
 export async function getActiveAssignment(taskId: string) {
@@ -17,17 +13,12 @@ export async function getActiveAssignment(taskId: string) {
 
 //* Get All TaskAssignments */
 export async function getTaskAssigments(taskId: string) {
-    const taskAssignments = await indexBy(AssignmentForTask(taskId)).get(
-        TaskAssignment
-    );
+    const taskAssignments = await indexBy(AssignmentForTask(taskId)).get(TaskAssignment);
     return taskAssignments;
 }
 
 export async function assignTask(
-    assignTaskProps: ModelRequired<
-        TaskAssignment,
-        "assigneeId" | "assignerId" | "taskId"
-    >
+    assignTaskProps: ModelRequired<TaskAssignment, "assigneeId" | "assignerId" | "taskId">
 ) {
     if (!assignTaskProps.assignerId || !assignTaskProps.assigneeId) {
         throw Error("assigner and assignee must be provided");
@@ -52,7 +43,7 @@ export async function assignTask(
     }
 
     const newTaskAssignment = new TaskAssignment({
-        id: uuidv4(),
+        id: ulid(),
         date: new Date().toISOString(),
         active: true,
         ...assignTaskProps,
@@ -79,8 +70,6 @@ export async function setAllTaskAssignmentsInactive(taskId: string) {
 //* Delete task assignments */
 export async function deleteTaskAssignments(taskId: string) {
     const taskAssignments = await getTaskAssigments(taskId);
-    await Promise.all(
-        taskAssignments.map((taskAssignment) => taskAssignment.delete())
-    );
+    await Promise.all(taskAssignments.map((taskAssignment) => taskAssignment.delete()));
     return taskAssignments;
 }

@@ -8,17 +8,23 @@ import { ContentTemplateIcon } from "../contentTemplate-icon";
 import { ContentTemplateStatus } from "../contentTemplate-status";
 import { ContentTemplateTitle } from "../contentTemplate-title";
 
-export const ContentTemplateHeader: FC<{ contentTemplate: CleanedCamel<ContentTemplate> }> = ({ contentTemplate }) => {
+export const ContentTemplateHeader: FC<{ contentTemplate: CleanedCamel<ContentTemplate> }> = ({
+    contentTemplate,
+}) => {
     return (
         <Group position="apart" noWrap>
             <Group noWrap>
-                <ContentTemplateIcon />
-                <ContentTemplateTitle editable />
+                <ContentTemplateIcon
+                    key={contentTemplate.id}
+                    editable
+                    contentTemplate={contentTemplate}
+                />
+                <ContentTemplateTitle editable contentTemplate={contentTemplate} />
             </Group>
 
-            <Group noWrap sx={{ flexShrink: 0 }}>
-                <ContentTemplateStatus />
-                <ContentTemplateDelete />
+            <Group noWrap sx={{ flexShrink: 0 }} spacing="sm">
+                <ContentTemplateStatus contentTemplate={contentTemplate} />
+                <ContentTemplateDelete contentTemplate={contentTemplate} />
                 <FieldCreate variant="icon" contentTemplate={contentTemplate} />
             </Group>
         </Group>

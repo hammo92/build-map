@@ -5,12 +5,13 @@ import { AssetIcon } from "../asset-icon";
 import { AssetImage } from "../asset-image";
 
 interface AssetPreview {
-    asset: CleanedCamel<Asset>;
+    assetId: string;
     height?: number;
+    ext?: string;
 }
 
-export const AssetPreview = ({ asset, height }: AssetPreview) => {
-    const category = mimeCategory(asset.ext);
-    if (category === "image") return <AssetImage asset={asset} height={height} />;
+export const AssetPreview = ({ assetId, height, ext }: AssetPreview) => {
+    const category = ext ? mimeCategory(ext) : "file";
+    if (category === "image") return <AssetImage assetId={assetId} height={height} />;
     return <AssetIcon category={category} height={height} />;
 };

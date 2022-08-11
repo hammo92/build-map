@@ -1,74 +1,63 @@
 import { Asset } from "../../asset/data/asset.model";
 import {
-    ContentTemplateFieldCheckbox,
-    ContentTemplateFieldComponent,
-    ContentTemplateFieldDate,
-    ContentTemplateFieldEmail,
-    ContentTemplateFieldImage,
-    ContentTemplateFieldMultiSelect,
-    ContentTemplateFieldNumber,
-    ContentTemplateFieldRichText,
-    ContentTemplateFieldSelect,
-    ContentTemplateFieldText,
+    PropertyCheckbox,
+    PropertyComponent,
+    PropertyDate,
+    PropertyEmail,
+    PropertyImage,
+    PropertyMultiSelect,
+    PropertyNumber,
+    PropertyRelation,
+    PropertyRichText,
+    PropertySelect,
+    PropertyText,
 } from "@lib/contentTemplate/data/types";
 import { SelectProps, TextInputProps } from "@mantine/core";
 import { RichTextEditorProps } from "@mantine/rte";
 import { CleanedCamel } from "type-helpers";
 
-export interface ContentFieldCheckbox extends ContentTemplateFieldCheckbox {
+export interface FieldBase {
     id: string;
     templateFieldId: string;
+    category: "template" | "additional";
+}
+
+export interface ContentFieldCheckbox extends PropertyCheckbox, FieldBase {
     value?: boolean;
 }
-export interface ContentFieldComponent extends ContentTemplateFieldComponent {
-    id: string;
-    templateFieldId: string;
+export interface ContentFieldComponent extends PropertyComponent, FieldBase {
     value?: any;
 }
-export interface ContentFieldDate extends ContentTemplateFieldDate {
-    id: string;
-    templateFieldId: string;
+export interface ContentFieldDate extends PropertyDate, FieldBase {
     value?: any;
 }
 
-export interface ContentFieldEmail extends ContentTemplateFieldEmail {
-    id: string;
-    templateFieldId: string;
+export interface ContentFieldEmail extends PropertyEmail, FieldBase {
     value?: string;
 }
-export interface ContentFieldImage extends ContentTemplateFieldImage {
-    id: string;
-    templateFieldId: string;
+export interface ContentFieldImage extends PropertyImage, FieldBase {
     value?: string[];
 }
-export interface ContentFieldMultiSelect extends ContentTemplateFieldMultiSelect {
-    id: string;
-    templateFieldId: string;
+export interface ContentFieldMultiSelect extends PropertyMultiSelect, FieldBase {
     value?: string[];
-    data: string;
 }
-export interface ContentFieldNumber extends ContentTemplateFieldNumber {
-    id: string;
-    templateFieldId: string;
+export interface ContentFieldNumber extends PropertyNumber, FieldBase {
     value?: number;
 }
-export interface ContentFieldRichText extends ContentTemplateFieldRichText {
-    id: string;
-    templateFieldId: string;
+export interface ContentFieldRichText extends PropertyRichText, FieldBase {
     value?: string;
 }
 
-export interface ContentFieldSelect extends ContentTemplateFieldSelect {
-    id: string;
-    templateFieldId: string;
+export interface ContentFieldSelect extends PropertySelect, FieldBase {
     value?: string;
-    data: string;
 }
 
-export interface ContentFieldText extends ContentTemplateFieldText {
-    id: string;
-    templateFieldId: string;
+export interface ContentFieldText extends PropertyText, FieldBase {
     value?: string;
+}
+
+export interface ContentFieldRelation extends PropertyRelation, FieldBase {
+    value?: string[];
 }
 
 type ContentField =
@@ -81,45 +70,46 @@ type ContentField =
     | ContentFieldNumber
     | ContentFieldRichText
     | ContentFieldText
-    | ContentFieldSelect;
+    | ContentFieldSelect
+    | ContentFieldRelation;
 
 /*type ContentFieldBase = {
     id: string;
     templateFieldId: string;
 };
 
-export type ContentFieldCheckbox = ContentTemplateFieldCheckbox& ContentFieldBase & {
+export type ContentFieldCheckbox = PropertyCheckbox& ContentFieldBase & {
     value?: boolean;
 }
-export type ContentFieldComponent = ContentTemplateFieldComponent& ContentFieldBase & {
+export type ContentFieldComponent = PropertyComponent& ContentFieldBase & {
     value?: any;
 }
-export type ContentFieldDate = ContentTemplateFieldDate& ContentFieldBase & {
+export type ContentFieldDate = PropertyDate& ContentFieldBase & {
     value?: any;
 }
 
-export type ContentFieldEmail = ContentTemplateFieldEmail& ContentFieldBase & {
+export type ContentFieldEmail = PropertyEmail& ContentFieldBase & {
     value?: string;
 }
-export type ContentFieldImage = ContentTemplateFieldImage& ContentFieldBase & {
+export type ContentFieldImage = PropertyImage& ContentFieldBase & {
     value?: any;
 }
-export type ContentFieldMultiSelect = ContentTemplateFieldMultiSelect& ContentFieldBase & {
+export type ContentFieldMultiSelect = PropertyMultiSelect& ContentFieldBase & {
     value?: string[];
     data: string;
 }
-export type ContentFieldNumber = ContentTemplateFieldNumber& ContentFieldBase & {
+export type ContentFieldNumber = PropertyNumber& ContentFieldBase & {
     value?: number;
 }
-export type ContentFieldRichText = ContentTemplateFieldRichText& ContentFieldBase & {
+export type ContentFieldRichText = PropertyRichText& ContentFieldBase & {
     value?: string;
 }
 
-export type ContentFieldSelect = ContentTemplateFieldSelect& ContentFieldBase & {
+export type ContentFieldSelect = PropertySelect& ContentFieldBase & {
     value?: string;
     data: string;
 }
 
-export type ContentFieldText = ContentTemplateFieldText& ContentFieldBase & {
+export type ContentFieldText = PropertyText& ContentFieldBase & {
     value?: string;
 }*/

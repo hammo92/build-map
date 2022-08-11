@@ -10,7 +10,12 @@ export const BasicFieldsCommon: FC<{ type: FieldType }> = ({ type }) => {
     return (
         <>
             <SmartForm.FieldGroup cols={subtypes?.length ? 2 : 1}>
-                <SmartForm.TextInput name="name" required label="Field Name" rules={{ minLength: 2 }} />
+                <SmartForm.TextInput
+                    name="name"
+                    required
+                    label="Property Name"
+                    rules={{ minLength: 2 }}
+                />
                 {
                     // If field option has subtypes
                     subtypes?.length ? (
@@ -26,7 +31,6 @@ export const BasicFieldsCommon: FC<{ type: FieldType }> = ({ type }) => {
                     ) : null
                 }
             </SmartForm.FieldGroup>
-            <SmartForm.Textarea name="description" label="Description" placeholder="A helpful tip about the field" />
         </>
     );
 };
