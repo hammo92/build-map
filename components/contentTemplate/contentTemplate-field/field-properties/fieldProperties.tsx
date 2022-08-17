@@ -3,8 +3,27 @@ import { Property } from "@lib/contentTemplate/data/types";
 import { Button, Group, Tabs } from "@mantine/core";
 import { FC } from "react";
 import { useFormContext } from "react-hook-form";
+import { FieldType } from "../field-options/fieldsDefinitions";
 import { PropertiesAdvancedFields } from "./properties-advancedFields";
 import { PropertiesBasicFields } from "./properties-basicFields";
+
+//Todo Fix typings for field options
+interface FieldPropertiesProps {
+    initialData: Property;
+    onCancel?: () => void;
+    onSubmit: (values: any) => void;
+    action: "edit" | "create";
+    isSubmitting?: boolean;
+    fieldOptions?: Partial<
+        Record<
+            FieldType,
+            {
+                basic?: any;
+                advanced?: any;
+            }
+        >
+    >;
+}
 
 const Actions = ({
     action,
@@ -37,13 +56,15 @@ const Actions = ({
     );
 };
 
-export const FieldProperties: FC<{
-    initialData: Property;
-    onCancel?: () => void;
-    onSubmit: (values: any) => void;
-    action: "edit" | "create";
-    isSubmitting?: boolean;
-}> = ({ initialData, onCancel, onSubmit, isSubmitting, action }) => {
+export const FieldProperties = ({
+    initialData,
+    onCancel,
+    onSubmit,
+    isSubmitting,
+    action,
+    fieldOptions,
+}: FieldPropertiesProps) => {
+    const type = initialData.type;
     return (
         <SmartForm
             onSubmit={onSubmit}
@@ -58,10 +79,10 @@ export const FieldProperties: FC<{
                     <Tabs.Tab value="advanced">Advanced</Tabs.Tab>
                 </Tabs.List>
                 <Tabs.Panel value="details" py="sm">
-                    <PropertiesBasicFields type={initialData.type} />
+                    <PropertiesBasicFields type={type} options={fieldOptions?.[type]?.basic} />
                 </Tabs.Panel>
                 <Tabs.Panel value="advanced" py="sm">
-                    <PropertiesAdvancedFields type={initialData.type} />
+                    <PropertiesAdvancedFields type={type} />
                 </Tabs.Panel>
             </Tabs>
             <Actions action={action} onCancel={onCancel} isSubmitting={isSubmitting} />

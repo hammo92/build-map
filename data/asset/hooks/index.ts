@@ -72,7 +72,12 @@ export function useGetImageUrl({
     width?: number;
     height?: number;
 }) {
-    return useQuery([Keys.GET_IMAGE_URL, assetId], () => getImageUrl({ assetId, width, height }), {
-        //refetchInterval: 1000,
-    });
+    return useQuery(
+        [Keys.GET_IMAGE_URL, assetId + width + height],
+        () => getImageUrl({ assetId, width, height }),
+        {
+            //refetchInterval: 1000,
+            enabled: !!assetId,
+        }
+    );
 }

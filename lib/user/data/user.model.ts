@@ -21,6 +21,10 @@ export class User extends Model<User> {
     createdBy: string;
     lastEditedTime: string;
     lastEditedBy: string;
+    // set on response
+    avatar: {
+        [key in "xs" | "sm" | "md" | "lg" | "xl" | "full" | string]: string;
+    };
     keys() {
         return [indexBy(UserId).exact(this.id)];
     }

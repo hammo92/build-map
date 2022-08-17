@@ -18,7 +18,7 @@ import { ReactElement, useEffect, useMemo, useState } from "react";
 import { CleanedCamel, CleanedSnake } from "type-helpers";
 import { SortByDateIso } from "utils/date";
 
-import Illustration from "../../../../../public/images/tokyo/3.0-03.svg";
+import Illustration from "../../../../../../../public/images/tokyo/3.0-03.svg";
 interface ContentPageProps {
     content: CleanedCamel<ContentProps>[];
     contentTemplate: CleanedCamel<ContentTemplate>;

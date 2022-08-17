@@ -16,7 +16,7 @@ const ModalContents = () => {
     const queryClient = useQueryClient();
     const { contentTemplateId } = useSnapshot(contentTemplateState);
     const data = queryClient.getQueryData<ContentTemplateResponse>([
-        Keys.GET_CONTENT_TYPE,
+        Keys.GET_CONTENT_TEMPLATE,
         contentTemplateId,
     ]);
     const [name, setName] = useState(data?.contentTemplate.name);

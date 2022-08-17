@@ -109,8 +109,7 @@ export const users = () => {
         try {
             const user = await updateUser({
                 userId: req.user.id,
-                name: req.body.name,
-                password: req.body.password,
+                ...req.body.userDetails,
             });
 
             res.status(200).send({
@@ -143,11 +142,7 @@ export const users = () => {
     api.get("/users/:identifier", async function name(req: any, res: any) {
         try {
             //check if is email address
-            if (
-                /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(
-                    req.params.identifier
-                )
-            ) {
+            if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(req.params.identifier)) {
                 const user = await getUserByEmail(req.params.identifier);
                 if (!user) {
                     throw new Error("No user found");

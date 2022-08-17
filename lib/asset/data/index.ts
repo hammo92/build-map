@@ -97,16 +97,15 @@ export async function getImageUrl({
 
     // prefix used to remove upload entry in data
     // not needed for serverside uploads
-    const nameStripPrefix = name.replace(PREFIX, "");
+    const nameNoPrefix = name.replace(PREFIX, "");
 
     // generate id from query and get potential storedFile item
-    const resizedImageId = `${nameStripPrefix}${width ? `-w${width}` : ""}${
+    const resizedImageId = `${nameNoPrefix}${width ? `-w${width}` : ""}${
         height ? `-h${height}` : ""
     }${ext}`;
 
-    const requestedImage = await indexBy(AssetId).exact(resizedImageId).get(Asset);
-
     // check if queried image exists if true return link
+    const requestedImage = await indexBy(AssetId).exact(resizedImageId).get(Asset);
     if (requestedImage) {
         return await storage.getDownloadUrl(requestedImage.path);
     }

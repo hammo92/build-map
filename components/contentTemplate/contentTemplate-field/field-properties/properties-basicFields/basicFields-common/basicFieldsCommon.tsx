@@ -5,7 +5,10 @@ import {
 import { SmartForm } from "@components/smartForm";
 import { FC } from "react";
 
-export const BasicFieldsCommon: FC<{ type: FieldType }> = ({ type }) => {
+export const BasicFieldsCommon: FC<{ type: FieldType; options: Record<string, any> }> = ({
+    type,
+    options,
+}) => {
     const subtypes = FIELD_TYPES[type]?.subtypes;
     return (
         <>
@@ -27,6 +30,7 @@ export const BasicFieldsCommon: FC<{ type: FieldType }> = ({ type }) => {
                                 ...subtype,
                                 value: subtype.type,
                             }))}
+                            disabled={options?.variantLocked}
                         />
                     ) : null
                 }

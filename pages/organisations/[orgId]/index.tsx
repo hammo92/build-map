@@ -1,4 +1,5 @@
 import { NavigationList } from "@components/navigation/linkList";
+import { InviteCreate } from "@components/organisation/organisation-invite/invite-create";
 import { ProjectCreateButton } from "@components/project/project-create";
 import { ProjectList } from "@components/project/project-list";
 import { useGetMe } from "@data/user/hooks";
@@ -8,7 +9,7 @@ import dayjs from "dayjs";
 import { LayoutShellSideNav } from "layouts";
 import { GetServerSidePropsContext } from "next";
 import Head from "next/head";
-import React, { ReactElement } from "react";
+import { ReactElement } from "react";
 import { capitalise } from "utils/stringTransform";
 
 interface OrganisationPageProps {
@@ -75,14 +76,9 @@ function OrganisationPage({ organisationId }: OrganisationPageProps) {
                     </Group>
                     <Divider />
                     <ProjectList />
+                    <InviteCreate organisationId={organisationId} />
                 </Stack>
             </Stack>
-
-            {/*<Group>
-                        <OrganisationInviteCreate
-                            organisationId={organisationId}
-                        />
-                    </Group> */}
         </>
     );
 }

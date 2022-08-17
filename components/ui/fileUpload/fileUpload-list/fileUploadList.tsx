@@ -5,7 +5,6 @@ import { FileUploadCard } from "../fileUpload-card";
 
 export const FileUploadList = () => {
     const { uploads, removeUploads } = useSnapshot(Uploader);
-    console.log("uploads", uploads);
     const { length } = uploads;
     const cols = length < 4 ? length : length === 4 ? 2 : 3;
     return length ? (

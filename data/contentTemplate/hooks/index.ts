@@ -17,6 +17,7 @@ import {
     deleteProperty,
     getContentTemplate,
     getOrganisationContentTemplates,
+    getProjectContentTemplates,
     reorderProperties,
     updateContentTemplate,
     updateProperty,
@@ -26,9 +27,9 @@ export function useCreateContentTemplate() {
     const queryClient = useQueryClient();
 
     return useMutation(createContentTemplate, {
-        mutationKey: Keys.CREATE_CONTENT_TYPE,
+        mutationKey: Keys.CREATE_CONTENT_TEMPLATE,
         onSuccess: ({ newContentTemplate }) => {
-            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
+            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TEMPLATES);
             showNotification({
                 title: `${newContentTemplate.name} created`,
                 message: `Created new content template successfully`,
@@ -51,7 +52,7 @@ export function useGetContentTemplate(
     initialData?: { contentTemplate: CleanedCamel<ContentTemplate> }
 ) {
     return useQuery(
-        [Keys.GET_CONTENT_TYPE, contentTemplateId],
+        [Keys.GET_CONTENT_TEMPLATE, contentTemplateId],
         () => getContentTemplate(contentTemplateId),
         {
             initialData,
@@ -63,9 +64,9 @@ export function useUpdateContentTemplate() {
     const queryClient = useQueryClient();
 
     return useMutation(updateContentTemplate, {
-        mutationKey: Keys.UPDATE_CONTENT_TYPE,
+        mutationKey: Keys.UPDATE_CONTENT_TEMPLATE,
         onMutate: async ({ contentTemplateId, name, status, icon, title }) => {
-            const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
+            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
 
@@ -105,9 +106,9 @@ export function useUpdateContentTemplate() {
             });
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
             // also force refresh of organisation content templates as this will need to update
-            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
+            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TEMPLATES);
         },
     });
 }
@@ -116,9 +117,9 @@ export function useDeleteContentTemplate() {
     const queryClient = useQueryClient();
 
     return useMutation(deleteContentTemplate, {
-        mutationKey: Keys.DELETE_CONTENT_TYPE,
+        mutationKey: Keys.DELETE_CONTENT_TEMPLATE,
         onSuccess: (data) => {
-            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
+            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TEMPLATES);
             showNotification({
                 title: `${data.contentTemplate.name} deleted`,
                 message: `Content Template deleted successfully`,
@@ -141,8 +142,21 @@ export function useGetOrganisationContentTemplates(
     initialData?: { contentTemplates: CleanedCamel<ContentTemplate>[] }
 ) {
     return useQuery(
-        Keys.GET_ORGANISATION_CONTENT_TYPES,
+        [Keys.GET_ORGANISATION_CONTENT_TEMPLATES, organisationId],
         () => getOrganisationContentTemplates(organisationId),
+        {
+            initialData,
+        }
+    );
+}
+
+export function useGetProjectContentTemplates(
+    projectId: string,
+    initialData?: { contentTemplates: CleanedCamel<ContentTemplate>[] }
+) {
+    return useQuery(
+        [Keys.GET_PROJECT_CONTENT_TEMPLATES, projectId],
+        () => getProjectContentTemplates(projectId),
         {
             initialData,
         }
@@ -153,9 +167,9 @@ export function useCreateProperty() {
     const queryClient = useQueryClient();
 
     return useMutation(createProperty, {
-        mutationKey: Keys.CREATE_CONTENT_TYPE_FIELD,
+        mutationKey: Keys.CREATE_CONTENT_TEMPLATE_FIELD,
         onMutate: async ({ contentTemplateId, fieldProperties }) => {
-            const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
+            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
             // Snapshot the previous value
@@ -189,9 +203,9 @@ export function useCreateProperty() {
         },
         onSettled: (data) => {
             console.log("settled");
-            queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
             // also force refresh of organisation content templates as this will need to update
-            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
+            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TEMPLATES);
         },
     });
 }
@@ -200,9 +214,9 @@ export function useUpdateProperty() {
     const queryClient = useQueryClient();
 
     return useMutation(updateProperty, {
-        mutationKey: Keys.UPDATE_CONTENT_TYPE_FIELD,
+        mutationKey: Keys.UPDATE_CONTENT_TEMPLATE_FIELD,
         onMutate: async ({ contentTemplateId, fieldProperties }) => {
-            const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
+            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
 
@@ -242,7 +256,7 @@ export function useUpdateProperty() {
             });
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
         },
     });
 }
@@ -251,9 +265,9 @@ export function useDeleteProperty() {
     const queryClient = useQueryClient();
 
     return useMutation(deleteProperty, {
-        mutationKey: Keys.DELETE_CONTENT_TYPE_FIELD,
+        mutationKey: Keys.DELETE_CONTENT_TEMPLATE_FIELD,
         onMutate: async ({ contentTemplateId, fieldId }) => {
-            const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
+            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
 
@@ -284,9 +298,9 @@ export function useDeleteProperty() {
             });
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
             // also force refresh of organisation content templates as this will need to update
-            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TYPES);
+            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TEMPLATES);
         },
     });
 }
@@ -294,9 +308,9 @@ export function useDeleteProperty() {
 export function useReorderProperties() {
     const queryClient = useQueryClient();
     return useMutation(reorderProperties, {
-        mutationKey: Keys.DELETE_CONTENT_TYPE_FIELD,
+        mutationKey: Keys.DELETE_CONTENT_TEMPLATE_FIELD,
         onMutate: async ({ contentTemplateId, fromIndex, toIndex }) => {
-            const queryId = [Keys.GET_CONTENT_TYPE, contentTemplateId];
+            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
 
@@ -328,7 +342,7 @@ export function useReorderProperties() {
             });
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([Keys.GET_CONTENT_TYPE, data?.contentTemplate.id]);
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
         },
     });
 }

@@ -26,6 +26,24 @@ import { deleteAllContentRelations } from "../../../lib/relation/data";
 import { objArrToKeyIndexedMap } from "../../../utils/arrayModify";
 import { updateRelationValue } from "./functions/relation";
 import { getDifference } from "../../../utils/objects";
+import { Required } from "utility-types";
+
+function fieldBaseValues({
+    userId,
+    date,
+}: {
+    userId: string;
+    date: string;
+}): Partial<ContentField> {
+    return {
+        id: ulid(),
+        active: true,
+        createdBy: userId,
+        createdTime: date,
+        lastEditedTime: date,
+        lastEditedBy: userId,
+    };
+}
 
 function fieldFromTemplateProperty({
     property,
@@ -37,18 +55,13 @@ function fieldFromTemplateProperty({
     userId: string;
     date: string;
     overrides?: Partial<ContentField>;
-}) {
+}): ContentField {
     return {
         ...property,
         ...(property.defaultValue && { value: property?.defaultValue }),
-        id: ulid(),
+        ...fieldBaseValues({ userId, date }),
         category: "template",
-        active: true,
         templateFieldId: property.id,
-        createdBy: userId,
-        createdTime: date,
-        lastEditedTime: date,
-        lastEditedBy: userId,
         ...overrides,
     };
 }
@@ -72,8 +85,8 @@ export async function createContent({
     }
     const date = new Date().toISOString();
 
-    // initialise array for properties with default values for content history
-    const propertyValuesUpdates: ContentHistory["propertyValuesUpdates"] = [];
+    const contentUpdates: ContentHistory["contentUpdates"] = [];
+
     // create contentTemplate //
     const newContent = new Content();
     newContent.contentTemplateId = contentTemplateId;
@@ -86,18 +99,28 @@ export async function createContent({
     newContent.history = [];
     newContent.fields = contentTemplate.fields.map((property) => {
         const field = fieldFromTemplateProperty({ property, userId, date });
+        contentUpdates.push({
+            type: "property",
+            action: "created",
+            fieldId: field.id,
+            note: "Created from template",
+            fieldName: field.name,
+            changes: getDifference({ property }, field),
+            fieldType: "template",
+        });
         if (field.value) {
-            propertyValuesUpdates.push({
+            contentUpdates.push({
+                type: "value",
                 fieldId: field.id,
-                value: field?.value,
+                change: { to: field?.value },
                 note: "Set from default value",
-                previousValue: null,
+                fieldName: field.name,
             });
         }
+
         return field;
     });
-    console.log("newContent", newContent);
-    await newContent.saveWithHistory({ userId, action: "created", propertyValuesUpdates });
+    await newContent.saveWithHistory({ userId, action: "created", contentUpdates });
     return { newContent, contentTemplate };
 }
 
@@ -192,8 +215,7 @@ export async function updateContentValues(props: {
     const { contentId, values, userId } = props;
     errorIfUndefined({ contentId, userId, values });
 
-    // initialise array for properties for content history
-    const propertyValuesUpdates: ContentHistory["propertyValuesUpdates"] = [];
+    const contentUpdates: ContentHistory["contentUpdates"] = [];
 
     const { content } = await getContentById(contentId);
 
@@ -204,10 +226,15 @@ export async function updateContentValues(props: {
             const { id } = field;
             if (values[id]) {
                 // create content history for change
-                propertyValuesUpdates.push({
+                contentUpdates.push({
+                    type: "value",
                     fieldId: field.id,
-                    previousValue: field.value ?? null,
-                    value: values[id],
+                    change: {
+                        ...(field.value && { from: field.value }),
+                        to: values[id],
+                    },
+                    fieldName: field.name,
+
                     note: null,
                 });
 
@@ -231,7 +258,7 @@ export async function updateContentValues(props: {
         })
     )) as unknown as ContentField[];
     content.fields = updatedFields;
-    await content.saveWithHistory({ userId, action: "updated", propertyValuesUpdates });
+    await content.saveWithHistory({ userId, action: "updated", contentUpdates });
     return content;
 }
 
@@ -246,15 +273,16 @@ export async function updateContentFields(props: {
 
     errorIfUndefined({ contentId, userId });
     const { content } = await getContentById(contentId);
-    console.log("updates :>> ", updates);
-    const propertyUpdates: ContentHistory["propertyUpdates"] = [];
+
+    const contentUpdates: ContentHistory["contentUpdates"] = [];
+
     if (updates?.length) {
         const updateMap = objArrToKeyIndexedMap(updates, "id");
-
         const updatedFields = content.fields.map((field) => {
             const updatedField = updateMap.get(field.id);
             if (updatedField) {
-                propertyUpdates.push({
+                contentUpdates.push({
+                    type: "property",
                     fieldId: field.id,
                     action: "updated",
                     fieldType: field.category,
@@ -270,10 +298,15 @@ export async function updateContentFields(props: {
         });
 
         // should only have new fields remaining in map
-        updateMap.forEach((field) => {
-            updatedFields.push(field);
-            propertyUpdates.push({
-                fieldId: field.id,
+        updateMap.forEach((field: Required<Partial<ContentField>, "name" | "category">) => {
+            const newField = {
+                ...fieldBaseValues({ userId, date: new Date().toISOString() }),
+                ...field,
+            };
+            updatedFields.push(newField as ContentField);
+            contentUpdates.push({
+                type: "property",
+                fieldId: ulid(),
                 action: "created",
                 fieldType: field.category,
                 fieldName: field.name,
@@ -281,23 +314,24 @@ export async function updateContentFields(props: {
             });
         });
 
-        content.templateFields = updatedFields;
+        content.fields = updatedFields;
     }
 
     if (deletions?.length) {
         const deletionsMap = objArrToKeyIndexedMap(deletions, "id");
         deletions.forEach((deletion) => {
-            propertyUpdates.push({
+            contentUpdates.push({
+                type: "property",
                 fieldId: deletion.id,
                 action: "deleted",
                 fieldType: deletion.category,
                 fieldName: deletion.name,
             });
         });
-        content.templateFields = content.templateFields.filter(({ id }) => !deletionsMap.get(id));
+        content.fields = content.fields.filter(({ id }) => !deletionsMap.get(id));
     }
 
-    await content.saveWithHistory({ action: "updated", userId, propertyUpdates });
+    await content.saveWithHistory({ action: "updated", userId, contentUpdates });
     return content;
 }
 
@@ -333,13 +367,13 @@ export async function updateContentFields(props: {
     );
 }*/
 
-export async function contentAndTemplateDifference({ templateId }: { templateId: string }) {
+/*export async function contentAndTemplateDifference({ templateId }: { templateId: string }) {
     const { content, contentTemplate } = await getContentOfTemplate({
         contentTemplateId: templateId,
     });
     const templateFieldMap = objArrToKeyIndexedMap(contentTemplate.fields, "id");
 
-    content.forEach(({ templateFields }) => {
+    content.forEach(({ fields }) => {
         const clonedMap = new Map(templateFieldMap);
 
         let contentFieldsNotOnTemplate: CleanedCamel<ContentField>[] = [];
@@ -349,7 +383,7 @@ export async function contentAndTemplateDifference({ templateId }: { templateId:
             difference: Partial<CleanedCamel<ContentField>>;
         }[] = [];
 
-        templateFields.forEach((field) => {
+        fields.forEach((field) => {
             // check if content field exists on template, and fetch
             const templateField = templateFieldMap.get(field.templateFieldId);
             if (!templateField) {
@@ -378,11 +412,8 @@ export async function contentAndTemplateDifference({ templateId }: { templateId:
             clonedMap.delete(field.templateFieldId);
         });
         templateFieldMap.forEach((field) => templateFieldsNotOnContent.push(field));
-        console.log("contentFieldsNotOnTemplate :>> ", contentFieldsNotOnTemplate);
-        console.log("templateFieldsNotOnContent :>> ", templateFieldsNotOnContent);
-        console.log("updatedFields :>> ", updatedFields);
     });
-}
+}*/
 
 export async function handleContentTemplateChange({
     historyEntry,
@@ -403,12 +434,19 @@ export async function handleContentTemplateChange({
 
             // if property deleted on template change property category to additional
             if (propertyUpdate.action === "deleted") {
-                const field = contentEntry.templateFields.find(
+                const field = contentEntry.fields.find(
                     ({ templateFieldId }) => templateFieldId === propertyUpdate.fieldId
                 );
                 if (field) {
                     updates.push({
                         ...field,
+                        // convert relation field to one way
+                        ...(field.type === "relation" && {
+                            isReciprocal: false,
+                            reciprocalPropertyId: "",
+                            reciprocalPropertyName: "",
+                        }),
+                        templateFieldId: "",
                         category: "additional",
                         required: false,
                         active: true,
@@ -458,14 +496,16 @@ export async function UpdateContentFromTemplate({
 
     // create hash map of contentFields indexed by field id
     const contentMap = content.fields.reduce<{ [fieldId: string]: ContentField }>((acc, curr) => {
-        return { ...acc, [curr.templateFieldId]: curr };
+        if (curr.templateFieldId) {
+            return { ...acc, [curr.templateFieldId]: curr };
+        } else {
+            return acc;
+        }
     }, {});
 
-    // initialise array for properties with default values for content history
-    const propertyValuesUpdates: ContentHistory["propertyValuesUpdates"] = [];
+    const contentUpdates: ContentHistory["contentUpdates"] = [];
 
     const date = new Date().toISOString();
-    console.log("contentMap", contentMap);
     // update field if exists on content, else create or remove
     content.fields = contentTemplate?.fields
         ? contentTemplate.fields.map((field) => {
@@ -474,11 +514,14 @@ export async function UpdateContentFromTemplate({
               // if value doesn't exist for field and default value does
               // then field will be updated, so needs to be pushed to history
               if (!contentMap[field?.id]?.value && field.defaultValue) {
-                  propertyValuesUpdates.push({
+                  contentUpdates.push({
+                      type: "value",
                       fieldId,
-                      value: field.defaultValue,
-                      previousValue: null,
+                      change: {
+                          to: field.defaultValue,
+                      },
                       note: "Set from default value",
+                      fieldName: field.name,
                   });
               }
               return {
@@ -501,7 +544,7 @@ export async function UpdateContentFromTemplate({
     content.saveWithHistory({
         action: "updated",
         userId,
-        propertyValuesUpdates,
+        contentUpdates,
         notes: ["Updated from content template"],
     });
     return content;

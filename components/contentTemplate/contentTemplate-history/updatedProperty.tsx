@@ -7,9 +7,8 @@ export const UpdatedProperty = ({
     variant,
 }: {
     updatedProperty: PropertyUpdate;
-    variant: "full" | "brief";
+    variant: "full" | "compact";
 }) => {
-    console.log("updatedProperty", updatedProperty);
     return (
         <Stack spacing={"sm"}>
             <Text size="sm">

@@ -79,6 +79,13 @@ export async function getOrganisationContentTemplates(organisationId: string) {
     };
 }
 
+export async function getProjectContentTemplates(projectId: string) {
+    const { data } = await apiClient.get(`/projects/${projectId}/contentTemplates`);
+    return camelcaseKeys(data, { deep: true }) as {
+        contentTemplates: CleanedCamel<ContentTemplate>[];
+    };
+}
+
 export async function createProperty({
     contentTemplateId,
     fieldProperties,

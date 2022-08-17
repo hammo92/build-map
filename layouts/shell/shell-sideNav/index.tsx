@@ -1,12 +1,13 @@
 import { SideBar } from "@components/navigation";
 import { HeaderProps } from "@components/navigation/header";
 import { Box, Group } from "@mantine/core";
-import { FC, ReactElement } from "react";
+import { FC, ReactElement, ReactNode } from "react";
 import Div100vh from "react-div-100vh";
 
 interface LayoutShellSideNavProps {
     sidebarContent?: ReactElement;
     headerProps?: HeaderProps;
+    children: ReactNode;
 }
 
 export const LayoutShellSideNav: FC<LayoutShellSideNavProps> = ({

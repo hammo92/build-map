@@ -1,4 +1,6 @@
-import { CreateOrganisation, JoinOrganisation } from "@components/organisation";
+import { CreateOrganisation } from "@components/organisation/organisation-create";
+import { OrganisationInviteCreate } from "@components/organisation/organisation-invite/invite-create";
+import { JoinOrganisation } from "@components/organisation/organisation-join";
 import { OrganisationList } from "@components/organisation/organisation-list";
 import { Box, Button, Group, Modal, Stack, Tabs, Title } from "@mantine/core";
 import { LayoutShellSideNav } from "layouts";
@@ -41,7 +43,7 @@ const Organisations = () => {
                         <CreateOrganisation onCreate={() => setOpen(false)} />
                     </Tabs.Panel>
                     <Tabs.Panel value="join">
-                        <JoinOrganisation onJoin={() => setOpen(false)} />
+                        <JoinOrganisation /*onJoin={() => setOpen(false)}*/ />
                     </Tabs.Panel>
                 </Tabs>
             </Modal>

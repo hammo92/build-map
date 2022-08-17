@@ -1,15 +1,19 @@
+import { UserAvatar } from "@components/user/user-avatar";
+import { useGetUsers } from "@data/user/hooks";
 import { faEllipsis, faMemoCircleInfo } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Content } from "@lib/content/data/content.model";
 import { ContentField } from "@lib/content/data/types";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { StrippedUser } from "@lib/user/data";
 import { ActionIcon, Group, Modal, ScrollArea, Stack, Text, Timeline, Title } from "@mantine/core";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useState } from "react";
+import { useQueries } from "react-query";
 import { CleanedCamel } from "type-helpers";
 import { capitalise } from "utils/stringTransform";
-import { UpdatedProperty } from "./historyEntry";
+import { HistoryEntry } from "./history-entry";
 dayjs.extend(relativeTime);
 
 export const ContentHistory = ({
@@ -28,6 +32,26 @@ export const ContentHistory = ({
         {}
     );
 
+    // get all unique user values from updates
+    const updatingUsers = Array.from(
+        new Set(
+            content.history.reduce<string[]>((acc, entry) => {
+                acc.push(entry.userId);
+                return acc;
+            }, [])
+        )
+    );
+    const userQueries = useGetUsers({ userIdentifiers: updatingUsers });
+
+    const users = userQueries.reduce<{ [id: string]: CleanedCamel<StrippedUser> }>((acc, query) => {
+        if (query?.data?.data?.user) {
+            const user: { [id: string]: CleanedCamel<StrippedUser> } = {
+                [query.data.data.user.id]: query.data.data.user,
+            };
+            return { ...acc, ...user };
+        } else return acc;
+    }, {});
+
     return (
         <>
             <Stack align="stretch">
@@ -38,26 +62,28 @@ export const ContentHistory = ({
                     </ActionIcon>
                 </Group>
                 <ScrollArea.Autosize maxHeight={250} offsetScrollbars>
-                    <Timeline>
+                    <Timeline bulletSize={24}>
                         {content.history.map((historyEntry) => (
                             <Timeline.Item
                                 key={historyEntry.date}
                                 title={`${contentTemplate.name} ${capitalise(historyEntry.action)}`}
+                                bullet={
+                                    users[historyEntry.userId] && (
+                                        <UserAvatar
+                                            user={users[historyEntry.userId]}
+                                            radius="xl"
+                                            size={22}
+                                        />
+                                    )
+                                }
                             >
-                                {historyEntry?.propertyValuesUpdates?.length ? (
-                                    <Stack>
-                                        <Text size="sm">
-                                            {`Updated Properties: 
-                                       ${historyEntry.propertyValuesUpdates
-                                           .map((updatedProperty) => {
-                                               const field =
-                                                   contentFieldsIndexedById[
-                                                       updatedProperty.fieldId
-                                                   ];
-                                               return field?.name ?? "deleted";
-                                           })
-                                           .join(", ")}`}
-                                        </Text>
+                                {historyEntry?.contentUpdates?.length ? (
+                                    <Stack spacing="sm">
+                                        <HistoryEntry
+                                            fieldMap={contentFieldsIndexedById}
+                                            contentUpdates={historyEntry.contentUpdates}
+                                            variant={"compact"}
+                                        />
                                     </Stack>
                                 ) : (
                                     ""
@@ -72,25 +98,28 @@ export const ContentHistory = ({
             </Stack>
 
             <Modal opened={opened} onClose={() => setOpened(false)} title="Content History">
-                <Timeline>
+                <Timeline bulletSize={24}>
                     {content.history.map((historyEntry) => (
                         <Timeline.Item
                             key={historyEntry.date}
                             title={`${contentTemplate.name} ${capitalise(historyEntry.action)}`}
+                            bullet={
+                                users[historyEntry.userId] && (
+                                    <UserAvatar
+                                        user={users[historyEntry.userId]}
+                                        radius="xl"
+                                        size={22}
+                                    />
+                                )
+                            }
                         >
-                            {historyEntry?.propertyValuesUpdates?.length ? (
-                                <Stack spacing="xs" mt="xs">
-                                    {historyEntry.propertyValuesUpdates.map((updatedProperty) => {
-                                        const field =
-                                            contentFieldsIndexedById[updatedProperty.fieldId];
-                                        return (
-                                            <UpdatedProperty
-                                                key={`${updatedProperty.fieldId}-${historyEntry.date}`}
-                                                field={field}
-                                                updatedProperty={updatedProperty}
-                                            />
-                                        );
-                                    })}
+                            {historyEntry?.contentUpdates?.length ? (
+                                <Stack spacing="sm">
+                                    <HistoryEntry
+                                        fieldMap={contentFieldsIndexedById}
+                                        contentUpdates={historyEntry.contentUpdates}
+                                        variant={"full"}
+                                    />
                                 </Stack>
                             ) : (
                                 ""

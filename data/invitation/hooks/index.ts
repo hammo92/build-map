@@ -14,24 +14,22 @@ export function useCreateInvite() {
                 color: "green",
             });
         },
-        onError: (error: AxiosError) => {
-            console.log(`error`, error?.response.data);
+        onError: (error: AxiosError<{ message: string }>) => {
             showNotification({
                 title: "Error",
-                message: error?.response.data.message,
+                message: error?.response?.data.message,
                 color: "red",
             });
         },
     });
 }
 
-export function useGetInvitesByEmail({ email }) {
-    return useQuery([Keys.GET_INVITES_FOR_EMAIL, email], () => getInvitesForEmail(email), {
-        onError: (error: AxiosError) => {
-            console.log(`error`, error?.response.data);
+export function useGetInvitesByEmail({ email }: { email: string }) {
+    return useQuery([Keys.GET_INVITES_FOR_EMAIL, email], () => getInvitesForEmail({ email }), {
+        onError: (error: AxiosError<{ message: string }>) => {
             showNotification({
                 title: "Error",
-                message: error?.response.data.message,
+                message: error?.response?.data.message,
                 color: "red",
             });
         },
@@ -40,11 +38,10 @@ export function useGetInvitesByEmail({ email }) {
 
 export function useGetMyInvites() {
     return useQuery(Keys.GET_MY_INVITES, () => getMyInvites(), {
-        onError: (error: AxiosError) => {
-            console.log(`error`, error?.response.data);
+        onError: (error: AxiosError<{ message: string }>) => {
             showNotification({
                 title: "Error",
-                message: error?.response.data.message,
+                message: error?.response?.data.message,
                 color: "red",
             });
         },
@@ -62,11 +59,10 @@ export function useJoinFromInvite() {
                 color: "green",
             });
         },
-        onError: (error: AxiosError) => {
-            console.log(`error`, error?.response.data);
+        onError: (error: AxiosError<{ message: string }>) => {
             showNotification({
                 title: "Error",
-                message: error?.response.data.message,
+                message: error?.response?.data.message,
                 color: "red",
             });
         },

@@ -8,10 +8,19 @@ import { FieldType } from "../../field-options/fieldsDefinitions";
 import { BasicFieldsCommon } from "./basicFields-common";
 import { BasicFieldsComponent } from "./basicFields-component";
 import { BasicFieldsMultiSelect } from "./basicFields-multiSelect";
-import { BasicFieldsRelation } from "./basicFields-relation";
+import { BasicFieldsRelation, BasicFieldsRelationProps } from "./basicFields-relation";
 import { BasicFieldsSelect } from "./basicFields-select";
 
-const FieldTypeBaseFields: FC<{ type: FieldType }> = ({ type }) => {
+interface BasicFieldOptions {
+    relation: BasicFieldsRelationProps;
+}
+
+interface PropertiesBasicFieldsProps {
+    type: FieldType;
+    options: Record<string, any>;
+}
+
+const FieldTypeBaseFields = ({ type, options }: PropertiesBasicFieldsProps) => {
     switch (type) {
         case "select":
             return <BasicFieldsSelect />;
@@ -20,18 +29,18 @@ const FieldTypeBaseFields: FC<{ type: FieldType }> = ({ type }) => {
         case "multiSelect":
             return <BasicFieldsMultiSelect />;
         case "relation":
-            return <BasicFieldsRelation />;
+            return <BasicFieldsRelation {...options} />;
         default:
             return null;
     }
 };
 
-export const PropertiesBasicFields: FC<{ type: FieldType }> = ({ type }) => {
+export const PropertiesBasicFields = ({ type, options }: PropertiesBasicFieldsProps) => {
     if (type) {
         return (
             <Stack spacing="sm">
-                <BasicFieldsCommon type={type} />
-                <FieldTypeBaseFields type={type} />
+                <BasicFieldsCommon type={type} options={options} />
+                <FieldTypeBaseFields type={type} options={options} />
                 <SmartForm.Textarea
                     name="description"
                     label="Description"

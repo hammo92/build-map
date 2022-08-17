@@ -1,3 +1,4 @@
+import { getProjectById } from "../../project/data";
 import { api, params } from "@serverless/cloud";
 import snakecaseKeys from "snakecase-keys";
 import {
@@ -101,6 +102,28 @@ export const contentTemplates = () => {
         const { user } = req;
         try {
             const contentTemplates = await getOrganisationContentTemplates(organisationId);
+            return res.status(200).send({
+                contentTemplates: contentTemplates.length
+                    ? contentTemplates.map((contentTemplate) => contentTemplate.clean())
+                    : [],
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
+        }
+    });
+
+    //* Get organsation contentTemplates */
+    api.get(`/projects/:projectId/contentTemplates`, async function (req: any, res: any) {
+        const projectId = req.params.projectId;
+        const { user } = req;
+
+        try {
+            const project = await getProjectById(projectId);
+            if (!project) throw new Error("project not found");
+            const contentTemplates = await getOrganisationContentTemplates(project.organisationId);
             return res.status(200).send({
                 contentTemplates: contentTemplates.length
                     ? contentTemplates.map((contentTemplate) => contentTemplate.clean())

@@ -10,7 +10,7 @@ import { useStyles } from "./styles";
 export type AssetManagerProps = CheckableAssetListPropsBase &
     Omit<ImageUploadProps, "onUpload"> & {
         /** Array of asset ids, used for initial data */
-        assetIds?: string[];
+        assetIds?: string[] | string;
 
         /** Sets if user is allowed to edit */
         editable?: boolean;
@@ -30,8 +30,10 @@ export const AssetManager = ({
     multiple,
     ...rest
 }: AssetManagerProps) => {
+    console.log("assetIds", assetIds);
     const [_value, handleChange] = useUncontrolled({
-        value: assetIds,
+        // convert string to array or accept array, remove empty strings
+        value: ([] as string[]).concat(assetIds).filter((e) => e),
         defaultValue,
         finalValue: [],
         onChange: onChange!,
@@ -43,6 +45,7 @@ export const AssetManager = ({
         ? { selectable: true as const, select, deselect, selected }
         : { selectable: false as const };
 
+    console.log("(_value) :>> ", _value);
     return (
         <Card p={0} withBorder>
             <Stack spacing={0}>
@@ -63,6 +66,7 @@ export const AssetManager = ({
                                         : handleChange(assetIds);
                                 }}
                                 multiple={multiple}
+                                value={_value}
                             />
                             {[...selected].length && (
                                 <ActionIcon
@@ -81,7 +85,7 @@ export const AssetManager = ({
                 {assetIds && (
                     <AssetList
                         cols={multiple ? 3 : 1}
-                        assetIds={assetIds}
+                        assetIds={_value}
                         {...assetSelectableProps}
                     />
                 )}

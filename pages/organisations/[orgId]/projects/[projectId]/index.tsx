@@ -1,3 +1,4 @@
+import { Avatar } from "@components/avatar";
 import { useGetMe } from "@data/user/hooks";
 import { Project } from "@lib/project/data/projectModel";
 import { Divider, Group, Stack, Title } from "@mantine/core";

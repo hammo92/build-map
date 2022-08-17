@@ -1,6 +1,6 @@
 import React from "react";
-import { OrganisationInviteList } from "../organisation-invite";
+import { InviteList } from "../organisation-invite/invite-list";
 
 export const JoinOrganisation = () => {
-    return <OrganisationInviteList />;
+    return <InviteList />;
 };

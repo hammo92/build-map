@@ -6,24 +6,38 @@ import {
 } from "@lib/contentTemplate/data/contentTemplate.model";
 import { events } from "@serverless/cloud";
 import { buildIndex, indexBy, Model, timekey } from "serverless-cloud-data-utils";
+import { DifferenceEntry } from "utils/objects";
 import { ContentField } from "./types";
 
 type ContentHistoryActions = "updated" | "created" | "published" | "archived";
 
-export interface PropertyValueUpdate {
+export interface ContentUpdateBase<T extends "value" | "property"> {
+    type: T;
     fieldId: string;
-    value: string;
-    previousValue: ContentField["value"] | null;
-    note: string | null;
+    fieldName: string;
+    note?: string | null;
 }
 
+export interface ContentUpdateValue extends ContentUpdateBase<"value"> {
+    change: {
+        from?: any;
+        to?: any;
+    };
+}
+
+export interface ContentUpdateProperty extends ContentUpdateBase<"property"> {
+    action: "deleted" | "updated" | "created";
+    fieldType: "template" | "additional";
+    changes?: DifferenceEntry;
+}
+
+export type ContentUpdates = (ContentUpdateValue | ContentUpdateProperty)[] | null;
 export interface ContentHistory {
     date: string;
     userId: string;
     action: ContentHistoryActions;
     notes: string[] | null;
-    propertyValuesUpdates?: PropertyValueUpdate[] | null;
-    propertyUpdates?: PropertyUpdate<ContentField["category"]>[] | null;
+    contentUpdates: ContentUpdates;
 }
 
 export type ContentStatus = "draft" | "published" | "archived";
@@ -73,14 +87,12 @@ export class Content extends Model<Content> {
     async saveWithHistory({
         userId,
         action,
-        propertyValuesUpdates,
-        propertyUpdates,
+        contentUpdates,
         notes,
     }: {
         userId: string;
         action: ContentHistoryActions;
-        propertyValuesUpdates?: ContentHistory["propertyValuesUpdates"];
-        propertyUpdates?: ContentHistory["propertyUpdates"];
+        contentUpdates?: ContentHistory["contentUpdates"];
         notes?: string[];
     }) {
         const date = new Date().toISOString();
@@ -90,8 +102,7 @@ export class Content extends Model<Content> {
             userId,
             action,
             notes: notes ?? null,
-            propertyValuesUpdates: propertyValuesUpdates ?? null,
-            propertyUpdates: propertyUpdates ?? null,
+            contentUpdates: contentUpdates ?? null,
         };
         this.lastEditedBy = userId;
         this.lastEditedTime = date;

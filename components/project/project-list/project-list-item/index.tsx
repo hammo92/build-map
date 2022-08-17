@@ -31,7 +31,7 @@ export const ProjectListItem: FC<ProjectListItemProps> = ({ project }) => {
                     <ActionIcon>
                         <FontAwesomeIcon
                             icon={faArrowRight}
-                            onClick={() => router.push(`/projects/${project.id}`)}
+                            onClick={() => router.push(`${router.asPath}/projects/${project.id}`)}
                         />
                     </ActionIcon>
                     <ActionIcon

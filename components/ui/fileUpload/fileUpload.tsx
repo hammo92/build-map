@@ -12,6 +12,7 @@ export type ImageUploadProps = Omit<DropzoneProps, "children" | "onDrop"> & {
     path?: string;
     onUpload: (fileIds: string[]) => void;
     onCancel?: () => void;
+    value?: string[];
 };
 
 const UploadManager = ({
@@ -20,6 +21,7 @@ const UploadManager = ({
     multiple,
     onUpload,
     onCancel,
+    path,
     ...others
 }: Omit<ImageUploadProps, "onDrop">) => {
     const modals = useModals();
@@ -48,7 +50,7 @@ const UploadManager = ({
                         <Button
                             disabled={busy || notUploaded.length === 0}
                             loading={busy}
-                            onClick={() => upload({ onUpload })}
+                            onClick={() => upload({ onUpload, ...(path && { path }) })}
                         >
                             Upload
                         </Button>
@@ -62,8 +64,8 @@ const UploadManager = ({
 export const FileUpload: React.FC<ImageUploadProps> = ({
     multiple,
     maxSize,
-    path,
     onUpload,
+    value,
     ...others
 }) => {
     const modals = useModals();
@@ -76,6 +78,7 @@ export const FileUpload: React.FC<ImageUploadProps> = ({
             onClose: () => {
                 Uploader.clearUploads();
             },
+            zIndex: 999999999999,
             children: (
                 <UploadManager
                     onUpload={onUpload}
@@ -90,7 +93,7 @@ export const FileUpload: React.FC<ImageUploadProps> = ({
 
     return (
         <Button size="xs" variant="subtle" onClick={() => openUploadManagerModal()}>
-            {multiple ? "Add Assets" : "Add Asset"}
+            {`${value?.length && !multiple ? "Change" : "Add"} Asset${multiple ? "s" : ""}`}
         </Button>
     );
 };

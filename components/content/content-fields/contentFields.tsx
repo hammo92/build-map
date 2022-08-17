@@ -1,6 +1,7 @@
-/*import { SmartFormImages } from "@components/smartForm/smartForm-images";
-import { ContentField, ContentFieldRelation } from "@lib/content/data/types";
+import { ContentField } from "@lib/content/data/types";
 import { Property } from "@lib/contentTemplate/data/types";
+import { Group } from "@mantine/core";
+import { AdditionalFieldActions } from "../content-additionalField/additionalField-actions";
 import { FieldsDate } from "./fields-date";
 import { FieldsEmail } from "./fields-email";
 import { FieldsImage } from "./fields-image";
@@ -11,35 +12,64 @@ import { FieldsRichText } from "./fields-richText";
 import { FieldsSelect } from "./fields-select";
 import { FieldsText } from "./fields-text";
 
-export const ContentFields = ({ fields }: { fields: ContentField[] | Property[] }) => {
+const getFieldElement = (field: ContentField | Property) => {
+    switch (field.type) {
+        case "email":
+            return <FieldsEmail field={field} key={field.id} />;
+        case "date":
+            return <FieldsDate field={field} key={field.id} />;
+        case "multiSelect":
+            return <FieldsMultiSelect field={field} key={field.id} />;
+        case "number":
+            return <FieldsNumber field={field} key={field.id} />;
+        case "richText":
+            return <FieldsRichText field={field} key={field.id} />;
+        case "select":
+            return <FieldsSelect field={field} key={field.id} />;
+        case "text":
+            return <FieldsText field={field} key={field.id} />;
+        case "image":
+            return <FieldsImage field={field} key={field.id} />;
+        case "relation":
+            return <FieldsRelation field={field} key={field.id} />;
+    }
+};
+
+export const ContentFields = ({
+    fields,
+    removable,
+    editable,
+    contentId,
+}: {
+    fields: ContentField[];
+    removable?: boolean;
+    editable?: boolean;
+    contentId: string;
+}) => {
     const fieldList = fields
         .map((field) => {
-            switch (field.type) {
-                case "email":
-                    return <FieldsEmail field={field} key={field.id} />;
-                case "date":
-                    return <FieldsDate field={field} key={field.id} />;
-                case "multiSelect":
-                    return <FieldsMultiSelect field={field} key={field.id} />;
-                case "number":
-                    return <FieldsNumber field={field} key={field.id} />;
-                case "richText":
-                    return <FieldsRichText field={field} key={field.id} />;
-                case "select":
-                    return <FieldsSelect field={field} key={field.id} />;
-                case "text":
-                    return <FieldsText field={field} key={field.id} />;
-                case "image":
-                    return <FieldsImage field={field} key={field.id} />;
-                case "relation":
-                    return <FieldsRelation field={field} key={field.id} />;
+            const element = getFieldElement(field);
+            if (removable || editable) {
+                return (
+                    <Group spacing="sm">
+                        <div style={{ flex: 1 }}>{element}</div>
+                        <AdditionalFieldActions
+                            field={field}
+                            contentId={contentId}
+                            editable={editable}
+                            removable={removable}
+                        />
+                    </Group>
+                );
+            } else {
+                return element;
             }
         })
-        .filter((field) => field);
+        .filter((field) => field !== undefined);
     return <>{fieldList}</>;
-};*/
+};
 
-//Draggable Content Fields
+/*Draggable Content Fields
 import { SmartFormImages } from "@components/smartForm/smartForm-images";
 import { ContentField } from "@lib/content/data/types";
 import { Property } from "@lib/contentTemplate/data/types";
@@ -117,3 +147,4 @@ export const ContentFields = ({ fields }: { fields: ContentField[] | Property[] 
         </DragDropContext>
     );
 };
+*/

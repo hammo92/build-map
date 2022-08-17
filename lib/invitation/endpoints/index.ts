@@ -164,7 +164,7 @@ export const invitations = () => {
     });
 
     //* Redeem invitation */
-    api.get("/invitations/:invitationId/redeem", async function name(req: any, res: any) {
+    api.post("/invitations/:invitationId/redeem", async function name(req: any, res: any) {
         try {
             const invitation = await redeemInvitationById(req.params.invitationId);
             res.status(200).send({

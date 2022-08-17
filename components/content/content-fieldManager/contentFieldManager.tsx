@@ -1,9 +1,11 @@
 import { FieldCard } from "@components/contentTemplate/contentTemplate-field/field-card";
 import { SmartForm } from "@components/smartForm";
 import { useUpdateContentFields } from "@data/content/hooks";
+import { faExclamationCircle, faSensorAlert } from "@fortawesome/pro-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Content } from "@lib/content/data/content.model";
 import { ContentField } from "@lib/content/data/types";
-import { Button, Checkbox, Group, Modal, Stack, Text } from "@mantine/core";
+import { Button, Checkbox, Group, Modal, Stack, Text, Alert } from "@mantine/core";
 import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { CleanedCamel } from "type-helpers";
@@ -29,11 +31,15 @@ function convertFormDataForUpdate({
     }, []);
 }
 
-const ContentFields = ({ content }: { content: CleanedCamel<Content> }) => {
-    const { formState, watch } = useFormContext();
+const ContentFields = ({ fields }: { fields: ContentField[] }) => {
+    const { watch, formState } = useFormContext();
+    const values = watch();
+    console.log("values", values);
+    const allFalse = !Object.entries(values).some(([_, val]) => val === true);
+    console.log("allFalse :>> ", allFalse);
     return (
         <Stack>
-            {content.fields.map((field) => {
+            {fields.map((field) => {
                 return (
                     <FieldCard
                         key={field.id}
@@ -44,15 +50,32 @@ const ContentFields = ({ content }: { content: CleanedCamel<Content> }) => {
                     />
                 );
             })}
-            <Button type="submit">Save</Button>
+            {allFalse && (
+                <Alert icon={<FontAwesomeIcon icon={faExclamationCircle} />} color="red">
+                    At least one field must be visible
+                </Alert>
+            )}
+            <Button type="submit" disabled={!formState.isDirty || allFalse}>
+                Update
+            </Button>
         </Stack>
     );
 };
 
 export const ContentFieldManager = ({ content }: { content: CleanedCamel<Content> }) => {
     const [opened, setOpened] = useState(false);
-    const defaultValues = convertDataForSmartForm(content?.fields);
     const { mutateAsync } = useUpdateContentFields();
+
+    // split into categories
+    const templateFields = content.fields.reduce<ContentField[]>((acc, curr) => {
+        if (curr.category === "template") {
+            acc.push(curr);
+        }
+        return acc;
+    }, []);
+
+    const defaultValues = convertDataForSmartForm(templateFields);
+
     return (
         <>
             <Modal
@@ -76,7 +99,7 @@ export const ContentFieldManager = ({ content }: { content: CleanedCamel<Content
                     }}
                     defaultValues={defaultValues}
                 >
-                    <ContentFields content={content} />
+                    <ContentFields fields={templateFields} />
                 </SmartForm>
             </Modal>
 

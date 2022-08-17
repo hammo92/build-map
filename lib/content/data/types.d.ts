@@ -18,7 +18,7 @@ import { CleanedCamel } from "type-helpers";
 
 export interface FieldBase {
     id: string;
-    templateFieldId: string;
+    templateFieldId?: string;
     category: "template" | "additional";
 }
 

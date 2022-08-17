@@ -1,10 +1,10 @@
 import { UserButton } from "@components/user";
 import { useGetMe } from "@data/user/hooks";
 import { Button, Group, Navbar, Skeleton, Title } from "@mantine/core";
-import React, { FC } from "react";
+import React, { FC, ReactNode } from "react";
 import { useStyles } from "./styles";
 
-export const SideBar: FC = ({ children }) => {
+export const SideBar: FC<{ children: ReactNode }> = ({ children }) => {
     const { data, error, isLoading } = useGetMe();
     const { classes } = useStyles();
     return (
@@ -21,16 +21,10 @@ export const SideBar: FC = ({ children }) => {
             {isLoading ? (
                 <Skeleton height={100} />
             ) : (
-                data.user && (
+                data?.user && (
                     <Navbar.Section className={classes.footer}>
                         <UserButton user={data.user} />
-                        <Button
-                            fullWidth
-                            variant="light"
-                            color="pink"
-                            radius={0}
-                            compact
-                        >
+                        <Button fullWidth variant="light" color="pink" radius={0} compact>
                             {!data.user ? "Login" : "Logout"}
                         </Button>
                     </Navbar.Section>

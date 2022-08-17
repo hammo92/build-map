@@ -21,6 +21,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { CleanedCamel } from "type-helpers";
 import { Required } from "utility-types";
+import { AdditionalFieldCreate } from "./content-additionalField/additionalField-create";
 import { ContentFieldManager } from "./content-fieldManager";
 import { ContentFields } from "./content-fields";
 import { ContentHeader } from "./content-header";
@@ -69,7 +70,6 @@ export const Content = ({
             },
             { active: [], hidden: [], additional: [] }
         );
-
         const onSubmit = async (values: any) => {
             await mutateAsync({
                 contentId: content.id,
@@ -127,12 +127,28 @@ export const Content = ({
                                                     <Divider />
                                                 </>
                                             )}
-                                            {active && <ContentFields fields={active} />}
+                                            {active && (
+                                                <ContentFields
+                                                    fields={active}
+                                                    contentId={content.id}
+                                                />
+                                            )}
                                         </Stack>
                                     </Tabs.Panel>
                                     <Tabs.Panel value="additionalContent">
                                         <Stack p="md" pt={0} spacing="sm">
-                                            {additional && <ContentFields fields={additional} />}
+                                            {additional && (
+                                                <ContentFields
+                                                    fields={additional}
+                                                    contentId={content.id}
+                                                    removable
+                                                    editable
+                                                />
+                                            )}
+                                            <AdditionalFieldCreate
+                                                content={content}
+                                                variant="button"
+                                            />
                                         </Stack>
                                     </Tabs.Panel>
                                 </Tabs>
@@ -176,14 +192,14 @@ export const Content = ({
                                             />
                                         </Card.Section>
                                     )}
-                                    {data.content.outdated && data.content.status !== "archived" && (
+                                    {/* {data.content.outdated && data.content.status !== "archived" && (
                                         <Card.Section p="sm">
                                             <ContentOutdated
                                                 content={data.content}
                                                 contentTemplate={contentTemplate}
                                             />
                                         </Card.Section>
-                                    )}
+                                    )} */}
                                 </Card>
                             </Stack>
                         </Grid.Col>

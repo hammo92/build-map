@@ -22,7 +22,9 @@ const FieldTypeAdvancedFields = ({ type }: { type: FieldType }) => {
     }
 };
 
-export const PropertiesAdvancedFields: FC<{ type: FieldType }> = ({ type }) => {
+export const PropertiesAdvancedFields: FC<{
+    type: FieldType;
+}> = ({ type }) => {
     if (type) {
         return (
             <Stack spacing="sm">

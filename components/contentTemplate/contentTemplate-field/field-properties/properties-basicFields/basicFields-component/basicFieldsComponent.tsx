@@ -12,7 +12,7 @@ export const BasicFieldsComponent = () => {
     const queryClient = useQueryClient();
     const data = queryClient.getQueryData<{
         contentTemplates: CleanedCamel<ContentTemplate>[];
-    }>([Keys.GET_ORGANISATION_CONTENT_TYPES]);
+    }>([Keys.GET_ORGANISATION_CONTENT_TEMPLATES]);
 
     const { contentTemplateId } = useSnapshot(contentTemplateState);
 
