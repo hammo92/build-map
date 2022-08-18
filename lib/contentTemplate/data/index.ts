@@ -30,22 +30,22 @@ export async function createContentTemplate({
     icon,
     organisationId,
     userId,
-    type,
+    templateType,
 }: {
     name: string;
     icon: IconPickerIcon;
     organisationId: string;
     userId: string;
-    type: ContentTemplate["type"];
+    templateType: ContentTemplate["templateType"];
 }) {
-    errorIfUndefined({ name, userId, organisationId, icon, type });
+    errorIfUndefined({ name, userId, organisationId, icon, templateType });
     const date = new Date().toISOString();
     // create contentTemplate //
     const newContentTemplate = new ContentTemplate();
     newContentTemplate.name = name;
     newContentTemplate.icon = icon;
     newContentTemplate.status = "draft";
-    newContentTemplate.type = type;
+    newContentTemplate.templateType = templateType;
     newContentTemplate.id = ulid();
     newContentTemplate.createdTime = date;
     newContentTemplate.createdBy = userId;

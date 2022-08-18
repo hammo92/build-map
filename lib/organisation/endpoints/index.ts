@@ -36,7 +36,8 @@ export const organisations = () => {
     api.get(`/organisations/:organisationId`, async function (req: any, res: any) {
         try {
             const organisationId = req.params.organisationId;
-            const organisation = await getOrganisationById(organisationId);
+            const { user } = req;
+            const organisation = await getOrganisationById({ organisationId, userId: user.id });
             return res.status(200).send({
                 organisation: organisation && organisation.clean(),
             });

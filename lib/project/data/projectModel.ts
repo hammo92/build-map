@@ -35,6 +35,7 @@ export const ProjectActive = buildIndex({
 //model: Project //
 export class Project extends Model<Project> {
     id: string;
+    type = "Project";
     jobNumber: string;
     name: string;
     date: string;

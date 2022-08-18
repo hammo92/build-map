@@ -9,6 +9,7 @@ export const UserId = buildIndex({ namespace: `user` });
 //model: User */
 export class User extends Model<User> {
     id: string;
+    type = "User";
     email: string;
     name: string;
     picture: string;

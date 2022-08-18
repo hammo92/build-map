@@ -51,6 +51,7 @@ export const ContentTemplateOrganisation = (organisationId: string) =>
 //model: ContentTemplate */
 export class ContentTemplate extends Model<ContentTemplate> {
     id: string;
+    type = "ContentTemplate";
     name: string;
     icon: IconPickerIcon;
     organisationId: string;
@@ -59,7 +60,7 @@ export class ContentTemplate extends Model<ContentTemplate> {
     lastEditedTime: string;
     lastEditedBy: string;
     status: "draft" | "archived" | "published";
-    type: "collection" | "component";
+    templateType: "collection" | "component";
     fields: Property[];
     history: ContentTemplateHistoryEntry[];
     title: ContentTemplateTitle;

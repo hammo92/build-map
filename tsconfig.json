@@ -49,7 +49,8 @@
         "**/*.tsx",
         "components/project/project-create/project-create-button/index.tss",
         "lib/organisation/tests/api.test.disabled",
-        "middleware.unused"
+        "middleware.unused",
+        "types/oso.d.ts.disabled"
     ],
     "exclude": ["node_modules"]
 }

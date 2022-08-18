@@ -57,7 +57,7 @@
         "jsonwebtoken": "^8.5.1",
         "mime-types": "^2.1.35",
         "next": "12.2.0",
-        "oso-cloud": "^0.8.1",
+        "oso-cloud": "^0.8.3",
         "pluralize": "^8.0.0",
         "react": "^17.0.2",
         "react-alice-carousel": "^2.6.4",

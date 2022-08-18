@@ -71,6 +71,7 @@ export const ContentOutdated = ({
 //model: Content */
 export class Content extends Model<Content> {
     id: string;
+    type = "Content";
     contentTemplateId: string;
     projectId: string;
     createdTime: string;

@@ -1,8 +1,10 @@
 import { SmartForm } from "@components/smartForm";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Property } from "@lib/contentTemplate/data/types";
 import { Grid, Stack } from "@mantine/core";
 import { contentTemplateState, ContentTemplateStateProps } from "@state/contentTemplate";
 import { FC } from "react";
+import { CleanedCamel } from "type-helpers";
 import { useSnapshot } from "valtio";
 import { FieldType } from "../../field-options/fieldsDefinitions";
 import { BasicFieldsCommon } from "./basicFields-common";
@@ -18,9 +20,10 @@ interface BasicFieldOptions {
 interface PropertiesBasicFieldsProps {
     type: FieldType;
     options: Record<string, any>;
+    contentTemplate: CleanedCamel<ContentTemplate>;
 }
 
-const FieldTypeBaseFields = ({ type, options }: PropertiesBasicFieldsProps) => {
+const FieldTypeBaseFields = ({ type, options, contentTemplate }: PropertiesBasicFieldsProps) => {
     switch (type) {
         case "select":
             return <BasicFieldsSelect />;
@@ -29,18 +32,26 @@ const FieldTypeBaseFields = ({ type, options }: PropertiesBasicFieldsProps) => {
         case "multiSelect":
             return <BasicFieldsMultiSelect />;
         case "relation":
-            return <BasicFieldsRelation {...options} />;
+            return <BasicFieldsRelation {...options} contentTemplate={contentTemplate} />;
         default:
             return null;
     }
 };
 
-export const PropertiesBasicFields = ({ type, options }: PropertiesBasicFieldsProps) => {
+export const PropertiesBasicFields = ({
+    type,
+    options,
+    contentTemplate,
+}: PropertiesBasicFieldsProps) => {
     if (type) {
         return (
             <Stack spacing="sm">
                 <BasicFieldsCommon type={type} options={options} />
-                <FieldTypeBaseFields type={type} options={options} />
+                <FieldTypeBaseFields
+                    type={type}
+                    options={options}
+                    contentTemplate={contentTemplate}
+                />
                 <SmartForm.Textarea
                     name="description"
                     label="Description"

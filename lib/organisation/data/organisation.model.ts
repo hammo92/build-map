@@ -20,6 +20,7 @@ export const OrganisationCreator = (creatorId: string) =>
 //model: Organisation */
 export class Organisation extends Model<Organisation> {
     id: string;
+    type = "Organisation";
     createdTime: string;
     createdBy: string;
     lastEditedTime: string;

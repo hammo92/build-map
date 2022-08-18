@@ -19,12 +19,12 @@ export const createRelationProperty = async ({
     userId: string;
     relatedContentId: string;
 }) => {
-    const { relatedTo, isReciprocal, reciprocalPropertyName, id, name } = property;
+    const { relatedTo, isReciprocal } = property;
 
     if (!isReciprocal || !relatedTo) return;
 
     // if isReciprocal create property on relation template
-    const { content, contentTemplate } = await getContentById(relatedContentId);
+    const { contentTemplate } = await getContentById(relatedContentId);
 
     // find reciprocal relation field for content on template
     const relationProperty = contentTemplate?.fields.find((field) => {
@@ -136,8 +136,8 @@ export const updateRelationValue = async ({
 
                     const previousValue = relationField?.value ?? [];
 
+                    // edge case
                     // if relation field doesn't exist on linked content it needs to be created
-                    // could occur if content is created before relation property added to template
                     if (!relationField) {
                         const relationProperty = await createRelationProperty({
                             property: field as PropertyRelation,
@@ -152,6 +152,11 @@ export const updateRelationValue = async ({
 
                         // relation field will be the last entry in fields array
                         relationField = relatedContent.fields.at(-1)!;
+                    }
+
+                    // if relation field is inactive set to active
+                    if (!relationField.active) {
+                        relationField.active = true;
                     }
 
                     if (action === "add") {

@@ -15,8 +15,9 @@ export const UserAssetsWithTypeFilter = ({ userId }: { userId: string }) =>
 //model: Asset */
 export class Asset extends Model<Asset> {
     id: string;
+    type = "Asset";
     filename: string;
-    type: string;
+    fileType: string;
     path: string;
     createdAt: string;
     createdBy: string;

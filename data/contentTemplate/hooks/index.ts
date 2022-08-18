@@ -1,12 +1,9 @@
-import { TitleEdit } from "@components/contentTemplate/contentTemplate-title/title-edit";
-import { content } from "@lib/content/endpoints";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Property } from "@lib/contentTemplate/data/types";
 import { showNotification } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { CleanedCamel } from "type-helpers";
-import { Required } from "utility-types";
 import { moveInArray } from "utils/arrayModify";
 import { Keys } from "../constants";
 import {

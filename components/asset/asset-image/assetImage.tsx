@@ -1,8 +1,5 @@
 import { useGetImageUrl } from "@data/asset/hooks";
-import { Asset } from "@lib/asset/data/asset.model";
-import { Group, Image, Loader, MantineSize } from "@mantine/core";
-import React from "react";
-import { CleanedCamel } from "type-helpers";
+import { Group, Image, Loader } from "@mantine/core";
 import { useStyles } from "./styles";
 
 interface AssetImageProps {

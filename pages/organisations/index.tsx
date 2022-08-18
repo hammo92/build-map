@@ -1,11 +1,10 @@
 import { CreateOrganisation } from "@components/organisation/organisation-create";
-import { OrganisationInviteCreate } from "@components/organisation/organisation-invite/invite-create";
 import { JoinOrganisation } from "@components/organisation/organisation-join";
 import { OrganisationList } from "@components/organisation/organisation-list";
 import { Box, Button, Group, Modal, Stack, Tabs, Title } from "@mantine/core";
 import { LayoutShellSideNav } from "layouts";
 import Head from "next/head";
-import React, { ReactElement, useState } from "react";
+import { ReactElement, useState } from "react";
 
 const Organisations = () => {
     const [open, setOpen] = useState(false);
@@ -34,7 +33,7 @@ const Organisations = () => {
                 </Box>
             </Stack>
             <Modal onClose={() => setOpen(false)} opened={open} title="Add Organisation">
-                <Tabs>
+                <Tabs defaultValue="create">
                     <Tabs.List grow>
                         <Tabs.Tab value="create">Create New</Tabs.Tab>
                         <Tabs.Tab value="join">Join</Tabs.Tab>

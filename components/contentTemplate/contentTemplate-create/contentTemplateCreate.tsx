@@ -11,7 +11,7 @@ import { openModal, closeAllModals, closeModal } from "@mantine/modals";
 
 interface ContentTemplateCreateProps {
     /** Whether the content is a collection or a component */
-    type: ContentTemplate["type"];
+    templateType: ContentTemplate["templateType"];
 
     /** Called when create form is submitted */
     onCreate?: (template: CleanedCamel<ContentTemplate>) => void;
@@ -21,7 +21,7 @@ interface ContentTemplateCreateProps {
 }
 
 const ContentTemplateCreateForm: FC<ContentTemplateCreateProps> = ({
-    type,
+    templateType,
     onCreate,
     organisationId,
 }) => {
@@ -33,7 +33,7 @@ const ContentTemplateCreateForm: FC<ContentTemplateCreateProps> = ({
                 name: values.name,
                 organisationId,
                 icon: values.icon,
-                type,
+                templateType,
             },
             {
                 onSuccess: ({ newContentTemplate }) => {
@@ -50,8 +50,10 @@ const ContentTemplateCreateForm: FC<ContentTemplateCreateProps> = ({
                 <SmartForm.TextInput
                     name="name"
                     required
-                    label={`${type === "collection" ? "Template" : "Component"} Name`}
-                    placeholder={`eg. ${type === "collection" ? "Scaffolding Doc" : "Address"}`}
+                    label={`${templateType === "collection" ? "Template" : "Component"} Name`}
+                    placeholder={`eg. ${
+                        templateType === "collection" ? "Scaffolding Doc" : "Address"
+                    }`}
                 />
                 <SmartForm.IconPicker name="icon" label="Select an icon" required />
                 <Group position="right" mt="md" grow>
@@ -72,19 +74,19 @@ const ContentTemplateCreateForm: FC<ContentTemplateCreateProps> = ({
 };
 
 export const ContentTemplateCreate: FC<ContentTemplateCreateProps> = ({
-    type,
+    templateType,
     onCreate,
     organisationId,
 }) => {
     const openCreateModal = () =>
         openModal({
-            title: `Create New ${type === "collection" ? "Template" : "Component"}`,
+            title: `Create New ${templateType === "collection" ? "Template" : "Component"}`,
             //id: "contentTemplateCreateModal",
             closeOnClickOutside: false,
             size: "xl",
             children: (
                 <ContentTemplateCreateForm
-                    type={type}
+                    templateType={templateType}
                     onCreate={onCreate}
                     organisationId={organisationId}
                 />

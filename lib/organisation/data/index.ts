@@ -171,13 +171,25 @@ export async function getUserOrganisationUsers(userId: string) {
 //* Get all organisations a user is a member of */
 export async function getUserOrganisations(userId: string) {
     errorIfUndefined({ userId });
-    const authorisedOrganisations = 
+    const authorisedOrganisations = await oso.list(
+        { type: "User", id: userId },
+        "read",
+        "Organisation"
+    );
+    const organisations = await Promise.all(
+        authorisedOrganisations.map((organisationId) =>
+            indexBy(OrganisationId).exact(organisationId).get(Organisation)
+        )
+    );
+
+    // Currently not needed replaced by oso
     /*const userOrganisationUserEntries = await getUserOrganisationUsers(userId);
     const organisations = await Promise.all(
         userOrganisationUserEntries.map(({ organisationId }) =>
             getOrganisationById({ organisationId, userId })
         )
     );*/
+
     return organisations;
 }
 

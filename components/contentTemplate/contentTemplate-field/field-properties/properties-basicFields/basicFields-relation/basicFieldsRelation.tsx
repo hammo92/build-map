@@ -1,13 +1,9 @@
 import { SmartForm } from "@components/smartForm";
-import { Keys } from "@data/contentTemplate/constants";
-import {
-    useGetOrganisationContentTemplates,
-    useGetProjectContentTemplates,
-} from "@data/contentTemplate/hooks";
+import { useGetOrganisationContentTemplates } from "@data/contentTemplate/hooks";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { useRouter } from "next/router";
+import pluralize from "pluralize";
 import { useFormContext } from "react-hook-form";
-import { useQueryClient } from "react-query";
 import { CleanedCamel } from "type-helpers";
 
 export interface BasicFieldsRelationProps {
@@ -16,11 +12,16 @@ export interface BasicFieldsRelationProps {
 
     /** disable related to select option */
     relationLocked?: boolean;
+
+    contentTemplate: CleanedCamel<ContentTemplate>;
 }
 
-export const BasicFieldsRelation = ({ oneWayOnly, relationLocked }: BasicFieldsRelationProps) => {
+export const BasicFieldsRelation = ({
+    oneWayOnly,
+    relationLocked,
+    contentTemplate,
+}: BasicFieldsRelationProps) => {
     const { query } = useRouter();
-    console.log("query :>> ", query);
     const { watch } = useFormContext();
     const { data } = useGetOrganisationContentTemplates(query.orgId as string);
     const isReciprocal = watch("isReciprocal");
@@ -54,6 +55,7 @@ export const BasicFieldsRelation = ({ oneWayOnly, relationLocked }: BasicFieldsR
                     label={`Property Name On ${relatedName}`}
                     name="reciprocalPropertyName"
                     required
+                    placeholder={pluralize(contentTemplate.name)}
                 />
             )}
         </>

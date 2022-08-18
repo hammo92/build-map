@@ -19,6 +19,7 @@ export class Relation extends Model<Relation> {
     id: string;
     createdTime: string;
     createdBy: string;
+    type = "relation";
 
     /** Id of content with relation */
     contentId: string;

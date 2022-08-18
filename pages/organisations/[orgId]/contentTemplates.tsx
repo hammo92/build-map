@@ -50,7 +50,8 @@ const HomeSidebar = () => {
 function ContentTemplatePage({ organisationId, initialData }: ContentTemplatePageProps) {
     const { data } = useGetOrganisationContentTemplates(organisationId, initialData);
     // display either collection or components
-    const [type, setType] = useState<ContentTemplateProps["type"]>("collection");
+    const [templateType, setTemplateType] =
+        useState<ContentTemplateProps["templateType"]>("collection");
     const [activeTemplate, setActiveTemplate] = useState<CleanedCamel<ContentTemplateProps>>();
     return (
         <>
@@ -96,11 +97,13 @@ function ContentTemplatePage({ organisationId, initialData }: ContentTemplatePag
                                         label: "Components",
                                     },
                                 ]}
-                                value={type}
-                                onChange={(value: ContentTemplateProps["type"]) => setType(value)}
+                                value={templateType}
+                                onChange={(value: ContentTemplateProps["templateType"]) =>
+                                    setTemplateType(value)
+                                }
                             />
                             <ContentTemplateCreate
-                                type={type}
+                                templateType={templateType}
                                 onCreate={setActiveTemplate}
                                 organisationId={organisationId}
                             />
@@ -108,7 +111,7 @@ function ContentTemplatePage({ organisationId, initialData }: ContentTemplatePag
                         <Stack px="md" py="sm" spacing="sm">
                             {data?.contentTemplates?.length
                                 ? data.contentTemplates
-                                      .filter((template) => template.type === type)
+                                      .filter((template) => template.templateType === templateType)
                                       .map((contentTemplate, i) => (
                                           <a
                                               key={contentTemplate.id}

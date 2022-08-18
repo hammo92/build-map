@@ -76,6 +76,7 @@ export const FieldCreate: FC<{
                         onSubmit={onSubmit}
                         isSubmitting={isLoading}
                         action="create"
+                        contentTemplate={contentTemplate}
                     />
                 </Stack>
             ),

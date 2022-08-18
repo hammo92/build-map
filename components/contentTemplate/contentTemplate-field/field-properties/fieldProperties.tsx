@@ -1,8 +1,10 @@
 import { SmartForm } from "@components/smartForm";
+import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Property } from "@lib/contentTemplate/data/types";
 import { Button, Group, Tabs } from "@mantine/core";
 import { FC } from "react";
 import { useFormContext } from "react-hook-form";
+import { CleanedCamel } from "type-helpers";
 import { FieldType } from "../field-options/fieldsDefinitions";
 import { PropertiesAdvancedFields } from "./properties-advancedFields";
 import { PropertiesBasicFields } from "./properties-basicFields";
@@ -23,6 +25,7 @@ interface FieldPropertiesProps {
             }
         >
     >;
+    contentTemplate: CleanedCamel<ContentTemplate>;
 }
 
 const Actions = ({
@@ -63,6 +66,7 @@ export const FieldProperties = ({
     isSubmitting,
     action,
     fieldOptions,
+    contentTemplate,
 }: FieldPropertiesProps) => {
     const type = initialData.type;
     return (
@@ -79,7 +83,11 @@ export const FieldProperties = ({
                     <Tabs.Tab value="advanced">Advanced</Tabs.Tab>
                 </Tabs.List>
                 <Tabs.Panel value="details" py="sm">
-                    <PropertiesBasicFields type={type} options={fieldOptions?.[type]?.basic} />
+                    <PropertiesBasicFields
+                        type={type}
+                        options={fieldOptions?.[type]?.basic}
+                        contentTemplate={contentTemplate}
+                    />
                 </Tabs.Panel>
                 <Tabs.Panel value="advanced" py="sm">
                     <PropertiesAdvancedFields type={type} />

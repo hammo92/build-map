@@ -16,12 +16,12 @@ export async function createContentTemplate({
     name,
     organisationId,
     icon,
-    type,
+    templateType,
 }: {
     name: string;
     organisationId: string;
     icon: IconPickerIcon;
-    type: ContentTemplate["type"];
+    templateType: ContentTemplate["templateType"];
 }) {
     const { data } = await apiClient.post<{
         newContentTemplate: CleanedSnake<ContentTemplate>;
@@ -29,7 +29,7 @@ export async function createContentTemplate({
         name,
         organisationId,
         icon,
-        type,
+        templateType,
     });
     return camelcaseKeys(data, { deep: true });
 }

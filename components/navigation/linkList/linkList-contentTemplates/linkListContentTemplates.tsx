@@ -12,7 +12,10 @@ export const LinkListContentTemplates = ({ organisationId }: { organisationId: s
         return (
             <NavigationList
                 items={data?.contentTemplates
-                    ?.filter(({ status, type }) => status === "published" && type === "collection")
+                    ?.filter(
+                        ({ status, templateType }) =>
+                            status === "published" && templateType === "collection"
+                    )
                     .map(({ name, icon, id }) => ({
                         //Todo fix links
                         link: `${asPath}/content/${id}`,

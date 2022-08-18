@@ -48,11 +48,11 @@ export async function generateUploadLink({
     userId: string;
 }) {
     errorIfUndefined({ filename, userId });
-    const type = mime.lookup(filename);
-    if (!type) {
+    const fileType = mime.lookup(filename);
+    if (!fileType) {
         throw new Error("Invalid file type");
     }
-    const ext = mime.extension(type);
+    const ext = mime.extension(fileType);
 
     // Create a sortable unique ID for the file
     const uid = ulid().toLowerCase();
@@ -64,7 +64,7 @@ export async function generateUploadLink({
         {
             id,
             filename,
-            type,
+            fileType,
             ext,
             userId,
         },
@@ -78,7 +78,7 @@ export async function generateUploadLink({
     const uploadUrl = await storage.getUploadUrl(
         path ? `files/${path}/${uid}/${id}` : `files/${uid}/${id}`
     );
-    return { id, filename, type, ext, userId, url: uploadUrl };
+    return { id, filename, fileType, ext, userId, url: uploadUrl };
 }
 
 export async function getImageUrl({
@@ -138,7 +138,7 @@ export async function getImageUrl({
     const newFile = new Asset({
         id: resizedImageId,
         filename: resizedImageId,
-        type: asset.type,
+        fileType: asset.type,
         path: resizedFilePath,
         ext: asset.ext,
     });

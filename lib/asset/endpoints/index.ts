@@ -12,7 +12,7 @@ import { Asset } from "../data/asset.model";
 type Upload = {
     id: string;
     filename: string;
-    type: string;
+    fileType: string;
     ext: string;
     userId: string;
     size: number;
@@ -118,11 +118,11 @@ export const asset = () => {
         const upload = (await data.get<Upload>(`upload_${id}`)) as Upload;
 
         if (upload) {
-            const { filename, type, ext, userId } = upload;
+            const { filename, fileType, ext, userId } = upload;
             const file = new Asset({
                 id,
                 filename,
-                type,
+                fileType,
                 path,
                 ext,
                 size,

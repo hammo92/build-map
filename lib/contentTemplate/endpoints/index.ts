@@ -16,7 +16,7 @@ import {
 export const contentTemplates = () => {
     //* Create contentTemplate */
     api.post("/contentTemplates", async function (req: any, res: any) {
-        const { name, organisationId, icon, type } = req.body;
+        const { name, organisationId, icon, templateType } = req.body;
         try {
             const { user } = req;
             const contentTemplate = await createContentTemplate({
@@ -24,7 +24,7 @@ export const contentTemplates = () => {
                 organisationId,
                 userId: user.id,
                 icon,
-                type,
+                templateType,
             });
             return res.status(200).send({
                 newContentTemplate: contentTemplate && contentTemplate.clean(),
