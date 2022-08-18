@@ -36,9 +36,11 @@ export async function createOrganisation({ name, userId }: { name: string; userI
     newOrganisationUser.organisationId = newOrganisation.id;
     newOrganisationUser.userId = userId;
     newOrganisationUser.roleId = "none";
+    console.log("newOrganisation", newOrganisation);
+    console.log("user", user);
 
     await Promise.all([
-        //oso.addRole(user, "owner", newOrganisation),
+        oso.tell("has_role", user!, "owner", newOrganisation),
         newOrganisation.save(),
         newOrganisationUser.save(),
     ]);
@@ -47,8 +49,26 @@ export async function createOrganisation({ name, userId }: { name: string; userI
 }
 
 //* Get organisation by id */
-export async function getOrganisationById(organisationId: string) {
+export async function getOrganisationById({
+    organisationId,
+    userId,
+}: {
+    organisationId: string;
+    userId: string;
+}) {
     errorIfUndefined({ organisationId });
+    console.log("organisationId", organisationId);
+    console.log("userId", userId);
+    // check user has permission to read organisation
+    if (
+        !(await oso.authorize({ type: "User", id: userId }, "read", {
+            type: "Organisation",
+            id: organisationId,
+        }))
+    ) {
+        throw new Error("Action is not allowed");
+    }
+
     const organisation = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
     return organisation;
 }
@@ -151,10 +171,13 @@ export async function getUserOrganisationUsers(userId: string) {
 //* Get all organisations a user is a member of */
 export async function getUserOrganisations(userId: string) {
     errorIfUndefined({ userId });
-    const userOrganisationUserEntries = await getUserOrganisationUsers(userId);
+    const authorisedOrganisations = 
+    /*const userOrganisationUserEntries = await getUserOrganisationUsers(userId);
     const organisations = await Promise.all(
-        userOrganisationUserEntries.map(({ organisationId }) => getOrganisationById(organisationId))
-    );
+        userOrganisationUserEntries.map(({ organisationId }) =>
+            getOrganisationById({ organisationId, userId })
+        )
+    );*/
     return organisations;
 }
 
