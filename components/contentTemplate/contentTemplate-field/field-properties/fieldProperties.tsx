@@ -25,7 +25,7 @@ interface FieldPropertiesProps {
             }
         >
     >;
-    contentTemplate: CleanedCamel<ContentTemplate>;
+    contentTemplate?: CleanedCamel<ContentTemplate>;
 }
 
 const Actions = ({

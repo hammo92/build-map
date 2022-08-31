@@ -19,7 +19,7 @@ import {
     useInputProps,
 } from "@mantine/core";
 import { useUncontrolled, useId } from "@mantine/hooks";
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { chunkArray, removeDuplicatesFromArray } from "utils/arrayModify";
 import { useStyles } from "./styles";
 import { BaseIconPickerProps, BaseIconPickerStylesNames, IconPickerIcon } from "./types";
@@ -104,6 +104,7 @@ export const IconPicker = forwardRef<HTMLInputElement, IconPickerProps>(
         const { systemStyles, rest } = extractSystemStyles(others);
         const [page, setPage] = useState(1);
         const [searchString, setSearchString] = useState("");
+        const [searchPage, setSearchPage] = useState(1);
         const uuid = useId(id);
 
         const [_value, handleChange, inputMode] = useUncontrolled({
@@ -124,10 +125,24 @@ export const IconPicker = forwardRef<HTMLInputElement, IconPickerProps>(
         /** convert icons object into array of icons */
         const iconsArray = Object.keys(far).map((key) => far[key as keyof typeof far]);
         const duplicatesRemoved = removeDuplicatesFromArray(iconsArray) as IconDefinition[];
+
         const filteredList = duplicatesRemoved.filter(({ iconName }) =>
             iconName.includes(searchString)
         );
+
         const pagedIcons = chunkArray(filteredList, perPage!);
+
+        const onPageChange = (newPageIndex: number) => {
+            searchString.length ? setSearchPage(newPageIndex) : setPage(newPageIndex);
+        };
+
+        const onSearch = (string: string) => {
+            !searchString.length && setSearchPage(1);
+            setSearchString(string);
+        };
+
+        const activePage = searchString ? searchPage : page;
+
         //* //
 
         const swatches = colors.map((color) => (
@@ -141,6 +156,7 @@ export const IconPicker = forwardRef<HTMLInputElement, IconPickerProps>(
             />
         ));
         //* */
+
         return (
             <Input.Wrapper
                 required={required}
@@ -165,15 +181,15 @@ export const IconPicker = forwardRef<HTMLInputElement, IconPickerProps>(
                     <Stack>
                         <Group grow>{swatches}</Group>
                         <TextInput
-                            onChange={(event) => setSearchString(event.currentTarget.value)}
+                            onChange={(event) => onSearch(event.currentTarget.value)}
                             size={size}
                             value={searchString}
                             placeholder="Type to search icons"
                         />
 
-                        {pagedIcons[page - 1] ? (
+                        {pagedIcons[activePage - 1] ? (
                             <SimpleGrid cols={cols}>
-                                {pagedIcons[page - 1].map((icon, index) => (
+                                {pagedIcons[activePage - 1].map((icon, index) => (
                                     <Tooltip
                                         label={icon.iconName}
                                         withArrow
@@ -217,11 +233,11 @@ export const IconPicker = forwardRef<HTMLInputElement, IconPickerProps>(
                         )}
                         {pagedIcons.length > 1 && (
                             <Pagination
-                                page={page}
+                                page={activePage}
                                 size={size}
                                 grow
-                                onChange={setPage}
-                                total={Math.floor(filteredList.length / perPage!)}
+                                onChange={onPageChange}
+                                total={Math.ceil(filteredList.length / perPage!)}
                             />
                         )}
                     </Stack>

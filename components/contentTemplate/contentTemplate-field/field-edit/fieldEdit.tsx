@@ -48,6 +48,13 @@ export const FieldEdit: FC<FieldEditProps> = ({ field }) => {
                         action="edit"
                         isSubmitting={isLoading}
                         onCancel={() => setOpened(false)}
+                        fieldOptions={{
+                            relation: {
+                                basic: {
+                                    relationLocked: true,
+                                },
+                            },
+                        }}
                     />
                 </Stack>
             </Modal>

@@ -1,20 +1,16 @@
-import { getUserById } from "../../user/data";
-import { errorIfUndefined } from "../../utils";
 import { indexBy } from "serverless-cloud-data-utils";
+import { getUserById } from "../../user/data";
 import { User, UserId } from "../../user/data/user.model";
-import {
-    Organisation,
-    OrganisationCreator,
-    OrganisationId,
-    OrganisationUser,
-    OrganisationUsers,
-    UserOrganisations,
-} from "./organisation.model";
+import { errorIfUndefined } from "../../utils";
+import { Organisation, OrganisationId } from "./organisation.model";
 
-import { Oso } from "oso-cloud";
 import { params } from "@serverless/cloud";
+import { Oso, Fact } from "oso-cloud";
 import { ulid } from "ulid";
+import { objArrToKeyIndexedMap } from "utils/arrayModify";
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
+
+export type OrganisationRoles = "member" | "admin" | "owner";
 
 //* Create organisation */
 export async function createOrganisation({ name, userId }: { name: string; userId: string }) {
@@ -31,18 +27,9 @@ export async function createOrganisation({ name, userId }: { name: string; userI
     newOrganisation.lastEditedBy = userId;
     newOrganisation.archived = false;
 
-    //create organisationUser for creator
-    const newOrganisationUser = new OrganisationUser();
-    newOrganisationUser.organisationId = newOrganisation.id;
-    newOrganisationUser.userId = userId;
-    newOrganisationUser.roleId = "none";
-    console.log("newOrganisation", newOrganisation);
-    console.log("user", user);
-
     await Promise.all([
         oso.tell("has_role", user!, "owner", newOrganisation),
         newOrganisation.save(),
-        newOrganisationUser.save(),
     ]);
 
     return newOrganisation;
@@ -56,17 +43,19 @@ export async function getOrganisationById({
     organisationId: string;
     userId: string;
 }) {
-    errorIfUndefined({ organisationId });
-    console.log("organisationId", organisationId);
-    console.log("userId", userId);
+    errorIfUndefined({ organisationId, userId });
+
     // check user has permission to read organisation
     if (
-        !(await oso.authorize({ type: "User", id: userId }, "read", {
-            type: "Organisation",
-            id: organisationId,
-        }))
+        !(await oso.authorize(
+            new User({ id: userId }),
+            "read",
+            new Organisation({
+                id: organisationId,
+            })
+        ))
     ) {
-        throw new Error("Action is not allowed");
+        throw new Error("You don's have access to this organisation");
     }
 
     const organisation = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
@@ -79,15 +68,8 @@ export async function deleteOrganisationById(organisationId: string) {
     // get organisation
     const organisation = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
 
-    // get all OrganisationUsers
-    const organistionUsers =
-        (await indexBy(OrganisationUsers(organisationId)).get(OrganisationUser)) ?? [];
-
-    // delete organisation and users
-    await Promise.all([
-        ...organistionUsers.map(async (organistionUser) => await organistionUser.delete()),
-        organisation && organisation.delete(),
-    ]);
+    // delete organisation
+    await Promise.all([organisation && organisation.delete()]);
 
     return organisation;
 }
@@ -96,11 +78,27 @@ export async function deleteOrganisationById(organisationId: string) {
 export async function updateOrganisation({
     organisationId,
     name,
+    userId,
 }: {
     organisationId: string;
     name?: string;
+    userId: string;
 }) {
     errorIfUndefined({ organisationId });
+
+    // check user has permission to delete organisation
+    if (
+        !(await oso.authorize(
+            new User({ id: userId }),
+            "delete",
+            new Organisation({
+                id: organisationId,
+            })
+        ))
+    ) {
+        throw new Error("You don't have the correct permission to delete this organisation");
+    }
+
     const organisation = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
 
     errorIfUndefined({ organisation }, "notFound");
@@ -108,19 +106,35 @@ export async function updateOrganisation({
     if (name) {
         organisation!.name = name;
     }
+
     await organisation!.save();
     return organisation;
 }
 
-//* Get all organisations created by a user */
-export async function getOrganisationsByCreator(ownerId: string) {
-    errorIfUndefined({ ownerId });
-    const organisations = await indexBy(OrganisationCreator(ownerId)).get(Organisation);
-    return organisations;
+//* Add user to an organisation */
+export async function addUserToOrganisation({
+    organisationId,
+    userId,
+    role = "member",
+}: {
+    organisationId: string;
+    userId: string;
+    role?: OrganisationRoles;
+}) {
+    errorIfUndefined({ organisationId, userId });
+
+    await oso.tell(
+        "has_role",
+        new User({ id: userId }),
+        role,
+        new Organisation({
+            id: organisationId,
+        })
+    );
 }
 
-//* Create organisation user */
-export async function createOrganisationUser({
+//* Check if user is in an Organisation */
+export async function checkUserInOrganisation({
     organisationId,
     userId,
 }: {
@@ -128,85 +142,75 @@ export async function createOrganisationUser({
     userId: string;
 }) {
     errorIfUndefined({ organisationId, userId });
-    // create organisationUser for creator
-    const newOrganisationUser = new OrganisationUser();
-    newOrganisationUser.organisationId = organisationId;
-    newOrganisationUser.userId = userId;
-    newOrganisationUser.roleId = "none";
-    await newOrganisationUser.save();
-    return newOrganisationUser;
+
+    const inOrganisation = await oso.authorize(
+        new User({ id: userId }),
+        "read",
+        new Organisation({ id: organisationId })
+    );
+    return inOrganisation;
 }
 
 //* Get all users for an organisation */
 export async function getOrganisationUsers(organisationId: string) {
     errorIfUndefined({ organisationId });
-    const organisationUsers = await indexBy(OrganisationUsers(organisationId)).get(
-        OrganisationUser
-    );
+
+    const authorisedUsers = await oso.get("has_role", null, null, {
+        type: "Organisation",
+        id: organisationId,
+    });
+
     const users = await Promise.all(
-        organisationUsers.map(async ({ userId }) => {
-            const user = await indexBy(UserId).exact(userId).get(User);
-            return user;
+        authorisedUsers.map((fact) => {
+            const [_, userInstance, role] = fact;
+            const { id } = userInstance as { id: string };
+            return indexBy(UserId).exact(id).get(User);
         })
     );
-    return users;
-}
 
-//* Get all organisationUsers for an organisation */
-export async function getOrganisationOrganisationUsers(organisationId: string) {
-    errorIfUndefined({ organisationId });
-    const organisationUsers = await indexBy(OrganisationUsers(organisationId)).get(
-        OrganisationUser
-    );
-    return organisationUsers;
-}
+    const usersMap = users.reduce<{ [key: string]: User }>((acc, user) => {
+        if (user) {
+            return { ...acc, [user.id]: user };
+        }
+        return acc;
+    }, {});
 
-//* Get all organisationUsers for a user */
-export async function getUserOrganisationUsers(userId: string) {
-    errorIfUndefined({ userId });
-    const organisationUsers = await indexBy(UserOrganisations(userId)).get(OrganisationUser);
-    return organisationUsers;
+    const usersAndRoles = authorisedUsers.map((fact) => {
+        const [_, userInstance, role] = fact;
+        const { id } = userInstance as { id: string };
+        return { user: usersMap[id], role: role as OrganisationRoles };
+    });
+
+    return usersAndRoles;
 }
 
 //* Get all organisations a user is a member of */
 export async function getUserOrganisations(userId: string) {
     errorIfUndefined({ userId });
+
     const authorisedOrganisations = await oso.list(
-        { type: "User", id: userId },
+        new User({ id: userId }),
         "read",
         "Organisation"
     );
+
+    console.log("authorisedOrganisations", authorisedOrganisations);
+
+    /** test get users for org */
+    const org = new Organisation({
+        id: authorisedOrganisations[0],
+    });
+    console.log("org", org);
+    const authorisedUsers = await oso.get("has_role", null, "owner", org);
+
+    console.log("authorisedUsers", authorisedUsers);
+    /** */
+
     const organisations = await Promise.all(
         authorisedOrganisations.map((organisationId) =>
             indexBy(OrganisationId).exact(organisationId).get(Organisation)
         )
     );
 
-    // Currently not needed replaced by oso
-    /*const userOrganisationUserEntries = await getUserOrganisationUsers(userId);
-    const organisations = await Promise.all(
-        userOrganisationUserEntries.map(({ organisationId }) =>
-            getOrganisationById({ organisationId, userId })
-        )
-    );*/
-
     return organisations;
-}
-
-//* Delete organisation user */
-export async function removeUserFromOrganisation({
-    organisationId,
-    userId,
-}: {
-    organisationId: string;
-    userId: string;
-}) {
-    errorIfUndefined({ organisationId, userId });
-    const user = await indexBy(UserOrganisations(userId))
-        .exact(organisationId)
-        .get(OrganisationUser);
-
-    errorIfUndefined({ user }, "notFound");
-    await user!.delete();
-    return user;
 }

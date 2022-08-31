@@ -5,7 +5,6 @@ import { ContentField } from "@lib/content/data/types";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import {
     Box,
-    Button,
     Card,
     Divider,
     Grid,
@@ -26,7 +25,6 @@ import { ContentFieldManager } from "./content-fieldManager";
 import { ContentFields } from "./content-fields";
 import { ContentHeader } from "./content-header";
 import { ContentHistory } from "./content-history";
-import { ContentOutdated } from "./content-outdated";
 import { ContentStatusBadge } from "./content-status/status-badge";
 dayjs.extend(relativeTime);
 

@@ -45,7 +45,6 @@ export const AssetManager = ({
         ? { selectable: true as const, select, deselect, selected }
         : { selectable: false as const };
 
-    console.log("(_value) :>> ", _value);
     return (
         <Card p={0} withBorder>
             <Stack spacing={0}>

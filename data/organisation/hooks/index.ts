@@ -5,6 +5,8 @@ import { AxiosError } from "axios";
 import { createOrganisation, getMyOrganisations, getOrganisationUsers } from "../queries";
 import { CleanedCamel } from "type-helpers";
 import { Organisation } from "@lib/organisation/data/organisation.model";
+import { User } from "@lib/user/data/user.model";
+import { OrganisationRoles } from "@lib/organisation/data";
 
 export type MyOrganisationsResponse = {
     organisations: CleanedCamel<Organisation>;
@@ -52,8 +54,16 @@ export function useGetMyOrganisations() {
     return useQuery(Keys.GET_MY_ORGANISATIONS, getMyOrganisations);
 }
 
-export function useGetOrganisationUsers({ organisationId }: { organisationId: string }) {
-    return useQuery([Keys.GET_ORGANISATION_USERS, organisationId], () =>
-        getOrganisationUsers({ organisationId })
+export function useGetOrganisationUsers({
+    organisationId,
+    initialData,
+}: {
+    organisationId: string;
+    initialData?: { usersAndRoles: { user: CleanedCamel<User>; role: OrganisationRoles }[] };
+}) {
+    return useQuery(
+        [Keys.GET_ORGANISATION_USERS, organisationId],
+        () => getOrganisationUsers({ organisationId })
+        //initialData
     );
 }

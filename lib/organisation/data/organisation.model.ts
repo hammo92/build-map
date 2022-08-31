@@ -1,7 +1,6 @@
 /* organisation.model.ts */
 
 import { buildIndex, indexBy, Model } from "serverless-cloud-data-utils";
-import slugify from "slugify";
 
 //* Organisation model and indexes //
 
@@ -32,39 +31,6 @@ export class Organisation extends Model<Organisation> {
         return [
             indexBy(OrganisationId).exact(this.id),
             indexBy(OrganisationCreator(this.createdBy)).exact(this.id),
-        ];
-    }
-}
-
-//* OrganisationUser model and indexes, used to manage and access members of a organisation */
-
-// To get all organsations a user is a member of *//
-//namespace user_${userId}:organisations:${organisationId} */
-export const UserOrganisations = (userId: string) => {
-    return buildIndex({ namespace: `user_${userId}:organisations` });
-};
-
-// To get all users who are members of an organisation *//
-//namespace organisation_${organisationId}:users:${userId} */
-export const OrganisationUsers = (organisationId: string) =>
-    buildIndex({
-        namespace: `organisation_${organisationId}:users`,
-        label: "label1",
-    });
-
-//model: OrganisationUser */
-export class OrganisationUser extends Model<OrganisationUser> {
-    organisationId: string;
-    createdTime: string;
-    createdBy: string;
-    lastEditedTime: string;
-    lastEditedBy: string;
-    userId: string;
-    roleId: string;
-    keys() {
-        return [
-            indexBy(UserOrganisations(this.userId)).exact(this.organisationId),
-            indexBy(OrganisationUsers(this.organisationId)).exact(this.userId),
         ];
     }
 }

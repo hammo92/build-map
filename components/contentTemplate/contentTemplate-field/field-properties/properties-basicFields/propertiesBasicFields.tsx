@@ -20,7 +20,7 @@ interface BasicFieldOptions {
 interface PropertiesBasicFieldsProps {
     type: FieldType;
     options: Record<string, any>;
-    contentTemplate: CleanedCamel<ContentTemplate>;
+    contentTemplate?: CleanedCamel<ContentTemplate>;
 }
 
 const FieldTypeBaseFields = ({ type, options, contentTemplate }: PropertiesBasicFieldsProps) => {

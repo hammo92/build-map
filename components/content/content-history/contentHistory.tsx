@@ -1,6 +1,6 @@
 import { UserAvatar } from "@components/user/user-avatar";
 import { useGetUsers } from "@data/user/hooks";
-import { faEllipsis, faMemoCircleInfo } from "@fortawesome/pro-regular-svg-icons";
+import { faMemoCircleInfo } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Content } from "@lib/content/data/content.model";
 import { ContentField } from "@lib/content/data/types";
@@ -10,7 +10,6 @@ import { ActionIcon, Group, Modal, ScrollArea, Stack, Text, Timeline, Title } fr
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useState } from "react";
-import { useQueries } from "react-query";
 import { CleanedCamel } from "type-helpers";
 import { capitalise } from "utils/stringTransform";
 import { HistoryEntry } from "./history-entry";
@@ -97,7 +96,12 @@ export const ContentHistory = ({
                 </ScrollArea.Autosize>
             </Stack>
 
-            <Modal opened={opened} onClose={() => setOpened(false)} title="Content History">
+            <Modal
+                opened={opened}
+                size="xl"
+                onClose={() => setOpened(false)}
+                title="Content History"
+            >
                 <Timeline bulletSize={24}>
                     {content.history.map((historyEntry) => (
                         <Timeline.Item

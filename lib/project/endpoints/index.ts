@@ -35,8 +35,9 @@ export const projects = () => {
     //* Get project by id */
     api.get(`/projects/:projectId`, async function (req: any, res: any) {
         try {
+            const { user } = req;
             const projectId = req.params.projectId;
-            const project = await getProjectById(projectId);
+            const project = await getProjectById({ projectId, userId: user.id });
             return res.status(200).send({
                 project: project && project.clean(),
             });

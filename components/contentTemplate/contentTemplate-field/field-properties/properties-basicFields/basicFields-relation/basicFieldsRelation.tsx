@@ -13,7 +13,7 @@ export interface BasicFieldsRelationProps {
     /** disable related to select option */
     relationLocked?: boolean;
 
-    contentTemplate: CleanedCamel<ContentTemplate>;
+    contentTemplate?: CleanedCamel<ContentTemplate>;
 }
 
 export const BasicFieldsRelation = ({
@@ -55,7 +55,7 @@ export const BasicFieldsRelation = ({
                     label={`Property Name On ${relatedName}`}
                     name="reciprocalPropertyName"
                     required
-                    placeholder={pluralize(contentTemplate.name)}
+                    placeholder={contentTemplate && pluralize(contentTemplate.name)}
                 />
             )}
         </>

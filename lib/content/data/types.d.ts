@@ -20,6 +20,9 @@ export interface FieldBase {
     id: string;
     templateFieldId?: string;
     category: "template" | "additional";
+    assets?: string[];
+    notes?: string[];
+    media?: string[];
 }
 
 export interface ContentFieldCheckbox extends PropertyCheckbox, FieldBase {

@@ -1,6 +1,6 @@
 import { indexBy } from "serverless-cloud-data-utils";
 import { v5 as uuidv5 } from "uuid";
-import { createOrganisationUser } from "../../organisation/data";
+import { addUserToOrganisation } from "../../organisation/data";
 import { USER_UUID_NAMESPACE } from "../../user/data";
 import {
     Invitation,
@@ -97,7 +97,7 @@ export async function redeemInvitationById(id: string) {
     // find id from email
     const userId = await uuidv5(email, USER_UUID_NAMESPACE);
 
-    await createOrganisationUser({ organisationId, userId });
+    await addUserToOrganisation({ organisationId, userId });
     //Todo: if project is defined on invitation
     // if (invitation.projectId) {
     //     await createProjectUser({ projectId, userId });

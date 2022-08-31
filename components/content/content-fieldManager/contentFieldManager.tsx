@@ -34,9 +34,7 @@ function convertFormDataForUpdate({
 const ContentFields = ({ fields }: { fields: ContentField[] }) => {
     const { watch, formState } = useFormContext();
     const values = watch();
-    console.log("values", values);
     const allFalse = !Object.entries(values).some(([_, val]) => val === true);
-    console.log("allFalse :>> ", allFalse);
     return (
         <Stack>
             {fields.map((field) => {

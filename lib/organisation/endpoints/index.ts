@@ -1,14 +1,10 @@
-import { api, params } from "@serverless/cloud";
+import { api } from "@serverless/cloud";
 import {
-    createOrganisationUser,
     createOrganisation,
     deleteOrganisationById,
     getOrganisationById,
-    getOrganisationOrganisationUsers,
-    getOrganisationsByCreator,
     getOrganisationUsers,
     getUserOrganisations,
-    removeUserFromOrganisation,
     updateOrganisation,
 } from "../data/index";
 
@@ -53,9 +49,11 @@ export const organisations = () => {
     api.patch(`/organisations/:organisationId`, async function (req: any, res: any) {
         try {
             const organisationId = req.params.organisationId;
+            const { user } = req;
             const organisation = await updateOrganisation({
                 organisationId,
                 name: req.body.name,
+                userId: user.id,
             });
             return res.status(200).send({
                 organisation: organisation && organisation.clean(),
@@ -85,9 +83,9 @@ export const organisations = () => {
     });
 
     //* Create organisation user */
-    api.post("/organisations/:organisationId/users", async function (req: any, res: any) {
+    /*api.post("/organisations/:organisationId/users", async function (req: any, res: any) {
         try {
-            const organisationUser = await createOrganisationUser({
+            const organisationUser = await addUserToOrganisation({
                 organisationId: req.params.organisationId,
                 userId: req.body.userId,
             });
@@ -100,10 +98,10 @@ export const organisations = () => {
                 message: error.message,
             });
         }
-    });
+    });*/
 
     //* Delete organisation user */
-    api.delete("/organisations/:organisationId/users", async function (req: any, res: any) {
+    /*api.delete("/organisations/:organisationId/users", async function (req: any, res: any) {
         try {
             const user = await removeUserFromOrganisation({
                 organisationId: req.params.organisationId,
@@ -118,16 +116,21 @@ export const organisations = () => {
                 message: error.message,
             });
         }
-    });
+    });*/
 
     //* Get all users for an organisation */
     api.get(`/organisations/:organisationId/users`, async function (req: any, res: any) {
         try {
             const organisationId = req.params.organisationId;
-            const users = await getOrganisationUsers(organisationId);
+            const usersAndRoles = await getOrganisationUsers(organisationId);
 
             return res.status(200).send({
-                users: users.length && users.map((user) => user!.clean(["salt", "hashedPassword"])),
+                usersAndRoles:
+                    usersAndRoles.length &&
+                    usersAndRoles.map(({ user, role }) => ({
+                        user: user!.clean(["salt", "hashedPassword"]),
+                        role,
+                    })),
             });
         } catch (error: any) {
             console.log(error);
@@ -138,7 +141,7 @@ export const organisations = () => {
     });
 
     //* Get all organisationUsers for an organisation */
-    api.get(
+    /*api.get(
         `/organisations/:organisationId/organisationUsers`,
         async function (req: any, res: any) {
             try {
@@ -156,23 +159,7 @@ export const organisations = () => {
                 });
             }
         }
-    );
-
-    //* Get all organisations a user has created */
-    api.get(`/me/createdOrganisations`, async function (req: any, res: any) {
-        try {
-            const { user } = req;
-            const organisations = await getOrganisationsByCreator(user.id);
-            return res.status(200).send({
-                organisations: organisations.map((organisation) => organisation.clean()),
-            });
-        } catch (error: any) {
-            console.log(error);
-            return res.status(403).send({
-                message: error.message,
-            });
-        }
-    });
+    );*/
 
     //* Get all organisations a user is a member of */
     api.get(`/me/organisations`, async function (req: any, res: any) {

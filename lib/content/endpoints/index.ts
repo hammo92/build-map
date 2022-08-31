@@ -1,7 +1,6 @@
 import { ContentTemplateHistoryEntry } from "@lib/contentTemplate/data/contentTemplate.model";
 import { api, events } from "@serverless/cloud";
 import {
-    contentAndTemplateDifference,
     createContent,
     deleteContentById,
     getContentById,

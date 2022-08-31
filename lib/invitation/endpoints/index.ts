@@ -1,6 +1,6 @@
 import { api } from "@serverless/cloud";
 import { v5 as uuidv5 } from "uuid";
-import { getUserOrganisationUsers } from "../../organisation/data";
+import { checkUserInOrganisation } from "../../organisation/data";
 import { USER_UUID_NAMESPACE } from "../../user/data/index";
 import {
     createInvitation,
@@ -19,13 +19,15 @@ export const invitations = () => {
     api.post(`/invitations`, async function (req: any, res: any) {
         try {
             const { user } = req;
-
+            const { organisationId } = req.body;
             // check user not already in Org
             const inviteeId = await uuidv5(req.body.email, USER_UUID_NAMESPACE);
-            const userOrganisations = await getUserOrganisationUsers(inviteeId);
-            const alreadyMember = userOrganisations.some(
-                ({ organisationId }) => organisationId === req.body.organisationId
-            );
+
+            const alreadyMember = await checkUserInOrganisation({
+                userId: inviteeId,
+                organisationId,
+            });
+
             if (alreadyMember) {
                 throw new Error("User is already in organisation");
             }

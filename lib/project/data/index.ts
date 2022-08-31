@@ -16,6 +16,7 @@ import {
     ProjectUsers,
     UserProjects,
 } from "./projectModel";
+
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
 //* Create project */
@@ -70,7 +71,7 @@ export async function createProject({
     newProjectUser.userId = userId;
     newProjectUser.roleId = "none";
     await Promise.all([
-        //oso.addRole(user, "writer", newProject),
+        oso.tell("has_role", user!, "owner", newProject),
         newProject.save(),
         newProjectUser.save(),
     ]);
@@ -78,8 +79,23 @@ export async function createProject({
 }
 
 //* Get project by id */
-export async function getProjectById(id: string) {
-    const project = await indexBy(ProjectId).exact(id).get(Project);
+export async function getProjectById({ projectId, userId }: { projectId: string; userId: string }) {
+    errorIfUndefined({ projectId, userId });
+
+    // check user has permission to read organisation
+    /*if (
+        !(await oso.authorize(
+            new User({ id: userId }),
+            "read",
+            new Project({
+                id: projectId,
+            })
+        ))
+    ) {
+        throw new Error("You don's have access to this organisation");
+    }*/
+
+    const project = await indexBy(ProjectId).exact(projectId).get(Project);
     return project;
 }
 
@@ -149,7 +165,7 @@ export async function getProjectsByCreator(ownerId: string) {
     return projects;
 }
 
-//* Get all projects for an organisation */
+//* Get all projects for an organisation that user can see*/
 export async function getProjectsByOrgId(organisationId: string) {
     errorIfUndefined({ organisationId });
     const projects = await indexBy(ProjectOrg(organisationId)).get(Project);

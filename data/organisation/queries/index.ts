@@ -1,3 +1,4 @@
+import { OrganisationRoles } from "@lib/organisation/data";
 import { Organisation } from "@lib/organisation/data/organisation.model";
 import { User } from "@lib/user/data/user.model";
 import camelcaseKeys from "camelcase-keys";
@@ -22,7 +23,7 @@ export async function getMyOrganisations() {
 
 export async function getOrganisationUsers({ organisationId }: { organisationId: string }) {
     const { data } = await apiClient.get<{
-        users: CleanedSnake<User>[];
+        usersAndRoles: { user: CleanedSnake<User>; role: OrganisationRoles }[];
     }>(`/organisations/${organisationId}/users`);
     return camelcaseKeys(data, { deep: true });
 }
