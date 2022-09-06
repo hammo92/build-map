@@ -7,10 +7,10 @@ import Image from "next/image";
 import { CleanedCamel } from "type-helpers";
 import Illustration from "../../public/images/tokyo/2.0-04.svg";
 import { FieldCreate } from "./contentTemplate-field/field-create";
-import { FieldList } from "./contentTemplate-field/field-list";
 import { ContentTemplateHeader } from "./contentTemplate-header/contentTemplateHeader";
 import { ContentTemplateHistory } from "./contentTemplate-history";
 import { ContentTemplateTitleSelect } from "./contentTemplate-titleSelect/contentTemplateTitleSelect";
+import { ContentTemplateTree } from "./contentTemplate-tree";
 
 const NoContentTemplates = () => (
     <Container p="md" fluid>
@@ -36,7 +36,7 @@ export const ContentTemplate = ({
                     <ContentTemplateHeader contentTemplate={data?.contentTemplate} />
                     <Grid>
                         <Grid.Col span={9}>
-                            <FieldList contentTemplate={data?.contentTemplate} />
+                            <ContentTemplateTree contentTemplate={data?.contentTemplate} />
                             <FieldCreate
                                 contentTemplate={data?.contentTemplate}
                                 variant={"button"}

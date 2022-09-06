@@ -11,7 +11,6 @@ export interface PropertyBase<T extends FieldType> {
     id: string;
     name: string;
     type: T;
-
     active?: boolean;
     required?: boolean;
     description?: string;

@@ -3,7 +3,8 @@ import { IconTitle } from "@components/ui/iconTitle/iconTitle";
 import { faGripVertical } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Property } from "@lib/contentTemplate/data/types";
-import { Card, Center, Group } from "@mantine/core";
+import { Card, Center, Divider, Group } from "@mantine/core";
+import { useHover } from "@mantine/hooks";
 import { FC } from "react";
 import { splitCamel } from "utils/stringTransform";
 import { FieldDelete } from "../field-delete";
@@ -12,9 +13,9 @@ import { FieldEdit } from "../field-edit";
 interface FieldCardProps {
     field: Property;
     index?: number;
-    withDrag?: boolean;
     withActions?: boolean;
     leftContent?: React.ReactNode;
+    grow?: boolean;
 }
 
 const fieldSubtitle = (field: Property) => {
@@ -32,40 +33,43 @@ const fieldSubtitle = (field: Property) => {
 export const FieldCard: FC<FieldCardProps> = ({
     field,
     index,
-    withDrag = true,
     withActions = true,
     leftContent,
+    grow,
 }) => {
     return (
-        <Card>
+        <Card radius={0} withBorder sx={{ flex: grow ? 1 : "auto" }}>
             <Card.Section
-                p="md"
                 sx={(theme) => ({
                     background: theme.colors.dark[6],
                 })}
             >
                 <Group position="apart">
-                    {withDrag && (
-                        <Center>
-                            <FontAwesomeIcon icon={faGripVertical} />
-                        </Center>
-                    )}
-                    {leftContent !== undefined && leftContent}
-                    <Group
-                        sx={{
-                            flex: "1",
-                            alignSelf: "stretch",
-                        }}
-                    >
-                        <IconTitle
-                            title={field.name}
-                            subtitle={fieldSubtitle(field)}
-                            icon={FIELD_TYPES[field.type].icon}
-                        />
+                    <Group p="md">
+                        {leftContent !== undefined && leftContent}
+                        <Group
+                            sx={{
+                                flex: "1",
+                                alignSelf: "stretch",
+                            }}
+                        >
+                            <IconTitle
+                                title={field.name}
+                                subtitle={fieldSubtitle(field)}
+                                icon={FIELD_TYPES[field.type].icon}
+                            />
+                        </Group>
                     </Group>
                     {withActions && (
-                        <Group>
+                        <Group
+                            p="md"
+                            grow
+                            sx={(theme) => ({
+                                alignSelf: "stretch",
+                            })}
+                        >
                             <FieldEdit field={field} />
+                            <Divider variant="solid" orientation="vertical" />
                             <FieldDelete field={field} />
                         </Group>
                     )}

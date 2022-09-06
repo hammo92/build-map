@@ -10,6 +10,7 @@
         "lint": "next lint"
     },
     "dependencies": {
+        "@atlaskit/tree": "^8.6.2",
         "@auth0/nextjs-auth0": "^1.9.1",
         "@emotion/react": "^11.9.3",
         "@emotion/server": "^11.4.0",
@@ -40,6 +41,7 @@
         "@types/uuid": "^8.3.4",
         "@ungap/structured-clone": "^1.0.1",
         "axios": "^0.27.2",
+        "camelcase": "^7.0.0",
         "camelcase-keys": "^8.0.1",
         "clone": "^2.1.2",
         "cookies-next": "^2.1.1",
@@ -72,6 +74,7 @@
         "serverless-cloud-data-utils": "^0.3.5",
         "sharp": "0.30.4",
         "slugify": "^1.6.5",
+        "snake-case": "^3.0.4",
         "snakecase-keys": "^5.4.2",
         "swiper": "^8.3.2",
         "tinycolor2": "^1.4.2",

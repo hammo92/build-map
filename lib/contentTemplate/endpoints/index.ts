@@ -6,11 +6,13 @@ import {
     createProperty,
     deleteContentTemplateById,
     deleteProperty,
+    deletePropertyGroup,
     getContentTemplateById,
     getOrganisationContentTemplates,
     reorderProperties,
     updateContentTemplate,
     updateProperty,
+    updatePropertyGroups,
 } from "../data";
 
 export const contentTemplates = () => {
@@ -139,7 +141,7 @@ export const contentTemplates = () => {
 
     //* Create contentTemplate Property */
     api.post("/contentTemplates/:contentTemplateId/fields", async function (req: any, res: any) {
-        const { fieldProperties } = req.body;
+        const { fieldProperties, groupId } = req.body;
         const { contentTemplateId } = req.params;
         const { user } = req;
         try {
@@ -147,6 +149,7 @@ export const contentTemplates = () => {
                 contentTemplateId,
                 fieldProperties,
                 userId: user.id,
+                groupId,
             });
             return res.status(200).send({
                 contentTemplate: contentTemplate && contentTemplate.clean(),
@@ -171,6 +174,56 @@ export const contentTemplates = () => {
                 const contentTemplate = await updateProperty({
                     contentTemplateId,
                     fieldProperties,
+                    userId: user.id,
+                });
+                return res.status(200).send({
+                    contentTemplate: contentTemplate && contentTemplate.clean(),
+                });
+            } catch (error: any) {
+                console.log(error);
+                return res.status(403).send({
+                    message: error.message,
+                });
+            }
+        }
+    );
+
+    //* Update contentTemplate Property Groups */
+    api.post(
+        "/contentTemplates/:contentTemplateId/propertyGroups",
+        async function (req: any, res: any) {
+            const { propertyGroups } = req.body;
+            const { contentTemplateId } = req.params;
+            const { user } = req;
+            try {
+                const contentTemplate = await updatePropertyGroups({
+                    contentTemplateId,
+                    propertyGroups,
+                    userId: user.id,
+                });
+                return res.status(200).send({
+                    contentTemplate: contentTemplate.clean(),
+                });
+            } catch (error: any) {
+                console.log(error);
+                return res.status(403).send({
+                    message: error.message,
+                });
+            }
+        }
+    );
+
+    //* Delete contentTemplate Property Group */
+    api.delete(
+        "/contentTemplates/:contentTemplateId/propertyGroup/:groupId-:deleteContents",
+        async function (req: any, res: any) {
+            const { contentTemplateId, groupId, deleteContents } = req.params;
+            const { user } = req;
+            try {
+                const contentTemplate = await deletePropertyGroup({
+                    contentTemplateId,
+                    groupId,
+                    deleteContents,
                     userId: user.id,
                 });
                 return res.status(200).send({
@@ -216,7 +269,6 @@ export const contentTemplates = () => {
         "/contentTemplates/:contentTemplateId/fields/:fieldId",
         async function (req: any, res: any) {
             const { contentTemplateId, fieldId } = req.params;
-            console.log("req.params", req.params);
             try {
                 const { user } = req;
                 const contentTemplate = await deleteProperty({

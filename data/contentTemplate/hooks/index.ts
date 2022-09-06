@@ -1,9 +1,11 @@
+import { content } from "@lib/content/endpoints";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Property } from "@lib/contentTemplate/data/types";
 import { showNotification } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { CleanedCamel } from "type-helpers";
+import { ulid } from "ulid";
 import { moveInArray } from "utils/arrayModify";
 import { Keys } from "../constants";
 import {
@@ -12,12 +14,14 @@ import {
     createProperty,
     deleteContentTemplate,
     deleteProperty,
+    deletePropertyGroup,
     getContentTemplate,
     getOrganisationContentTemplates,
     getProjectContentTemplates,
     reorderProperties,
     updateContentTemplate,
     updateProperty,
+    updatePropertyGroups,
 } from "../queries";
 
 export function useCreateContentTemplate() {
@@ -165,7 +169,7 @@ export function useCreateProperty() {
 
     return useMutation(createProperty, {
         mutationKey: Keys.CREATE_CONTENT_TEMPLATE_FIELD,
-        onMutate: async ({ contentTemplateId, fieldProperties }) => {
+        onMutate: async ({ contentTemplateId, fieldProperties, groupId }) => {
             const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
@@ -176,8 +180,11 @@ export function useCreateProperty() {
                 // add new field to end with placeholder default values
                 contentTemplate.fields.push({
                     ...(fieldProperties as Property),
-                    id: "placeHolder",
+                    id: "newProperty",
                 });
+
+                contentTemplate.propertyGroups[groupId ?? "1"].children.push("newProperty");
+                //contentTemplate.propertyGroups[groupId ?? "1"].children.push("placeHolder");
 
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {
@@ -258,6 +265,48 @@ export function useUpdateProperty() {
     });
 }
 
+export function useUpdatePropertyGroups() {
+    const queryClient = useQueryClient();
+
+    return useMutation(updatePropertyGroups, {
+        mutationKey: Keys.UPDATE_CONTENT_TEMPLATE_PROPERTY_GROUPS,
+        onMutate: async ({ contentTemplateId, propertyGroups }) => {
+            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries(queryId);
+
+            // Snapshot the previous value
+            const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
+
+            if (currentData?.contentTemplate) {
+                const { contentTemplate } = currentData;
+                contentTemplate.propertyGroups = propertyGroups;
+
+                // Optimistically update to the new value
+                queryClient.setQueryData(queryId, () => {
+                    return {
+                        contentTemplate,
+                    };
+                });
+            }
+
+            // Return a context object with the snapshotted value
+            return { currentData };
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.log(`error`, error?.response?.data);
+            showNotification({
+                title: "Error",
+                message: error?.response?.data.message,
+                color: "red",
+            });
+        },
+        onSettled: (data) => {
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
+        },
+    });
+}
+
 export function useDeleteProperty() {
     const queryClient = useQueryClient();
 
@@ -286,6 +335,27 @@ export function useDeleteProperty() {
             // Return a context object with the snapshotted value
             return { currentData };
         },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.log(`error`, error?.response?.data);
+            showNotification({
+                title: "Could not delete field",
+                message: error?.response?.data.message,
+                color: "red",
+            });
+        },
+        onSettled: (data) => {
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
+            // also force refresh of organisation content templates as this will need to update
+            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TEMPLATES);
+        },
+    });
+}
+
+export function useDeletePropertyGroup() {
+    const queryClient = useQueryClient();
+
+    return useMutation(deletePropertyGroup, {
+        mutationKey: Keys.DELETE_CONTENT_TEMPLATE_FIELD,
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
             showNotification({

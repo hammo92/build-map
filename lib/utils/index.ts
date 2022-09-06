@@ -30,12 +30,12 @@ export function errorIfUndefined(
     }
 }
 
-export function errorRequiredPropsUndefined<T, U extends { [key: string]: any }>({
+export function errorRequiredPropsUndefined<U extends { [key: string]: any }>({
     props,
     propPaths,
 }: {
     props: U;
-    propPaths: KeyPath<T>[];
+    propPaths: KeyPath<U>[];
 }) {
     const missingList: string[] = [];
     propPaths.forEach((key) => {

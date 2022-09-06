@@ -5,6 +5,7 @@ import { indexBy } from "serverless-cloud-data-utils";
 import { CleanedCamel } from "type-helpers";
 import { ulid } from "ulid";
 import { Required } from "utility-types";
+import { objArrayToHashmap, objArrToKeyIndexedMap } from "../../../utils/arrayModify";
 import { IconPickerIcon } from "../../../components/ui/iconPicker/types";
 import { withOrdinalSuffix } from "../../../utils/numbers";
 import { getDifference } from "../../../utils/objects";
@@ -14,6 +15,7 @@ import {
     ContentTemplateId,
     ContentTemplateOrganisation,
     ContentTemplateTitle,
+    PropertyGroup,
 } from "./contentTemplate.model";
 import {
     createRelatedProperty,
@@ -21,6 +23,9 @@ import {
     updateRelatedProperty,
 } from "./functions/relation";
 import { Property, PropertyRelation } from "./types";
+import camelcaseKeys from "camelcase-keys";
+import { snakeCase } from "snake-case";
+import camelCase from "camelcase";
 
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
@@ -51,6 +56,9 @@ export async function createContentTemplate({
     newContentTemplate.createdBy = userId;
     newContentTemplate.organisationId = organisationId;
     newContentTemplate.fields = [];
+    newContentTemplate.propertyGroups = {
+        ["1"]: { id: "1", children: [], title: "root", repeatable: false, isExpanded: true },
+    };
     newContentTemplate.history = [];
     newContentTemplate.title = {
         setType: "auto",
@@ -175,13 +183,14 @@ export async function createProperty(props: {
     contentTemplateId: string;
     fieldProperties: Required<Partial<CleanedCamel<Property>>, "name" | "type">;
     userId: string;
+    groupId?: string;
 }) {
     errorRequiredPropsUndefined({
         props,
         propPaths: ["contentTemplateId", "fieldProperties.name", "fieldProperties.type", "userId"],
     });
 
-    const { contentTemplateId, fieldProperties, userId } = props;
+    const { contentTemplateId, fieldProperties, userId, groupId } = props;
 
     const contentTemplate = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
@@ -218,6 +227,9 @@ export async function createProperty(props: {
     }
 
     contentTemplate.fields.push(newProperty);
+
+    // add to root group if no group specified
+    contentTemplate.propertyGroups[groupId ?? "1"].children.push(newProperty.id);
 
     const changes = getDifference({}, fieldProperties);
 
@@ -291,6 +303,108 @@ export async function updateProperty(props: {
             changes,
             fieldId: property.id,
         },
+    });
+
+    return contentTemplate;
+}
+
+//* Update Property Groups */
+export async function updatePropertyGroups(props: {
+    contentTemplateId: string;
+    propertyGroups: Record<string, PropertyGroup>;
+    userId: string;
+}) {
+    errorRequiredPropsUndefined({
+        props,
+        propPaths: ["contentTemplateId", "propertyGroups", "userId"],
+    });
+
+    const { contentTemplateId, propertyGroups, userId } = props;
+
+    const contentTemplate = await indexBy(ContentTemplateId)
+        .exact(contentTemplateId)
+        .get(ContentTemplate);
+
+    if (!contentTemplate) throw new Error("No content template found");
+
+    contentTemplate.propertyGroups = propertyGroups;
+
+    await contentTemplate.saveWithHistory({
+        userId,
+        action: "updated",
+    });
+
+    return contentTemplate;
+}
+
+//* Delete Property Group */
+export async function deletePropertyGroup(props: {
+    contentTemplateId: string;
+    groupId: string;
+    deleteContents?: boolean;
+    userId: string;
+}) {
+    errorRequiredPropsUndefined({
+        props,
+        propPaths: ["contentTemplateId", "groupId", "userId"],
+    });
+
+    const { contentTemplateId, groupId, deleteContents, userId } = props;
+
+    const contentTemplate = await indexBy(ContentTemplateId)
+        .exact(contentTemplateId)
+        .get(ContentTemplate);
+
+    if (!contentTemplate) throw new Error("No content template found");
+
+    const deSnake = (string: string) => camelCase(snakeCase(string)).toUpperCase();
+
+    // workaround for group key being transformed by data utils
+    //Todo - find fix for ULID being transformed by snakecaseKeys in data-utils
+    const groupIdTransformed = deSnake(groupId);
+    const propertyGroups;
+
+    const getParentId = (id: string | number) => {
+        let parent = null;
+        Object.values(contentTemplate.propertyGroups).forEach((item) => {
+            if (item.children.length && item.children.includes(id)) {
+                parent = item.id;
+            }
+        });
+        return parent;
+    };
+
+    const propertyGroup = contentTemplate.propertyGroups[groupIdTransformed];
+    console.log("propertyGroup", propertyGroup);
+
+    if (deleteContents) {
+        const removedFields = [];
+        const fieldsMap = objArrToKeyIndexedMap(contentTemplate.fields, "id");
+        const deleteChildren = (propertyGroup: PropertyGroup) => {
+            propertyGroup.children.forEach((id) => {
+                /** Check if id belongs to a field, if true remove field */
+                const field = fieldsMap.get(`${id}`);
+                if (field) {
+                    fieldsMap.delete(`${id}`);
+                    removedFields.push(field);
+                } else {
+                    deleteChildren(contentTemplate.propertyGroups[id]);
+                }
+            });
+        };
+        deleteChildren(propertyGroup);
+        contentTemplate.fields = Array.from(fieldsMap, ([name, value]) => ({ ...value }));
+    } else {
+        const parentId = getParentId(groupIdTransformed) ?? "1";
+        const parentGroup = contentTemplate.propertyGroups[parentId];
+        const groupIndex = parentGroup.children.indexOf(groupIdTransformed);
+        parentGroup.children.splice(groupIndex, 1);
+        parentGroup.children.push(...propertyGroup.children);
+    }
+
+    await contentTemplate.saveWithHistory({
+        userId,
+        action: "updated",
     });
 
     return contentTemplate;

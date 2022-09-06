@@ -1,6 +1,6 @@
 import { useReorderProperties } from "@data/contentTemplate/hooks";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Box, Group, Skeleton, Stack } from "@mantine/core";
+import { Box, Skeleton, Stack } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { FC, useEffect } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";

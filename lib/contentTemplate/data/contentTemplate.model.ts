@@ -33,6 +33,14 @@ export interface ContentTemplateTitle {
     value: string;
 }
 
+export interface PropertyGroup {
+    id: string | number;
+    children: (string | number)[];
+    title: string;
+    repeatable: boolean;
+    isExpanded: boolean;
+}
+
 //* contentTemplate model and indexes //
 
 // To get all contentTemplate by it's ID *//
@@ -62,6 +70,7 @@ export class ContentTemplate extends Model<ContentTemplate> {
     status: "draft" | "archived" | "published";
     templateType: "collection" | "component";
     fields: Property[];
+    propertyGroups: Record<string | number, PropertyGroup>;
     history: ContentTemplateHistoryEntry[];
     title: ContentTemplateTitle;
 

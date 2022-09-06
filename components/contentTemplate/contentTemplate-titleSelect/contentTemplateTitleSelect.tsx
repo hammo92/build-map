@@ -43,6 +43,7 @@ export const ContentTemplateTitleSelect = ({
         >
             <SmartForm.Select
                 name="title"
+                withinPortal={true}
                 label="Title Property"
                 description="For content created with this template"
                 data={[

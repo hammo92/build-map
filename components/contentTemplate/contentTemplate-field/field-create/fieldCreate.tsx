@@ -19,7 +19,8 @@ import { SelectFieldType } from "./selectFieldType";
 export const FieldCreate: FC<{
     contentTemplate: CleanedCamel<ContentTemplate>;
     variant: "button" | "icon";
-}> = ({ contentTemplate, variant = "button" }) => {
+    groupId?: string;
+}> = ({ contentTemplate, variant = "button", groupId = "1" }) => {
     const modals = useModals();
     const { mutateAsync, isLoading } = useCreateProperty();
 
@@ -28,6 +29,7 @@ export const FieldCreate: FC<{
             fieldProperties: {
                 ...values,
             },
+            groupId,
             contentTemplateId: contentTemplate.id,
         });
         if (data.contentTemplate) {
