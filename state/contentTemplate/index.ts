@@ -4,9 +4,13 @@ import { proxy } from "valtio";
 export interface ContentTemplateStateProps {
     hasEditPermission: boolean;
     contentTemplateId: string;
+    deletingGroup: string | number;
+    processingItems: (string | number)[];
 }
 
 export const contentTemplateState = proxy<ContentTemplateStateProps>({
     hasEditPermission: true,
     contentTemplateId: "",
+    deletingGroup: "",
+    processingItems: [],
 });

@@ -4,6 +4,7 @@ import snakecaseKeys from "snakecase-keys";
 import {
     createContentTemplate,
     createProperty,
+    createPropertyGroup,
     deleteContentTemplateById,
     deleteProperty,
     deletePropertyGroup,
@@ -12,7 +13,8 @@ import {
     reorderProperties,
     updateContentTemplate,
     updateProperty,
-    updatePropertyGroups,
+    updatePropertyGroup,
+    reorderPropertyGroups,
 } from "../data";
 
 export const contentTemplates = () => {
@@ -188,17 +190,71 @@ export const contentTemplates = () => {
         }
     );
 
-    //* Update contentTemplate Property Groups */
+    //* Create contentTemplate Property Group */
     api.post(
         "/contentTemplates/:contentTemplateId/propertyGroups",
         async function (req: any, res: any) {
-            const { propertyGroups } = req.body;
+            const { name, parentId } = req.body;
             const { contentTemplateId } = req.params;
             const { user } = req;
             try {
-                const contentTemplate = await updatePropertyGroups({
+                const contentTemplate = await createPropertyGroup({
                     contentTemplateId,
-                    propertyGroups,
+                    name,
+                    parentId,
+                    userId: user.id,
+                });
+                return res.status(200).send({
+                    contentTemplate: contentTemplate.clean(),
+                });
+            } catch (error: any) {
+                console.log(error);
+                return res.status(403).send({
+                    message: error.message,
+                });
+            }
+        }
+    );
+
+    //* Rorder Property Groups/Properties */
+    api.patch(
+        "/contentTemplates/:contentTemplateId/propertyGroups",
+        async function (req: any, res: any) {
+            const { source, destination } = req.body;
+            const { contentTemplateId } = req.params;
+            const { user } = req;
+            try {
+                const contentTemplate = await reorderPropertyGroups({
+                    contentTemplateId,
+                    userId: user.id,
+                    source,
+                    destination,
+                });
+                return res.status(200).send({
+                    contentTemplate: contentTemplate.clean(),
+                });
+            } catch (error: any) {
+                console.log(error);
+                return res.status(403).send({
+                    message: error.message,
+                });
+            }
+        }
+    );
+
+    //* Update contentTemplate Property Group */
+    api.post(
+        "/contentTemplates/:contentTemplateId/propertyGroup/:propertyGroupId",
+        async function (req: any, res: any) {
+            const { name, repeatable } = req.body;
+            const { contentTemplateId, propertyGroupId } = req.params;
+            const { user } = req;
+            try {
+                const contentTemplate = await updatePropertyGroup({
+                    contentTemplateId,
+                    propertyGroupId,
+                    name,
+                    repeatable,
                     userId: user.id,
                 });
                 return res.status(200).send({
@@ -223,7 +279,7 @@ export const contentTemplates = () => {
                 const contentTemplate = await deletePropertyGroup({
                     contentTemplateId,
                     groupId,
-                    deleteContents,
+                    deleteContents: deleteContents === "true",
                     userId: user.id,
                 });
                 return res.status(200).send({

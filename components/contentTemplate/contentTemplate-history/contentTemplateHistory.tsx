@@ -1,18 +1,14 @@
 import { UserAvatar } from "@components/user/user-avatar";
 import { useGetUsers } from "@data/user/hooks";
-import { faEllipsis, faEye, faMemoCircleInfo } from "@fortawesome/pro-regular-svg-icons";
+import { faMemoCircleInfo } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Content } from "@lib/content/data/content.model";
-import { ContentField } from "@lib/content/data/types";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { StrippedUser } from "@lib/user/data";
-import { ActionIcon, Group, Modal, ScrollArea, Stack, Text, Timeline, Title } from "@mantine/core";
+import { ActionIcon, Group, List, ScrollArea, Stack, Text, Timeline, Title } from "@mantine/core";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useState } from "react";
 import { CleanedCamel } from "type-helpers";
-import { capitalise } from "utils/stringTransform";
-import { UpdatedProperty } from "./updatedProperty";
 dayjs.extend(relativeTime);
 
 export const ContentTemplateHistory = ({
@@ -25,7 +21,7 @@ export const ContentTemplateHistory = ({
     const updatingUsers = Array.from(
         new Set(
             contentTemplate.history.reduce<string[]>((acc, entry) => {
-                acc.push(entry.userId);
+                acc.push(entry.editedBy);
                 return acc;
             }, [])
         )
@@ -54,35 +50,29 @@ export const ContentTemplateHistory = ({
                     <Timeline bulletSize={24}>
                         {contentTemplate.history.map((historyEntry) => (
                             <Timeline.Item
-                                key={historyEntry.date}
-                                title={`${contentTemplate.name} ${capitalise(historyEntry.action)}`}
+                                key={historyEntry.editedTime}
+                                title={historyEntry.title}
                                 bullet={
-                                    users[historyEntry.userId] && (
+                                    users[historyEntry.editedBy] && (
                                         <UserAvatar
-                                            user={users[historyEntry.userId]}
+                                            user={users[historyEntry.editedBy]}
                                             radius="xl"
                                             size={22}
                                         />
                                     )
                                 }
                             >
-                                <Stack spacing="sm">
-                                    {historyEntry?.propertyUpdate && (
-                                        <UpdatedProperty
-                                            updatedProperty={historyEntry?.propertyUpdate}
-                                            variant="compact"
-                                        />
-                                    )}
-                                    {historyEntry?.updateNotes?.length &&
-                                        historyEntry?.updateNotes.map((note) => (
-                                            <Text size="sm" key={note}>
-                                                {note}
-                                            </Text>
+                                {!!historyEntry.subtitle && (
+                                    <Text size="sm">{historyEntry.subtitle}</Text>
+                                )}
+                                <List size="sm">
+                                    {historyEntry?.notes?.length &&
+                                        historyEntry?.notes.map((note) => (
+                                            <List.Item key={note}>{note}</List.Item>
                                         ))}
-                                </Stack>
-
+                                </List>
                                 <Text color="dimmed" size="sm">
-                                    {dayjs(historyEntry.date).from(dayjs())}
+                                    {dayjs(historyEntry.editedTime).from(dayjs())}
                                 </Text>
                             </Timeline.Item>
                         ))}
@@ -90,7 +80,7 @@ export const ContentTemplateHistory = ({
                 </ScrollArea.Autosize>
             </Stack>
 
-            <Modal opened={opened} onClose={() => setOpened(false)} title="Content History">
+            {/* <Modal opened={opened} onClose={() => setOpened(false)} title="Content History">
                 <Timeline bulletSize={24}>
                     {contentTemplate.history.map((historyEntry) => (
                         <Timeline.Item
@@ -127,7 +117,7 @@ export const ContentTemplateHistory = ({
                         </Timeline.Item>
                     ))}
                 </Timeline>
-            </Modal>
+            </Modal> */}
         </>
     );
 };

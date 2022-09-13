@@ -1,17 +1,23 @@
-import { content } from "@lib/content/endpoints";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import {
+    createGroup,
+    deleteGroup,
+    findParentGroup,
+    reorderGroups,
+    updateGroup,
+} from "@lib/contentTemplate/data/functions/propertyGroup";
 import { Property } from "@lib/contentTemplate/data/types";
 import { showNotification } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { CleanedCamel } from "type-helpers";
-import { ulid } from "ulid";
 import { moveInArray } from "utils/arrayModify";
 import { Keys } from "../constants";
 import {
     ContentTemplateResponse,
     createContentTemplate,
     createProperty,
+    createPropertyGroup,
     deleteContentTemplate,
     deleteProperty,
     deletePropertyGroup,
@@ -21,7 +27,8 @@ import {
     reorderProperties,
     updateContentTemplate,
     updateProperty,
-    updatePropertyGroups,
+    updatePropertyGroup,
+    reorderPropertyGroups,
 } from "../queries";
 
 export function useCreateContentTemplate() {
@@ -183,7 +190,9 @@ export function useCreateProperty() {
                     id: "newProperty",
                 });
 
-                contentTemplate.propertyGroups[groupId ?? "1"].children.push("newProperty");
+                contentTemplate?.propertyGroups
+                    ?.find(({ id }) => id === (groupId ?? "1"))
+                    ?.children.push("newProperty");
                 //contentTemplate.propertyGroups[groupId ?? "1"].children.push("placeHolder");
 
                 // Optimistically update to the new value
@@ -265,12 +274,12 @@ export function useUpdateProperty() {
     });
 }
 
-export function useUpdatePropertyGroups() {
+export function useCreatePropertyGroup() {
     const queryClient = useQueryClient();
 
-    return useMutation(updatePropertyGroups, {
-        mutationKey: Keys.UPDATE_CONTENT_TEMPLATE_PROPERTY_GROUPS,
-        onMutate: async ({ contentTemplateId, propertyGroups }) => {
+    return useMutation(createPropertyGroup, {
+        mutationKey: Keys.CREATE_CONTENT_TEMPLATE_PROPERTY_GROUPS,
+        onMutate: async ({ contentTemplateId, name, parentId }) => {
             const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
@@ -280,7 +289,13 @@ export function useUpdatePropertyGroups() {
 
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
-                contentTemplate.propertyGroups = propertyGroups;
+                const { updatedGroups } = createGroup({
+                    contentTemplate,
+                    name,
+                    parentId,
+                });
+
+                contentTemplate.propertyGroups = updatedGroups;
 
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {
@@ -291,6 +306,97 @@ export function useUpdatePropertyGroups() {
             }
 
             // Return a context object with the snapshotted value
+            return { currentData };
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.log(`error`, error?.response?.data);
+            showNotification({
+                title: "Error",
+                message: error?.response?.data.message,
+                color: "red",
+            });
+        },
+        onSettled: (data) => {
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
+        },
+    });
+}
+
+export function useReorderPropertyGroups() {
+    const queryClient = useQueryClient();
+
+    return useMutation(reorderPropertyGroups, {
+        mutationKey: Keys.UPDATE_CONTENT_TEMPLATE_PROPERTY_GROUPS,
+        onMutate: async ({ contentTemplateId, source, destination }) => {
+            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries(queryId);
+
+            // Snapshot the previous value
+            const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
+
+            if (currentData?.contentTemplate) {
+                const { contentTemplate } = currentData;
+                const updatedGroups = reorderGroups({ contentTemplate, destination, source });
+
+                // Optimistically update to the new value
+                queryClient.setQueryData(queryId, () => {
+                    return {
+                        contentTemplate,
+                    };
+                });
+            }
+
+            // Return a context object with the snapshotted value
+            return { currentData };
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.log(`error`, error?.response?.data);
+            showNotification({
+                title: "Error",
+                message: error?.response?.data.message,
+                color: "red",
+            });
+        },
+        onSettled: (data) => {
+            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
+        },
+    });
+}
+
+export function useUpdatePropertyGroup() {
+    const queryClient = useQueryClient();
+
+    return useMutation(updatePropertyGroup, {
+        mutationKey: Keys.UPDATE_CONTENT_TEMPLATE_PROPERTY_GROUP,
+        onMutate: async ({ contentTemplateId, name, repeatable, propertyGroupId }) => {
+            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries(queryId);
+
+            // Snapshot the previous value
+            const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
+
+            if (currentData?.contentTemplate) {
+                const { contentTemplate } = currentData;
+
+                const { updatedGroup, index } = updateGroup({
+                    contentTemplate,
+                    groupId: propertyGroupId,
+                    repeatable,
+                    name,
+                });
+
+                contentTemplate.propertyGroups.splice(index, 1, updatedGroup);
+
+                // Optimistically update to the new value
+                queryClient.setQueryData(queryId, () => {
+                    return {
+                        contentTemplate,
+                    };
+                });
+            }
+            // Return a context object with the snapshotted value1
             return { currentData };
         },
         onError: (error: AxiosError<{ message: string }>) => {
@@ -323,6 +429,16 @@ export function useDeleteProperty() {
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
                 const updatedFields = contentTemplate.fields.filter(({ id }) => id !== fieldId);
+
+                //remove property from group
+                const parentGroup = findParentGroup({
+                    propertyGroups: contentTemplate.propertyGroups,
+                    itemId: fieldId,
+                });
+                // find group index in parent's children array and remove it
+                const groupIndex = parentGroup.children.indexOf(fieldId);
+                parentGroup.children.splice(groupIndex, 1);
+
                 contentTemplate.fields = updatedFields;
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {
@@ -356,6 +472,35 @@ export function useDeletePropertyGroup() {
 
     return useMutation(deletePropertyGroup, {
         mutationKey: Keys.DELETE_CONTENT_TEMPLATE_FIELD,
+        onMutate: async ({ contentTemplateId, groupId, deleteContents }) => {
+            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries(queryId);
+
+            // Snapshot the previous value
+            const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
+
+            if (currentData?.contentTemplate) {
+                const { contentTemplate } = currentData;
+                const { propertyGroups, fields } = deleteGroup({
+                    contentTemplate,
+                    groupId,
+                    deleteContents,
+                });
+
+                contentTemplate.fields = fields;
+                contentTemplate.propertyGroups = propertyGroups;
+                // Optimistically update to the new value
+                queryClient.setQueryData(queryId, () => {
+                    return {
+                        contentTemplate,
+                    };
+                });
+            }
+
+            // Return a context object with the snapshotted value
+            return { currentData };
+        },
         onError: (error: AxiosError<{ message: string }>) => {
             console.log(`error`, error?.response?.data);
             showNotification({

@@ -1,9 +1,9 @@
 /* contentTemplate.model.ts */
 
-import { IconPickerIcon } from "@components/ui/iconPicker/types";
-import { events } from "@serverless/cloud";
-import { buildIndex, indexBy, Model, timekey } from "serverless-cloud-data-utils";
-import { DifferenceEntry } from "utils/objects";
+import { ModelWithHistory } from "../../models";
+import { buildIndex, indexBy, timekey } from "serverless-cloud-data-utils";
+import { IconPickerIcon } from "../../../components/ui/iconPicker/types";
+import { DifferenceEntry } from "../../../utils/objects";
 import { Property } from "./types";
 
 type ContentTemplateHistoryActions = "updated" | "created" | "published" | "archived";
@@ -34,11 +34,11 @@ export interface ContentTemplateTitle {
 }
 
 export interface PropertyGroup {
+    type: "propertyGroup";
     id: string | number;
     children: (string | number)[];
-    title: string;
+    name: string;
     repeatable: boolean;
-    isExpanded: boolean;
 }
 
 //* contentTemplate model and indexes //
@@ -56,48 +56,28 @@ export const ContentTemplateOrganisation = (organisationId: string) =>
         converter: timekey,
     });
 
+interface ContentTemplateProps {
+    name: string;
+    icon: IconPickerIcon;
+    organisationId: string;
+    status: "draft" | "archived" | "published";
+    templateType: "collection" | "component";
+    fields: Property[];
+    propertyGroups: PropertyGroup[];
+    title: ContentTemplateTitle;
+}
+
 //model: ContentTemplate */
-export class ContentTemplate extends Model<ContentTemplate> {
-    id: string;
+export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
     type = "ContentTemplate";
     name: string;
     icon: IconPickerIcon;
     organisationId: string;
-    createdTime: string;
-    createdBy: string;
-    lastEditedTime: string;
-    lastEditedBy: string;
     status: "draft" | "archived" | "published";
     templateType: "collection" | "component";
     fields: Property[];
-    propertyGroups: Record<string | number, PropertyGroup>;
-    history: ContentTemplateHistoryEntry[];
+    propertyGroups: PropertyGroup[];
     title: ContentTemplateTitle;
-
-    async saveWithHistory(props: Omit<ContentTemplateHistoryEntry, "date">) {
-        const { userId } = props;
-        const date = new Date().toISOString();
-        const historyEntry: ContentTemplateHistoryEntry = {
-            ...props,
-            date,
-        };
-        this.lastEditedBy = userId;
-        this.lastEditedTime = date;
-        if (this.history) {
-            this.history.unshift(historyEntry);
-        } else {
-            this.history = [historyEntry];
-        }
-        await super.save();
-        await events.publish(
-            "contentTemplate.updated",
-            { after: "5 seconds" },
-            {
-                templateId: this.id,
-                historyEntry,
-            }
-        );
-    }
 
     keys() {
         return [

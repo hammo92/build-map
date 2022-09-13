@@ -13,7 +13,10 @@ export const generatePlaceholder = (id: string) => ({
     },
 });
 
-export const transformTemplateToTree = (template: CleanedCamel<ContentTemplate>): TreeData => {
+export const transformTemplateToTree = (
+    template: CleanedCamel<ContentTemplate>,
+    collapsed: Record<string, boolean>
+): TreeData => {
     let placeholders: TreeItem[] = [];
     const addPlaceholder = () => {
         const placeholder = generatePlaceholder(`placeholder-${placeholders.length}`);
@@ -23,17 +26,17 @@ export const transformTemplateToTree = (template: CleanedCamel<ContentTemplate>)
     return {
         rootId: "1",
         items: {
-            ...Object.values(template.propertyGroups).reduce(
-                (acc, { id, children, title, repeatable, isExpanded }) => ({
+            ...template.propertyGroups.reduce(
+                (acc, { id, children, name, repeatable }) => ({
                     ...acc,
                     [id]: {
                         id,
                         children: children.length ? children : [addPlaceholder()],
                         hasChildren: true,
-                        isExpanded,
                         isChildrenLoading: false,
+                        isExpanded: !collapsed?.[id],
                         data: {
-                            title,
+                            name,
                             repeatable,
                             type: "group",
                             templateId: template.id,
@@ -77,17 +80,16 @@ export const transformTreeGroupsToModel = (treeData: TreeData) => {
         Object.values(treeData.items)
             // remove any placeholder values
             .filter(({ data }) => !data.isPlaceholder)
-            .reduce<Record<string, PropertyGroup>>((acc, item) => {
+            .reduce<PropertyGroup[]>((acc, item) => {
                 if (item.data.type === "group" || item.hasChildren) {
-                    acc[item.id] = {
+                    acc.push({
                         children: item.children.filter((id) => !placeholders.includes(id)),
                         id: item.id,
-                        title: item.data.title,
+                        name: item.data.name,
                         repeatable: item.data.repeatable,
-                        isExpanded: !!item.isExpanded,
-                    };
+                    });
                 }
                 return acc;
-            }, {})
+            }, [])
     );
 };

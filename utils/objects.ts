@@ -1,4 +1,4 @@
-const isObject = (v: any) => v && typeof v === "object";
+export const isObject = (v: any) => v && typeof v === "object";
 
 export type DifferenceEntry = Record<
     string,

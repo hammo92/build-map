@@ -1,42 +1,44 @@
+import React from "react";
+
 import { SmartForm } from "@components/smartForm";
 import { Keys } from "@data/contentTemplate/constants";
-import { useCreatePropertyGroup } from "@data/contentTemplate/hooks";
+import { useUpdatePropertyGroup } from "@data/contentTemplate/hooks";
 import { ContentTemplateResponse } from "@data/contentTemplate/queries";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Button, Group, Stack } from "@mantine/core";
 import { closeAllModals, openModal } from "@mantine/modals";
-import React from "react";
 import { useQueryClient } from "react-query";
 import { CleanedCamel } from "type-helpers";
 
-interface GroupCreateProps {
+interface GroupRenameProps {
     contentTemplateId: string;
-    parentId?: string;
+    groupId?: string;
     component?: React.ReactElement;
+    groupTitle: string;
 }
 
 interface GroupCreateFormProps {
-    parentId?: string;
+    groupId?: string;
     contentTemplate: CleanedCamel<ContentTemplate>;
+    groupTitle: string;
 }
 
-const GroupCreateForm = ({ parentId, contentTemplate }: GroupCreateFormProps) => {
-    const { mutateAsync, isLoading } = useCreatePropertyGroup();
-    const { propertyGroups } = contentTemplate;
+const GroupRenameForm = ({ groupId, contentTemplate, groupTitle }: GroupCreateFormProps) => {
+    const { mutateAsync, isLoading } = useUpdatePropertyGroup();
     return (
         <SmartForm
             formName="ContentTemplate Group Name"
-            onSubmit={async (values: { name: string }) => {
+            onSubmit={async (values: { title: string }) => {
                 await mutateAsync({
                     contentTemplateId: contentTemplate.id,
-                    name: values.name,
-                    parentId,
+                    propertyGroupId: `${groupId}`,
+                    title: values.title,
                 });
                 closeAllModals();
             }}
         >
             <Stack>
-                <SmartForm.TextInput name="name" required />
+                <SmartForm.TextInput defaultValue={groupTitle} name="title" required />
                 <Group grow>
                     <Button
                         onClick={() => closeAllModals()}
@@ -47,7 +49,7 @@ const GroupCreateForm = ({ parentId, contentTemplate }: GroupCreateFormProps) =>
                         Cancel
                     </Button>
                     <Button type="submit" loading={isLoading} disabled={isLoading}>
-                        Create
+                        Update
                     </Button>
                 </Group>
             </Stack>
@@ -55,7 +57,12 @@ const GroupCreateForm = ({ parentId, contentTemplate }: GroupCreateFormProps) =>
     );
 };
 
-export const GroupCreate = ({ contentTemplateId, parentId, component }: GroupCreateProps) => {
+export const GroupRename = ({
+    contentTemplateId,
+    groupId,
+    component,
+    groupTitle,
+}: GroupRenameProps) => {
     const queryClient = useQueryClient();
     const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
     const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
@@ -66,9 +73,10 @@ export const GroupCreate = ({ contentTemplateId, parentId, component }: GroupCre
         openModal({
             title: "Enter group name",
             children: (
-                <GroupCreateForm
+                <GroupRenameForm
                     contentTemplate={currentData?.contentTemplate}
-                    parentId={parentId}
+                    groupId={groupId}
+                    groupTitle={groupTitle}
                 />
             ),
         });

@@ -1,19 +1,18 @@
 import Tree, {
     ItemId,
     moveItemOnTree,
-    mutateTree,
     TreeData,
     TreeDestinationPosition,
     TreeSourcePosition,
 } from "@atlaskit/tree";
-import { useUpdatePropertyGroups } from "@data/contentTemplate/hooks";
+import { useReorderPropertyGroups } from "@data/contentTemplate/hooks";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Group, Skeleton, Stack } from "@mantine/core";
-import { FC, useCallback } from "react";
+import { useSetState } from "@mantine/hooks";
+import { FC } from "react";
 import { CleanedCamel } from "type-helpers";
 import { GroupCreate } from "../contentTemplate-group/group-create";
 import { transformTemplateToTree, transformTreeGroupsToModel } from "../utils/dataTransforms";
-import { onAdd } from "./functions";
 import { useStyles } from "./styles";
 import { TreeRenderItem } from "./tree-renderItem";
 
@@ -28,18 +27,23 @@ const FieldListSkeleton = () => (
 export const ContentTemplateTree: FC<{ contentTemplate: CleanedCamel<ContentTemplate> }> = ({
     contentTemplate,
 }) => {
-    console.log("contentTemplate", contentTemplate);
-    const tree = transformTemplateToTree(contentTemplate);
+    const [collapsed, setState] = useSetState(
+        contentTemplate.propertyGroups.reduce<Record<string, boolean>>((acc, group) => {
+            acc[group.id] = false;
+            return acc;
+        }, {})
+    );
+    const tree = transformTemplateToTree(contentTemplate, collapsed);
+
     const { classes } = useStyles();
 
-    const { mutateAsync } = useUpdatePropertyGroups();
+    const { mutateAsync } = useReorderPropertyGroups();
 
-    async function onMove(treeData: TreeData) {
-        console.log("treeData :>> ", treeData);
-        console.log("transformTreeGroupsToModel(treeData)", transformTreeGroupsToModel(treeData));
+    async function onMove(source: TreeSourcePosition, destination: TreeDestinationPosition) {
         await mutateAsync({
             contentTemplateId: contentTemplate.id,
-            propertyGroups: transformTreeGroupsToModel(treeData),
+            source,
+            destination,
         });
     }
 
@@ -64,22 +68,18 @@ export const ContentTemplateTree: FC<{ contentTemplate: CleanedCamel<ContentTemp
     }
 
     const onExpand = async (itemId: ItemId) => {
-        const mutated = mutateTree(tree, itemId, { isExpanded: true });
-        await onMove(mutated);
+        setState({ [itemId]: false });
     };
 
     const onCollapse = async (itemId: ItemId) => {
-        const mutated = mutateTree(tree, itemId, { isExpanded: false });
-        await onMove(mutated);
+        setState({ [itemId]: true });
     };
 
     const onDragEnd = async (source: TreeSourcePosition, destination?: TreeDestinationPosition) => {
         if (!destination) {
             return;
         }
-
-        const newTree = moveItemOnTree(tree, source, destination);
-        await onMove(newTree);
+        await onMove(source, destination);
     };
 
     return (
@@ -96,7 +96,7 @@ export const ContentTemplateTree: FC<{ contentTemplate: CleanedCamel<ContentTemp
                 //offsetPerLevel={20}
             />
             <Group>
-                <GroupCreate contentTemplate={contentTemplate} />
+                <GroupCreate contentTemplateId={contentTemplate.id} />
             </Group>
         </Stack>
     );

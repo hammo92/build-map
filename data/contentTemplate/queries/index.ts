@@ -1,5 +1,10 @@
 import { IconPickerIcon } from "@components/ui/iconPicker/types";
 import {
+    CreatePropertyGroupProps,
+    ReorderPropertyGroupsProps,
+    UpdatePropertyGroupProps,
+} from "@lib/contentTemplate/data";
+import {
     ContentTemplate,
     ContentTemplateTitle,
     PropertyGroup,
@@ -120,17 +125,45 @@ export async function updateProperty({
     return camelcaseKeys(data, { deep: true });
 }
 
-export async function updatePropertyGroups({
+export async function createPropertyGroup({
     contentTemplateId,
-    propertyGroups,
-}: {
-    contentTemplateId: string;
-    propertyGroups: Record<string, PropertyGroup>;
-}) {
+    name,
+    parentId,
+}: Omit<CreatePropertyGroupProps, "userId">) {
     const { data } = await apiClient.post<{
         contentTemplate: CleanedSnake<ContentTemplate>;
     }>(`/contentTemplates/${contentTemplateId}/propertyGroups`, {
-        propertyGroups,
+        name,
+        parentId,
+    });
+    return camelcaseKeys(data, { deep: true });
+}
+
+export async function reorderPropertyGroups({
+    contentTemplateId,
+    source,
+    destination,
+}: Omit<ReorderPropertyGroupsProps, "userId">) {
+    const { data } = await apiClient.patch<{
+        contentTemplate: CleanedSnake<ContentTemplate>;
+    }>(`/contentTemplates/${contentTemplateId}/propertyGroups`, {
+        source,
+        destination,
+    });
+    return camelcaseKeys(data, { deep: true });
+}
+
+export async function updatePropertyGroup({
+    contentTemplateId,
+    propertyGroupId,
+    repeatable,
+    name,
+}: Omit<UpdatePropertyGroupProps, "userId">) {
+    const { data } = await apiClient.post<{
+        contentTemplate: CleanedSnake<ContentTemplate>;
+    }>(`/contentTemplates/${contentTemplateId}/propertyGroup/${propertyGroupId}`, {
+        repeatable,
+        name,
     });
     return camelcaseKeys(data, { deep: true });
 }

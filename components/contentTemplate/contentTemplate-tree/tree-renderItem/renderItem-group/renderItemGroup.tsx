@@ -1,9 +1,9 @@
 import { ItemId, RenderItemParams, TreeItem } from "@atlaskit/tree";
-import { GroupDelete } from "@components/contentTemplate/contentTemplate-group/group-delete";
+import { GroupActions } from "@components/contentTemplate/contentTemplate-group/group-actions";
+import { useUpdatePropertyGroup } from "@data/contentTemplate/hooks";
 import { faChevronDown, faChevronRight, faGripVertical } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ActionIcon, Card, Group, TextInput } from "@mantine/core";
-import React from "react";
+import { ActionIcon, Card, Checkbox, Group, Text, TextInput } from "@mantine/core";
 import { useStyles } from "./styles";
 
 const getIcon = (
@@ -30,6 +30,8 @@ export const RenderItemGroup = ({
     snapshot,
 }: RenderItemParams) => {
     const { classes } = useStyles();
+    const { mutateAsync } = useUpdatePropertyGroup();
+    console.log("item", item);
     return (
         <Card
             p="md"
@@ -47,9 +49,23 @@ export const RenderItemGroup = ({
                         </div>
                         {getIcon(item, onExpand, onCollapse)}
                     </Group>
-                    <TextInput defaultValue={item.data ? item.data.title : ""} />
+                    <Text>{item.data ? item.data.name : ""}</Text>
                 </Group>
-                <GroupDelete group={item} />
+                <Group>
+                    <Checkbox
+                        style={{ cursor: "pointer" }}
+                        label="repeatable"
+                        defaultChecked={item.data.repeatable}
+                        onChange={(event) =>
+                            mutateAsync({
+                                contentTemplateId: item.data.templateId,
+                                propertyGroupId: `${item.id}`,
+                                repeatable: event.currentTarget.checked,
+                            })
+                        }
+                    />
+                    <GroupActions group={item} />
+                </Group>
             </Group>
         </Card>
     );
