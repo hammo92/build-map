@@ -10,23 +10,22 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useState } from "react";
 import { CleanedCamel } from "type-helpers";
+import { HistoryChanges } from "./history-changes";
 dayjs.extend(relativeTime);
 
-export const ContentTemplateHistory = ({
-    contentTemplate,
-}: {
-    contentTemplate: CleanedCamel<ContentTemplate>;
-}) => {
+export const History = ({ historyEntries }: { historyEntries: HistoryEntry[] }) => {
     const [opened, setOpened] = useState(false);
+
     // get all unique user values from updates
     const updatingUsers = Array.from(
         new Set(
-            contentTemplate.history.reduce<string[]>((acc, entry) => {
+            historyEntries.reduce<string[]>((acc, entry) => {
                 acc.push(entry.editedBy);
                 return acc;
             }, [])
         )
     );
+
     const userQueries = useGetUsers({ userIdentifiers: updatingUsers });
 
     const users = userQueries.reduce<{ [id: string]: CleanedCamel<StrippedUser> }>((acc, query) => {
@@ -56,7 +55,7 @@ export const ContentTemplateHistory = ({
                 </Group>
                 <ScrollArea.Autosize maxHeight={250} offsetScrollbars>
                     <Timeline bulletSize={24}>
-                        {contentTemplate.history.map((historyEntry) => (
+                        {historyEntries.map((historyEntry) => (
                             <Timeline.Item
                                 key={historyEntry.editedTime}
                                 title={historyEntry.title}
@@ -82,6 +81,7 @@ export const ContentTemplateHistory = ({
                                 <Text color="dimmed" size="sm">
                                     {dayjs(historyEntry.editedTime).from(dayjs())}
                                 </Text>
+                                <HistoryChanges changes={historyEntry.changes} />
                             </Timeline.Item>
                         ))}
                     </Timeline>

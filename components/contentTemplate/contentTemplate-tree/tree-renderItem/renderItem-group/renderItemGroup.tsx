@@ -31,7 +31,6 @@ export const RenderItemGroup = ({
 }: RenderItemParams) => {
     const { classes } = useStyles();
     const { mutateAsync } = useUpdatePropertyGroup();
-    console.log("item", item);
     return (
         <Card
             p="md"

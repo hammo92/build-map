@@ -1,12 +1,12 @@
 import { FieldCard } from "@components/contentTemplate/contentTemplate-field/field-card";
 import { SmartForm } from "@components/smartForm";
 import { useUpdateContentFields } from "@data/content/hooks";
-import { faExclamationCircle, faSensorAlert } from "@fortawesome/pro-regular-svg-icons";
+import { faExclamationCircle } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Content } from "@lib/content/data/content.model";
 import { ContentField } from "@lib/content/data/types";
-import { Button, Checkbox, Group, Modal, Stack, Text, Alert } from "@mantine/core";
-import React, { useState } from "react";
+import { Alert, Button, Modal, Stack } from "@mantine/core";
+import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { CleanedCamel } from "type-helpers";
 import { Required } from "utility-types";
@@ -43,7 +43,6 @@ const ContentFields = ({ fields }: { fields: ContentField[] }) => {
                         key={field.id}
                         field={field}
                         withActions={false}
-                        withDrag={false}
                         leftContent={<SmartForm.Checkbox name={field.id} />}
                     />
                 );
@@ -85,11 +84,6 @@ export const ContentFieldManager = ({ content }: { content: CleanedCamel<Content
                 <SmartForm
                     formName="fieldManager"
                     onSubmit={(values: Record<string, boolean>) => {
-                        console.log("values", values);
-                        console.log(
-                            "convertFormDataForUpdate :>> ",
-                            convertFormDataForUpdate({ fields: content.fields, values })
-                        );
                         mutateAsync({
                             contentId: content.id,
                             updates: convertFormDataForUpdate({ fields: content.fields, values }),

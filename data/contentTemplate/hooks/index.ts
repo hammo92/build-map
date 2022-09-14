@@ -283,7 +283,6 @@ export function useCreatePropertyGroup() {
             const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
-
             // Snapshot the previous value
             const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
 

@@ -4,11 +4,9 @@ import { isObject } from "../../../utils/objects";
 
 type ChangedItemType = "text" | "image" | "icon";
 
-export type Change = { from: any; to: any; type?: ChangedItemType };
+export type Change = { from?: any; to?: any; type?: ChangedItemType };
 
 export type Changes = { [key: string]: Change | Changes };
-
-//export type Changes<T extends Record<any, any>> = T extends Change ? Change : {[P in keyof T] : T[P] extends Change ? Change : Changes<T[P]>};
 
 export function getChanges<T extends Record<string, any>>(
     a: Partial<T> | Record<any, any>,
@@ -43,7 +41,7 @@ export class HistoryEntry {
     title: string;
     subtitle?: string;
     notes?: string[];
-    changes?: Change | Changes;
+    changes?: Changes;
     editedTime?: string;
     editedBy: string;
 
@@ -56,7 +54,7 @@ export class HistoryEntry {
         title: string;
         subtitle?: string;
         notes?: string[];
-        changes?: Change | Changes;
+        changes?: Changes;
     }) {
         const date = new Date().toISOString();
         this.id = ulid();

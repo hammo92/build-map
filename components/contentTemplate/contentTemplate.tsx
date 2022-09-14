@@ -1,3 +1,4 @@
+import { History } from "@components/history";
 import { useGetContentTemplate } from "@data/contentTemplate/hooks";
 import { ContentTemplate as ContentTemplateProps } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Card, Container, Divider, Grid, SimpleGrid, Stack, Text, Title } from "@mantine/core";
@@ -38,7 +39,7 @@ export const ContentTemplate = ({
                         <Grid.Col span={9}>
                             <ContentTemplateTree contentTemplate={data?.contentTemplate} />
                             <FieldCreate
-                                contentTemplate={data?.contentTemplate}
+                                contentTemplateId={data?.contentTemplate.id}
                                 variant={"button"}
                             />
                         </Grid.Col>
@@ -73,7 +74,7 @@ export const ContentTemplate = ({
                                     </SimpleGrid>
                                 </Card.Section>
                                 <Card.Section withBorder p="sm">
-                                    <ContentTemplateHistory contentTemplate={contentTemplate} />
+                                    <History historyEntries={data?.contentTemplate.history} />
                                 </Card.Section>
                             </Card>
                         </Grid.Col>

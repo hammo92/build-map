@@ -276,6 +276,8 @@ export async function updateProperty(props: {
     // values should not be different, but removed as safeguard
     const { id, type, ...updates } = fieldProperties;
 
+    console.log("updates", updates);
+
     let property = contentTemplate.fields[fieldIndexToUpdate];
 
     let updatedProperty = { ...property, ...updates };
@@ -325,7 +327,7 @@ export async function createPropertyGroup(props: CreatePropertyGroupProps) {
 
     if (!contentTemplate) throw new Error("No content template found");
 
-    const { updatedGroups } = createGroup({
+    const { updatedGroups, parent } = createGroup({
         contentTemplate,
         parentId,
         name,
@@ -336,7 +338,7 @@ export async function createPropertyGroup(props: CreatePropertyGroupProps) {
     await contentTemplate.saveWithHistory({
         editedBy: userId,
         title: "Group created",
-        ...(parentId && { subtitle: `In group: ${parent.name}` }),
+        ...(parentId && { subtitle: `In group ${parent.name}` }),
     });
 
     return contentTemplate;
@@ -371,15 +373,26 @@ export async function reorderPropertyGroups(props: ReorderPropertyGroupsProps) {
     const historyEntry = new HistoryEntry({
         title: "Groups updated",
         editedBy: userId,
+        notes: [],
     });
 
     const movedToNewGroup = reordered.source.group !== reordered.destination.group;
     const itemType = reordered.item.type === "propertyGroup" ? "Group" : "Property";
 
-    historyEntry.title = `${itemType}: ${reordered.item.name} moved`;
-    historyEntry.subtitle = movedToNewGroup
-        ? `Group ${reordered.source.group.name} to ${reordered.destination.group.name}`
-        : `Position ${reordered.source.index} to ${reordered.destination.index}`;
+    historyEntry.title = `${itemType} ${reordered.item.name} moved`;
+    if (movedToNewGroup) {
+        historyEntry.subtitle = "Between groups";
+        historyEntry.notes!.push(
+            `From group:  ${reordered.source.group.name}`,
+            `To group:  ${reordered.destination.group.name}`
+        );
+    } else {
+        historyEntry.subtitle = `Inside group: ${reordered.source.group.name}`;
+        historyEntry.notes!.push(
+            `From position: ${reordered.source.index + 1}`,
+            `To position: ${reordered.destination.index! + 1}`
+        );
+    }
 
     await contentTemplate.saveWithHistory(historyEntry);
 
@@ -467,7 +480,7 @@ export async function deletePropertyGroup(props: {
 
     const historyEntry = new HistoryEntry({
         title: `${targetGroup.name} Deleted`,
-        subtitle: `Contents ${deleteContents ? "deleted" : "retained"}`,
+        subtitle: `Contents ${deleteContents ? "deleted:" : "retained"}`,
         notes: [
             ...removedGroups.map(({ name }) => `Group deleted: ${name} `),
             ...removedFields.map(({ name }) => `Property deleted: ${name} `),

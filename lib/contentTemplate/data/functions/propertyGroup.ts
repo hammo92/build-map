@@ -13,7 +13,6 @@ interface CreateGroupProps {
 
 export const createGroup = ({ contentTemplate, name, parentId = "1" }: CreateGroupProps) => {
     const id = ulid();
-
     const newItem = {
         id,
         children: [],
