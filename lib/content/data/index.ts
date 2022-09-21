@@ -9,62 +9,23 @@ import {
     ContentId,
     ContentStatus,
     ContentTemplate,
+    FieldGroup,
 } from "./content.model";
 import { ContentField } from "./types";
 /*import {
     ContentTemplateHistory,
     ContentTemplate as ContentTemplateModel,
 } from "../../../lib/contentTemplate/data/contentTemplate.model";*/
-import {
-    ContentTemplateHistoryEntry,
-    PropertyUpdate,
-} from "../../contentTemplate/data/contentTemplate.model";
-import { Property } from "../../contentTemplate/data/types";
-import { diff } from "deep-object-diff";
-import { CleanedCamel } from "type-helpers";
-import { deleteAllContentRelations } from "../../../lib/relation/data";
-import { objArrToKeyIndexedMap } from "../../../utils/arrayModify";
-import { updateRelationValue } from "./functions/relation";
-import { getDifference } from "../../../utils/objects";
+
+import pluralize from "pluralize";
 import { Required } from "utility-types";
-
-function fieldBaseValues({
-    userId,
-    date,
-}: {
-    userId: string;
-    date: string;
-}): Partial<ContentField> {
-    return {
-        id: ulid(),
-        active: true,
-        createdBy: userId,
-        createdTime: date,
-        lastEditedTime: date,
-        lastEditedBy: userId,
-    };
-}
-
-function fieldFromTemplateProperty({
-    property,
-    userId,
-    date,
-    overrides,
-}: {
-    property: Property;
-    userId: string;
-    date: string;
-    overrides?: Partial<ContentField>;
-}): ContentField {
-    return {
-        ...property,
-        ...(property.defaultValue && { value: property?.defaultValue }),
-        ...fieldBaseValues({ userId, date }),
-        category: "template",
-        templateFieldId: property.id,
-        ...overrides,
-    };
-}
+import { deleteAllContentRelations } from "../../../lib/relation/data";
+import { objArrayToHashmap, objArrToKeyIndexedMap } from "../../../utils/arrayModify";
+import { getObjectChanges } from "../../../utils/objects";
+import { PropertyGroup } from "../../contentTemplate/data/contentTemplate.model";
+import { updateRelationValue } from "./functions/relation";
+import { fieldBaseValues, fieldFromTemplateProperty } from "./functions/field";
+import { duplicateGroup, generateFieldGroups } from "./functions/group";
 
 //* Create content */
 export async function createContent({
@@ -87,25 +48,29 @@ export async function createContent({
 
     const contentUpdates: ContentHistory["contentUpdates"] = [];
 
+    const contentFields = contentTemplate.fields.map((property) => {
+        const field = fieldFromTemplateProperty({ property, userId, date });
+        return field;
+    });
+
     // create contentTemplate //
-    const newContent = new Content();
+    const newContent = new Content({ userId });
     newContent.contentTemplateId = contentTemplateId;
     newContent.projectId = projectId;
     newContent.status = "draft";
-    newContent.id = ulid();
-    newContent.createdBy = userId;
-    newContent.createdTime = date;
-    newContent.templateUpdates = [];
-    newContent.history = [];
-    newContent.fields = contentTemplate.fields.map((property) => {
-        const field = fieldFromTemplateProperty({ property, userId, date });
-        contentUpdates.push({
+    newContent.fields = contentFields;
+    newContent.fieldGroups = generateFieldGroups({
+        fields: contentFields,
+        propertyGroups: contentTemplate.propertyGroups,
+    });
+    /*newContent.fields = 
+        /*contentUpdates.push({
             type: "property",
             action: "created",
             fieldId: field.id,
             note: "Created from template",
             fieldName: field.name,
-            changes: getDifference({ property }, field),
+            changes: getObjectChanges({ property }, field),
             fieldType: "template",
         });
         if (field.value) {
@@ -118,9 +83,14 @@ export async function createContent({
             });
         }
 
-        return field;
+        
+    });*/
+
+    await newContent.saveWithHistory({
+        editedBy: userId,
+        title: `${contentTemplate.name} Created`,
     });
-    await newContent.saveWithHistory({ userId, action: "created", contentUpdates });
+
     return { newContent, contentTemplate };
 }
 
@@ -209,7 +179,13 @@ export async function getContentOfTemplate({
 //* Update content field values */
 export async function updateContentValues(props: {
     contentId: string;
-    values: { [fieldId: string]: ContentField["value"] };
+    values: {
+        [fieldId: string]: {
+            value?: ContentField["value"];
+            note?: ContentField["note"];
+            assets?: ContentField["assets"];
+        };
+    };
     userId: string;
 }) {
     const { contentId, values, userId } = props;
@@ -226,7 +202,7 @@ export async function updateContentValues(props: {
             const { id } = field;
             if (values[id]) {
                 // create content history for change
-                contentUpdates.push({
+                /*contentUpdates.push({
                     type: "value",
                     fieldId: field.id,
                     change: {
@@ -236,12 +212,12 @@ export async function updateContentValues(props: {
                     fieldName: field.name,
 
                     note: null,
-                });
+                });*/
 
-                if (field.type === "relation") {
+                if (field.type === "relation" && values[id]["value"]) {
                     await updateRelationValue({
                         field,
-                        value: values[id],
+                        value: values[id]["value"],
                         userId,
                         content,
                     });
@@ -251,7 +227,9 @@ export async function updateContentValues(props: {
                     ...field,
                     lastEditedBy: userId,
                     lastEditedAt: new Date().toISOString(),
-                    value: values[id],
+                    ...(values[id]["value"] && { value: values[id]["value"] }),
+                    ...(values[id]["note"] && { note: values[id]["note"] }),
+                    ...(values[id]["assets"] && { assets: values[id]["assets"] }),
                 };
             }
             return field;
@@ -259,6 +237,38 @@ export async function updateContentValues(props: {
     )) as unknown as ContentField[];
     content.fields = updatedFields;
     await content.saveWithHistory({ userId, action: "updated", contentUpdates });
+    return content;
+}
+
+//* Repeat Group */
+export async function repeatGroup(props: { contentId: string; groupId: string; userId: string }) {
+    const { contentId, groupId, userId } = props;
+    errorIfUndefined({ contentId, groupId, userId });
+
+    const { content } = await getContentById(contentId);
+    if (!content) throw new Error("Content entry not found");
+
+    /** Group id is for parent of repeated group instances */
+    const { nestedFields, newGroup, nestedGroups } = duplicateGroup({
+        content,
+        groupId,
+        userId,
+    });
+
+    console.log("newFields", nestedFields);
+    console.log("newGroup", newGroup);
+    console.log("newGroups", nestedGroups);
+
+    content.fieldGroups.find(({ id }) => id === groupId)?.children.push(newGroup.id);
+    content.fieldGroups.push(...nestedGroups, newGroup);
+    content.fields.push(...nestedFields);
+
+    await content.save();
+    /*createRepeatableGroupInstance({
+        content,
+        groupId,
+        userId,
+    });*/
     return content;
 }
 
@@ -287,7 +297,7 @@ export async function updateContentFields(props: {
                     action: "updated",
                     fieldType: field.category,
                     fieldName: field.name,
-                    changes: getDifference(field, updatedField),
+                    changes: getObjectChanges(field, updatedField),
                 });
                 // delete from map after processed
                 updateMap.delete(field.id);
@@ -310,7 +320,7 @@ export async function updateContentFields(props: {
                 action: "created",
                 fieldType: field.category,
                 fieldName: field.name,
-                changes: getDifference({}, field),
+                changes: getObjectChanges({}, field),
             });
         });
 

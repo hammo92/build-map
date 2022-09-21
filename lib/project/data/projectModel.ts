@@ -1,4 +1,5 @@
 /* project.model.ts */
+import { BaseModel, BaseModelId } from "../../../lib/models";
 import { buildIndex, indexBy, Model } from "serverless-cloud-data-utils";
 import { Address } from "../../../types/common";
 
@@ -24,22 +25,12 @@ export const ProjectOrg = (organisationId: string) =>
         label: "label2",
     });
 
-//! check this //
-// To get project by state //
-//namespace projects:${isActive} */
-export const ProjectActive = buildIndex({
-    namespace: `projects`,
-    label: "label3",
-});
-
 //model: Project //
-export class Project extends Model<Project> {
-    id: string;
+export class Project extends BaseModel<Project> {
     type = "Project";
     jobNumber: string;
     name: string;
     date: string;
-    creatorId: string;
     organisationId: string;
     address: Address;
     isActive: boolean;
@@ -70,10 +61,10 @@ export const ProjectUsers = (projectId: string) =>
     });
 
 //model: ProjectUser //
-export class ProjectUser extends Model<ProjectUser> {
+export class ProjectUser extends BaseModel<ProjectUser> {
+    type = "User";
     projectId: string;
     userId: string;
-    roleId: string;
     keys() {
         return [
             indexBy(UserProjects(this.userId)).exact(this.projectId),

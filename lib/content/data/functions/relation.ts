@@ -1,7 +1,7 @@
 import { createRelation, removeRelation } from "../../../relation/data";
 import { indexBy } from "serverless-cloud-data-utils";
 import { CleanedCamel } from "type-helpers";
-import { Content, ContentId, ContentUpdateValue } from "../content.model";
+import { Content, ContentId } from "../content.model";
 import { ContentFieldRelation } from "../types";
 import { PropertyRelation } from "../../../../lib/contentTemplate/data/types";
 import { getContentById } from "..";
