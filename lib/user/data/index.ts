@@ -84,14 +84,9 @@ export async function createUser({
     const hashedPassword = (await pbkdf2(password, salt, 310000, 32, "sha256")).toString();
 
     const newUser = new User();
-    newUser.id = id;
     newUser.name = name;
     newUser.email = email;
     newUser.nickname = name.split(" ")[0];
-    newUser.createdBy = id;
-    newUser.createdTime = new Date().toISOString();
-    newUser.lastEditedBy = id;
-    newUser.lastEditedTime = new Date().toISOString();
     newUser.salt = salt;
     newUser.hashedPassword = hashedPassword;
     await newUser.save();

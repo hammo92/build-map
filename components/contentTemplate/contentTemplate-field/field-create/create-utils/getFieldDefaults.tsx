@@ -15,9 +15,9 @@ const sharedDefaults = {
 export const getFieldDefaults = (type: FieldType): Property => {
     switch (type) {
         case "text":
-            return { ...sharedDefaults, type: "text", subtype: "shortText" };
+            return { ...sharedDefaults, type: "text", variant: "shortText" };
         case "number":
-            return { ...sharedDefaults, type: "number", subtype: "integer" };
+            return { ...sharedDefaults, type: "number", variant: "integer" };
         case "checkbox":
             return { ...sharedDefaults, type: "checkbox", defaultValue: false };
         default:

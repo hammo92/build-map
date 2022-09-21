@@ -15,14 +15,16 @@ import {
 import { SelectProps, TextInputProps } from "@mantine/core";
 import { RichTextEditorProps } from "@mantine/rte";
 import { CleanedCamel } from "type-helpers";
+import { PropertyGroup } from "../../lib/contentTemplate/data/contentTemplate.model";
 
 export interface FieldBase {
     id: string;
     templateFieldId?: string;
     category: "template" | "additional";
     assets?: string[];
-    notes?: string[];
-    media?: string[];
+    note?: string[];
+    tasks?: string[];
+    defaultValue?: any;
 }
 
 export interface ContentFieldCheckbox extends PropertyCheckbox, FieldBase {

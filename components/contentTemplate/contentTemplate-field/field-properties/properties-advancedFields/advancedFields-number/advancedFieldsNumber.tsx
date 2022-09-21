@@ -30,9 +30,9 @@ const ValueLimiter = (props: ValueLimiterProps) => {
 
 export const AdvancedFieldsNumber = () => {
     const { watch } = useFormContext();
-    const subtype = watch("subtype");
+    const variant = watch("variant");
     const precision = () => {
-        switch (subtype) {
+        switch (variant) {
             case "integer":
                 return 0;
             case "decimal":
@@ -49,7 +49,7 @@ export const AdvancedFieldsNumber = () => {
     //Todo improve formatter to run on blur
     const formatter = (value: string | undefined) => {
         if (value) {
-            if (subtype === "float" && value.split(".")?.[1]?.length > 1) {
+            if (variant === "float" && value.split(".")?.[1]?.length > 1) {
                 return parseFloat(value).toString();
             } else {
                 return value;

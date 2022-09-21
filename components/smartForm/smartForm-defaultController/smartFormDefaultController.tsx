@@ -1,4 +1,6 @@
-import { Text } from "@mantine/core";
+import { faQuestionCircle } from "@fortawesome/pro-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ActionIcon, Box, Card, Grid, Group, Paper, Stack, Text, Tooltip } from "@mantine/core";
 import { debounce } from "debounce";
 import React, { useMemo } from "react";
 import { Controller, useFormContext } from "react-hook-form";
@@ -10,6 +12,7 @@ interface SmartFormDefaultControllerProps extends SmartFormInputBaseProps {
     defaultChecked?: boolean;
     children: JSX.Element;
     converter?: (value: any) => any;
+    hidden?: boolean;
 }
 
 export const SmartFormDefaultController = (props: SmartFormDefaultControllerProps) => {
@@ -26,8 +29,8 @@ export const SmartFormDefaultController = (props: SmartFormDefaultControllerProp
         children,
         converter,
         disabled,
-        //label,
-        //description,
+        label,
+        description,
         ...rest
     } = props;
     const debouncedChangeHandler = useMemo(
@@ -62,36 +65,34 @@ export const SmartFormDefaultController = (props: SmartFormDefaultControllerProp
                             : { error: error.type })),
                 };
                 return (
-                    // <Grid>
-                    //     <Grid.Col span={2} py="xs">
-                    //         <Group position="apart" noWrap>
-                    //             <Text lineClamp={1} py="sm" sx={{ flexGrow: 1 }}>
-                    //                 {label}
-                    //             </Text>
-                    //             {description && (
-                    //                 <Tooltip label={description}>
-                    //                     <ActionIcon sx={{ flexShrink: 0 }}>
-                    //                         <FontAwesomeIcon icon={faQuestionCircle} />
-                    //                     </ActionIcon>
-                    //                 </Tooltip>
-                    //             )}
-                    //         </Group>
-                    //     </Grid.Col>
-                    //     <Grid.Col span={10}>
-                    React.createElement(input.type, {
-                        ...{
-                            ...input.props,
-                            ...field,
-                            ...rest,
-                            ...status,
-                            onChange,
-                            value: converter ? converter(field.value) : field.value ?? "",
-                            disabled: readOnly || props.readOnly || disabled,
-                            readOnly: readOnly || props.readOnly || disabled,
-                        },
-                    })
-                    //    </Grid.Col>
-                    //</Grid>
+                    <Stack spacing="xs">
+                        {!rest.hidden && (
+                            <Group position="apart" noWrap>
+                                <Text lineClamp={1} sx={{ flexGrow: 1 }} size="sm">
+                                    {label}
+                                </Text>
+                                {description && (
+                                    <Tooltip label={description}>
+                                        <ActionIcon sx={{ flexShrink: 0 }}>
+                                            <FontAwesomeIcon icon={faQuestionCircle} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                )}
+                            </Group>
+                        )}
+                        {React.createElement(input.type, {
+                            ...{
+                                ...input.props,
+                                ...field,
+                                ...rest,
+                                ...status,
+                                onChange,
+                                value: converter ? converter(field.value) : field.value ?? "",
+                                disabled: readOnly || props.readOnly || disabled,
+                                readOnly: readOnly || props.readOnly || disabled,
+                            },
+                        })}
+                    </Stack>
                 );
             }}
         />

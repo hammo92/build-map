@@ -1,4 +1,5 @@
 /* invitation.model.ts */
+import { BaseModel, BaseModelId } from "../../../lib/models";
 import { buildIndex, indexBy, Model } from "serverless-cloud-data-utils";
 
 //* Invitation model and indexes *//
@@ -40,16 +41,11 @@ export const InvitationEmail = (invitationEmail: string) =>
     });
 
 //model: Invitation */
-export class Invitation extends Model<Invitation> {
-    id: string;
+export class Invitation extends BaseModel<Invitation> {
     type = "Invitation";
     email: string;
     organisationId: string;
     projectId?: string;
-    createdTime: string;
-    createdBy: string;
-    lastEditedTime: string;
-    lastEditedBy: string;
     redeemed: boolean;
     creatorId: string;
     keys() {
@@ -58,6 +54,7 @@ export class Invitation extends Model<Invitation> {
             indexBy(InvitationCreator(this.creatorId)).exact(this.id),
             indexBy(InvitationOrganisation(this.organisationId)).exact(this.id),
             indexBy(InvitationEmail(this.email)).exact(this.id),
+            indexBy(BaseModelId).exact(this.id),
         ];
     }
 }

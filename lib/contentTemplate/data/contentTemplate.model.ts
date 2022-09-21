@@ -1,31 +1,9 @@
 /* contentTemplate.model.ts */
 
-import { ModelWithHistory } from "../../models";
 import { buildIndex, indexBy, timekey } from "serverless-cloud-data-utils";
 import { IconPickerIcon } from "../../../components/ui/iconPicker/types";
-import { DifferenceEntry } from "../../../utils/objects";
+import { BaseModelId, ModelWithHistory } from "../../models";
 import { Property } from "./types";
-
-type ContentTemplateHistoryActions = "updated" | "created" | "published" | "archived";
-
-export type PropertyUpdate<T = "TemplateInfo" | "TemplateProperty"> = {
-    fieldType: T;
-    fieldId: string | null;
-    fieldName: string;
-    action: "deleted" | "updated" | "created";
-    note?: string | null;
-    /** Object with key of property and changed values */
-    changes?: DifferenceEntry;
-};
-
-export interface ContentTemplateHistoryEntry {
-    date: string;
-    userId: string;
-    action: ContentTemplateHistoryActions;
-    updateNotes?: string[];
-    /** Updates to content template properties */
-    propertyUpdate?: PropertyUpdate;
-}
 
 export interface ContentTemplateTitle {
     setType: "manual" | "auto";
@@ -83,6 +61,7 @@ export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
         return [
             indexBy(ContentTemplateId).exact(this.id),
             indexBy(ContentTemplateOrganisation(this.organisationId)).exact(this.lastEditedTime),
+            indexBy(BaseModelId).exact(this.id),
         ];
     }
 }

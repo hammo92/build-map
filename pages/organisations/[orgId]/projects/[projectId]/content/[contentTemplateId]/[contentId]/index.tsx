@@ -18,8 +18,8 @@ interface ContentEntryProps {
 
 const ContentEntry = ({ content, contentTemplate }: ContentEntryProps) => {
     return (
-        <Stack p="md">
-            <Content content={content} />
+        <Stack>
+            <Content content={content} contentTemplate={contentTemplate} />
         </Stack>
     );
 };

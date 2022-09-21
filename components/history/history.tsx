@@ -5,7 +5,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { HistoryEntry } from "@lib/historyEntry/data/historyEntry.model";
 import { StrippedUser } from "@lib/user/data";
-import { ActionIcon, Group, List, ScrollArea, Stack, Text, Timeline, Title } from "@mantine/core";
+import {
+    ActionIcon,
+    Group,
+    List,
+    Modal,
+    ScrollArea,
+    Stack,
+    Text,
+    Timeline,
+    Title,
+} from "@mantine/core";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useState } from "react";
@@ -78,54 +88,53 @@ export const History = ({ historyEntries }: { historyEntries: HistoryEntry[] }) 
                                             <List.Item key={note}>{note}</List.Item>
                                         ))}
                                 </List>
+                                <HistoryChanges changes={historyEntry.changes} variant="slim" />
                                 <Text color="dimmed" size="sm">
                                     {dayjs(historyEntry.editedTime).from(dayjs())}
                                 </Text>
-                                <HistoryChanges changes={historyEntry.changes} />
                             </Timeline.Item>
                         ))}
                     </Timeline>
                 </ScrollArea.Autosize>
             </Stack>
 
-            {/* <Modal opened={opened} onClose={() => setOpened(false)} title="Content History">
+            <Modal
+                opened={opened}
+                onClose={() => setOpened(false)}
+                title="Content Template History"
+            >
                 <Timeline bulletSize={24}>
-                    {contentTemplate.history.map((historyEntry) => (
+                    {historyEntries.map((historyEntry) => (
                         <Timeline.Item
-                            key={historyEntry.date}
-                            title={`${contentTemplate.name} ${capitalise(historyEntry.action)}`}
+                            key={historyEntry.editedTime}
+                            title={historyEntry.title}
                             bullet={
-                                users[historyEntry.userId] && (
+                                users[historyEntry.editedBy] && (
                                     <UserAvatar
-                                        user={users[historyEntry.userId]}
+                                        user={users[historyEntry.editedBy]}
                                         radius="xl"
                                         size={22}
                                     />
                                 )
                             }
                         >
-                            <Stack spacing="sm">
-                                {historyEntry?.propertyUpdate && (
-                                    <UpdatedProperty
-                                        updatedProperty={historyEntry?.propertyUpdate}
-                                        variant="full"
-                                    />
-                                )}
-                                {historyEntry?.updateNotes?.length &&
-                                    historyEntry?.updateNotes.map((note) => (
-                                        <Text size="sm" key={note}>
-                                            {note}
-                                        </Text>
+                            {!!historyEntry.subtitle && (
+                                <Text size="sm">{historyEntry.subtitle}</Text>
+                            )}
+                            <List size="sm">
+                                {historyEntry?.notes?.length &&
+                                    historyEntry?.notes.map((note) => (
+                                        <List.Item key={note}>{note}</List.Item>
                                     ))}
-                            </Stack>
-
+                            </List>
+                            <HistoryChanges changes={historyEntry.changes} variant="full" />
                             <Text color="dimmed" size="sm">
-                                {dayjs(historyEntry.date).from(dayjs())}
+                                {dayjs(historyEntry.editedTime).from(dayjs())}
                             </Text>
                         </Timeline.Item>
                     ))}
                 </Timeline>
-            </Modal> */}
+            </Modal>
         </>
     );
 };

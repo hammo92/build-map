@@ -8,7 +8,7 @@ import { useUncontrolled } from "@mantine/hooks";
 import { useStyles } from "./styles";
 
 export type AssetManagerProps = CheckableAssetListPropsBase &
-    Omit<ImageUploadProps, "onUpload"> & {
+    Omit<ImageUploadProps, "onUpload" | "onChange"> & {
         /** Array of asset ids, used for initial data */
         assetIds?: string[] | string;
 
@@ -28,9 +28,9 @@ export const AssetManager = ({
     onChange,
     defaultValue = [],
     multiple,
+    size = "sm",
     ...rest
 }: AssetManagerProps) => {
-    console.log("assetIds", assetIds);
     const [_value, handleChange] = useUncontrolled({
         // convert string to array or accept array, remove empty strings
         value: ([] as string[]).concat(assetIds).filter((e) => e),
@@ -45,11 +45,19 @@ export const AssetManager = ({
         ? { selectable: true as const, select, deselect, selected }
         : { selectable: false as const };
 
+    const cols = {
+        xs: 7,
+        sm: 5,
+        md: 3,
+        lg: 3,
+        xl: 2,
+    };
+
     return (
         <Card p={0} withBorder>
             <Stack spacing={0}>
                 <Group position="apart" p="sm" className={classes.actionBar}>
-                    <Text color="dimmed" size="sm">{`${_value!.length} Asset${
+                    <Text color="dimmed" size={size}>{`${_value!.length} Asset${
                         _value!.length !== 1 ? "s" : ""
                     }`}</Text>
                     {editable && (
@@ -83,8 +91,9 @@ export const AssetManager = ({
 
                 {assetIds && (
                     <AssetList
-                        cols={multiple ? 3 : 1}
+                        cols={multiple ? cols[size] : 1}
                         assetIds={_value}
+                        size={size}
                         {...assetSelectableProps}
                     />
                 )}

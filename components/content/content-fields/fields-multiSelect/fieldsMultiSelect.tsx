@@ -14,6 +14,7 @@ export const FieldsMultiSelect = ({
             name={field.id}
             label={field.name}
             data={commaListToArray(field.data)}
+            withinPortal={true}
         />
     );
 };

@@ -18,13 +18,8 @@ export async function createOrganisation({ name, userId }: { name: string; userI
     const user = await getUserById(userId);
     errorIfUndefined({ user }, "notFound");
     // create organisation
-    const newOrganisation = new Organisation();
+    const newOrganisation = new Organisation({ userId });
     newOrganisation.name = name;
-    newOrganisation.id = ulid();
-    newOrganisation.createdTime = new Date().toISOString();
-    newOrganisation.createdBy = userId;
-    newOrganisation.lastEditedTime = new Date().toISOString();
-    newOrganisation.lastEditedBy = userId;
     newOrganisation.archived = false;
 
     await Promise.all([

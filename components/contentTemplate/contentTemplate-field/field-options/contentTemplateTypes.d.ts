@@ -1,6 +1,6 @@
 import { FieldType } from "./fieldsDefinitions";
 
-interface Subtype<T> {
+interface variant<T> {
     type: T;
     description: string;
     label: string;
@@ -11,32 +11,32 @@ interface FieldTypePropsBase {
     description: string;
     label: string;
     icon: FontAwesomeIconProps["icon"];
-    subtypes?: Subtype[];
+    variants?: variant[];
 }
 
 export interface FieldTypePropsSelect extends FieldTypePropsBase {
     type: "select";
-    subtypes: [Subtype<"single">, Subtype<"multiple">];
+    variants: [variant<"single">, variant<"multiple">];
 }
 
 export interface FieldTypePropsNumber extends FieldTypePropsBase {
     type: "number";
-    subtypes: [Subtype<"integer">, Subtype<"decimal">, Subtype<"float">];
+    variants: [variant<"integer">, variant<"decimal">, variant<"float">];
 }
 
 export interface FieldTypePropsText extends FieldTypePropsBase {
     type: "text";
-    subtypes: [Subtype<"shortText">, Subtype<"longText">];
+    variants: [variant<"shortText">, variant<"longText">];
 }
 
 export interface FieldTypePropsImage extends FieldTypePropsBase {
     type: "image";
-    subtypes: [Subtype<"single">, Subtype<"multiple">];
+    variants: [variant<"single">, variant<"multiple">];
 }
 
 export interface FieldTypePropsDate extends FieldTypePropsBase {
     type: "date";
-    subtypes: [Subtype<"date">, Subtype<"dateTime">, Subtype<"time">];
+    variants: [variant<"date">, variant<"dateTime">, variant<"time">];
 }
 
 export type FieldTypeProps =

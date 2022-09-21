@@ -25,7 +25,7 @@ export const UserSettings = () => {
         >
             <Stack spacing="sm">
                 <SmartForm.TextInput name="name" label="Full name" />
-                <SmartForm.Images
+                <SmartForm.Assets
                     name="picture"
                     label="Photo"
                     accept={[MIME_TYPES.jpeg, MIME_TYPES.png]}

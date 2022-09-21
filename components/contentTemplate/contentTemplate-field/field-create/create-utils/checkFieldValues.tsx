@@ -9,11 +9,11 @@ export const checkFieldValues = (fieldProperties: Partial<Property>) => {
         throw new Error("Name is required");
     }
 
-    //check for subtype
-    const hasSubtype = FIELD_TYPES[fieldProperties.type]?.subtypes;
-    const subtypeHasValue = fieldProperties?.subtype;
-    if (hasSubtype && !subtypeHasValue) {
-        throw new Error("Please select a subtype");
+    //check for variant
+    const hasvariant = FIELD_TYPES[fieldProperties.type]?.variants;
+    const variantHasValue = fieldProperties?.variant;
+    if (hasvariant && !variantHasValue) {
+        throw new Error("Please select a variant");
     }
 
     //check field specific values

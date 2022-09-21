@@ -9,10 +9,10 @@ export const BasicFieldsCommon: FC<{ type: FieldType; options: Record<string, an
     type,
     options,
 }) => {
-    const subtypes = FIELD_TYPES[type]?.subtypes;
+    const variants = FIELD_TYPES[type]?.variants;
     return (
         <>
-            <SmartForm.FieldGroup cols={subtypes?.length ? 2 : 1}>
+            <SmartForm.FieldGroup cols={variants?.length ? 2 : 1}>
                 <SmartForm.TextInput
                     name="name"
                     required
@@ -20,15 +20,15 @@ export const BasicFieldsCommon: FC<{ type: FieldType; options: Record<string, an
                     rules={{ minLength: 2 }}
                 />
                 {
-                    // If field option has subtypes
-                    subtypes?.length ? (
+                    // If field option has variants
+                    variants?.length ? (
                         <SmartForm.Select
                             required
                             label="Variant"
-                            name="subtype"
-                            data={subtypes?.map((subtype) => ({
-                                ...subtype,
-                                value: subtype.type,
+                            name="variant"
+                            data={variants?.map((variant) => ({
+                                ...variant,
+                                value: variant.type,
                             }))}
                             disabled={options?.variantLocked}
                         />

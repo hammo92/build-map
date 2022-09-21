@@ -26,14 +26,9 @@ export async function createInvitation({
     userId: string;
 }) {
     // create invitation
-    const newInvitation = new Invitation();
-    newInvitation.id = ulid();
+    const newInvitation = new Invitation({ userId });
     newInvitation.email = email;
     newInvitation.organisationId = organisationId;
-    newInvitation.createdTime = new Date().toISOString();
-    newInvitation.createdBy = userId;
-    newInvitation.lastEditedTime = new Date().toISOString();
-    newInvitation.lastEditedBy = userId;
     newInvitation.redeemed = false;
     newInvitation.projectId = projectId;
     await newInvitation.save();

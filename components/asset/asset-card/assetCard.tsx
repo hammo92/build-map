@@ -56,16 +56,16 @@ const AssetDetails = ({ filename, ext }: Partial<CleanedCamel<Asset>>) => {
     return (
         <Group position="apart" align="flex-start" noWrap>
             <Stack spacing={0}>
-                <Text size="md" lineClamp={1}>
+                <Text size="sm" lineClamp={1}>
                     <Skeleton visible={!filename}>{filename ?? "file.ext"}</Skeleton>
                 </Text>
-                <Text color="dimmed" size="sm" sx={{ textTransform: "uppercase" }}>
+                <Text color="dimmed" size="xs" sx={{ textTransform: "uppercase" }}>
                     <Skeleton visible={!ext}>{ext ?? "ext"}</Skeleton>
                 </Text>
             </Stack>
-            <Badge my="xs" sx={{ flexShrink: 0 }}>
+            {/* <Badge my="xs" sx={{ flexShrink: 0 }}>
                 {mimeCategory(ext)}
-            </Badge>
+            </Badge> */}
         </Group>
     );
 };

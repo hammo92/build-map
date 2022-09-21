@@ -27,7 +27,7 @@ export const getContentTitle = ({
         const field = content.fields.find(({ templateFieldId }) => templateFieldId === value);
         if (field?.type === "date" && field.value) {
             const date = dayjs(field.value);
-            switch (field.subtype) {
+            switch (field.variant) {
                 case "date":
                     title = date.format("D/MM/YY");
                     break;

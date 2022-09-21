@@ -1,21 +1,21 @@
+import { TreeDestinationPosition, TreeSourcePosition } from "@atlaskit/tree";
 import { params } from "@serverless/cloud";
 import { Oso } from "oso-cloud";
 import { indexBy } from "serverless-cloud-data-utils";
 import { CleanedCamel } from "type-helpers";
 import { ulid } from "ulid";
 import { Required } from "utility-types";
-import { objArrToKeyIndexedMap } from "../../../utils/arrayModify";
+import { getObjectChanges } from "../../../utils/objects";
 import { IconPickerIcon } from "../../../components/ui/iconPicker/types";
-import { getChanges, HistoryEntry } from "../../../lib/historyEntry/data/historyEntry.model";
+import { HistoryEntry } from "../../../lib/historyEntry/data/historyEntry.model";
 import { withOrdinalSuffix } from "../../../utils/numbers";
-import { capitalise } from "../../../utils/stringTransform";
+import { capitalise, splitCamel } from "../../../utils/stringTransform";
 import { errorIfUndefined, errorRequiredPropsUndefined } from "../../utils";
 import {
     ContentTemplate,
     ContentTemplateId,
     ContentTemplateOrganisation,
     ContentTemplateTitle,
-    PropertyGroup,
 } from "./contentTemplate.model";
 import {
     createGroup,
@@ -30,12 +30,7 @@ import {
     updateRelatedProperty,
 } from "./functions/relation";
 import { Property, PropertyRelation } from "./types";
-import { TreeDestinationPosition, TreeSourcePosition } from "@atlaskit/tree";
-import {
-    transformTemplateToTree,
-    transformTreeGroupsToModel,
-} from "@components/contentTemplate/utils/dataTransforms";
-import { iteratorSymbol } from "immer/dist/internal";
+import { content } from "@lib/content/endpoints";
 
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
@@ -56,10 +51,7 @@ export async function createContentTemplate({
     errorIfUndefined({ name, userId, organisationId, icon, templateType });
 
     // create contentTemplate //
-    const newContentTemplate = new ContentTemplate();
-    newContentTemplate.initialise({
-        createdBy: userId,
-    });
+    const newContentTemplate = new ContentTemplate({ userId });
 
     // set Content Template details
     newContentTemplate.name = name;
@@ -76,8 +68,6 @@ export async function createContentTemplate({
         type: "contentInfo",
         value: "id",
     };
-
-    console.log("newContentTemplate", newContentTemplate);
 
     await newContentTemplate.saveWithHistory({
         editedBy: userId,
@@ -158,21 +148,29 @@ export async function updateContentTemplate({
     if (name) {
         historyEntry.title = `Name Updated`;
         historyEntry.subtitle = `${contentTemplate.name} to ${name}`;
+        contentTemplate.name = name;
     }
 
     if (icon) {
         historyEntry.title = `Icon Changed`;
-        historyEntry.changes = {
-            from: contentTemplate.icon,
-            to: icon,
-            type: "icon",
-        };
+        historyEntry.changes = [
+            {
+                path: ["Icon"],
+                from: contentTemplate.icon,
+                to: icon,
+                type: "icon",
+            },
+        ];
         contentTemplate.icon = icon;
     }
 
     if (title) {
         historyEntry.title = `Title Property Updated`;
-        historyEntry.subtitle = `${title.value} to ${title}`;
+        const getName = (title: ContentTemplate["title"]) => {
+            if (title.type === "contentInfo") return splitCamel(title.value);
+            return contentTemplate.fields.find(({ id }) => id === title.value)?.name;
+        };
+        historyEntry.subtitle = `${getName(contentTemplate.title)} to ${getName(title)}`;
         contentTemplate.title = title;
     }
 
@@ -276,8 +274,6 @@ export async function updateProperty(props: {
     // values should not be different, but removed as safeguard
     const { id, type, ...updates } = fieldProperties;
 
-    console.log("updates", updates);
-
     let property = contentTemplate.fields[fieldIndexToUpdate];
 
     let updatedProperty = { ...property, ...updates };
@@ -291,7 +287,9 @@ export async function updateProperty(props: {
         });
     }
 
-    const changes = getChanges(property, updatedProperty);
+    const changes = getObjectChanges(property, updatedProperty);
+
+    //console.log("changes", changes);
 
     // update field on content template
     contentTemplate.fields[fieldIndexToUpdate] = updatedProperty as Property;
@@ -337,7 +335,7 @@ export async function createPropertyGroup(props: CreatePropertyGroupProps) {
 
     await contentTemplate.saveWithHistory({
         editedBy: userId,
-        title: "Group created",
+        title: `Group created: ${name}`,
         ...(parentId && { subtitle: `In group ${parent.name}` }),
     });
 
@@ -379,7 +377,7 @@ export async function reorderPropertyGroups(props: ReorderPropertyGroupsProps) {
     const movedToNewGroup = reordered.source.group !== reordered.destination.group;
     const itemType = reordered.item.type === "propertyGroup" ? "Group" : "Property";
 
-    historyEntry.title = `${itemType} ${reordered.item.name} moved`;
+    historyEntry.title = `${itemType} moved: ${reordered.item.name}`;
     if (movedToNewGroup) {
         historyEntry.subtitle = "Between groups";
         historyEntry.notes!.push(
@@ -479,7 +477,7 @@ export async function deletePropertyGroup(props: {
     });
 
     const historyEntry = new HistoryEntry({
-        title: `${targetGroup.name} Deleted`,
+        title: `Group Deleted: ${targetGroup.name} `,
         subtitle: `Contents ${deleteContents ? "deleted:" : "retained"}`,
         notes: [
             ...removedGroups.map(({ name }) => `Group deleted: ${name} `),
@@ -565,7 +563,7 @@ export async function deleteProperty(props: {
     const [property] = contentTemplate.fields.splice(propertyIndex, 1);
 
     const historyEntry = new HistoryEntry({
-        title: `${property.name} deleted`,
+        title: `Property Deleted: ${property.name}`,
         editedBy: userId,
     });
 
@@ -587,7 +585,7 @@ export async function deleteProperty(props: {
             type: "contentInfo",
             value: "id",
         };
-        historyEntry.notes?.push("Property was template title, title reset to id");
+        historyEntry.notes?.push("Property was used as template title, title reset to id");
     }
 
     //remove property from group

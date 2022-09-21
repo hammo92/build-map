@@ -107,7 +107,7 @@ export const AdditionalFieldActions: FC<FieldEditProps> = ({
                                 basic: {
                                     variantLocked:
                                         field.type === "image" &&
-                                        field.subtype === "multiple" &&
+                                        field.variant === "multiple" &&
                                         field.value &&
                                         field.value.length > 1,
                                 },

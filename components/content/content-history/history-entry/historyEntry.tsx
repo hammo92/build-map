@@ -13,7 +13,7 @@ import { formatDate } from "utils/date";
 const valueDisplay = ({ field, value }: { field: ContentField; value: string }) => {
     switch (field?.type) {
         case "date":
-            return <>{formatDate(value, field.subtype)}</>;
+            return <>{formatDate(value, field.variant)}</>;
         case "relation":
             return <ContentTitle contentId={value} valueOnly />;
         default:

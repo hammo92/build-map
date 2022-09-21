@@ -12,7 +12,7 @@ import { FieldsRichText } from "./fields-richText";
 import { FieldsSelect } from "./fields-select";
 import { FieldsText } from "./fields-text";
 
-const getFieldElement = (field: ContentField | Property) => {
+export const getFieldElement = (field: ContentField | Property) => {
     switch (field.type) {
         case "email":
             return <FieldsEmail field={field} key={field.id} />;
@@ -70,7 +70,7 @@ export const ContentFields = ({
 };
 
 /*Draggable Content Fields
-import { SmartFormImages } from "@components/smartForm/smartForm-images";
+import { SmartFormAssets } from "@components/smartForm/smartForm-images";
 import { ContentField } from "@lib/content/data/types";
 import { Property } from "@lib/contentTemplate/data/types";
 import { useListState } from "@mantine/hooks";

@@ -18,7 +18,15 @@ export const ContentHeader: FC<{
     const { formState } = useFormContext();
     const { mutateAsync, isLoading } = useDeleteContent();
     return (
-        <Group position="apart" noWrap>
+        <Group
+            position="apart"
+            noWrap
+            px="md"
+            pt="sm"
+            /*sx={(theme) => ({
+                borderBottom: `1px solid ${theme.colors.dark[6]}`,
+            })}*/
+        >
             <Group noWrap>
                 <ContentTitle
                     contentId={content.id}

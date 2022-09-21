@@ -6,6 +6,7 @@ import {
     getContentById,
     getContentOfTemplate,
     handleContentTemplateChange,
+    repeatGroup,
     updateContentFields,
     UpdateContentFromTemplate,
     updateContentStatus,
@@ -129,6 +130,28 @@ export const content = () => {
         }
     });
 
+    //* Add repeatable group entry*/
+    api.post(`/content/:contentId/groups/:groupId`, async function (req: any, res: any) {
+        const { contentId, groupId } = req.params;
+        const { updates, deletions } = req.body;
+        const { user } = req;
+        try {
+            const content = await repeatGroup({
+                contentId,
+                groupId,
+                userId: user.id,
+            });
+            return res.status(200).send({
+                content: content && content.clean(),
+            });
+        } catch (error: any) {
+            console.log(error);
+            return res.status(403).send({
+                message: error.message,
+            });
+        }
+    });
+
     //* Update content to latest Template*/
     api.patch(`/content/:contentId/patchFromTemplate`, async function (req: any, res: any) {
         const { contentId } = req.params;
@@ -170,7 +193,7 @@ export const content = () => {
     );
 
     events.on(
-        "contentTemplate.updated",
+        "ContentTemplate.updated",
         async ({
             body,
         }: {
@@ -183,6 +206,7 @@ export const content = () => {
             // console.time();
             // contentAndTemplateDifference({ templateId: body.templateId });
             // console.timeEnd();
+            console.log("ContentTemplate updated");
             handleContentTemplateChange(body);
         }
     );

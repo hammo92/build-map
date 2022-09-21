@@ -1,3 +1,4 @@
+import { BaseModel, BaseModelId } from "../../../lib/models";
 import { buildIndex, indexBy, Model } from "serverless-cloud-data-utils";
 
 //* User model and indexes *//
@@ -7,8 +8,7 @@ import { buildIndex, indexBy, Model } from "serverless-cloud-data-utils";
 export const UserId = buildIndex({ namespace: `user` });
 
 //model: User */
-export class User extends Model<User> {
-    id: string;
+export class User extends BaseModel<User> {
     type = "User";
     email: string;
     name: string;
@@ -18,15 +18,11 @@ export class User extends Model<User> {
     nickname: string;
     nicknameManuallySet: boolean;
     salt: string;
-    createdTime: string;
-    createdBy: string;
-    lastEditedTime: string;
-    lastEditedBy: string;
     // set on response
     avatar: {
         [key in "xs" | "sm" | "md" | "lg" | "xl" | "full" | string]: string;
     };
     keys() {
-        return [indexBy(UserId).exact(this.id)];
+        return [indexBy(UserId).exact(this.id), indexBy(BaseModelId).exact(this.id)];
     }
 }

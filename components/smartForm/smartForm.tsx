@@ -1,5 +1,5 @@
 import { DevTool } from "@hookform/devtools";
-import { FormProvider, SubmitHandler, useForm, UseFormProps } from "react-hook-form";
+import { FieldValues, FormProvider, SubmitHandler, useForm, UseFormProps } from "react-hook-form";
 import { SmartFormBooleanSegmentedControl } from "./smartForm-booleanSegmentedControl";
 import { SmartFormCheckbox } from "./smartForm-checkbox";
 import { SmartFormChips } from "./smartForm-chips";
@@ -11,7 +11,7 @@ import { SmartFormDateTime } from "./smartForm-dateTime";
 import { SmartFormEditableList } from "./smartForm-editableList";
 import { SmartFormFieldGroup } from "./smartForm-fieldGroup";
 import { SmartFormIconPicker } from "./smartForm-iconPicker";
-import { SmartFormImages } from "./smartForm-images";
+import { SmartFormAssets } from "./smartForm-assets";
 import { SmartFormJsonInput } from "./smartForm-jsonInput";
 import { SmartFormMultiSelect } from "./smartForm-multiSelect";
 import { SmartFormNumberInput } from "./smartForm-numberInput";
@@ -25,7 +25,7 @@ import { SmartFormTextarea } from "./smartForm-textarea";
 import { SmartFormTextInput } from "./smartForm-textInput";
 import { SmartFormTimeInput } from "./smartForm-timeInput";
 
-interface SmartFormProps<FormValues> extends UseFormProps {
+interface SmartFormProps<FormValues extends FieldValues> extends UseFormProps {
     formName: string;
     onSubmit: SubmitHandler<FormValues>;
     disableSubmit?: boolean;
@@ -54,7 +54,7 @@ function dirtyValues<FormValues>(
     ) as unknown as FormValues;
 }
 
-export const SmartForm = <FormValues,>({
+export const SmartForm = <FormValues extends FieldValues>({
     formName,
     defaultValues,
     children,
@@ -98,7 +98,7 @@ SmartForm.ColorPicker = SmartFormColorPicker;
 SmartForm.DatePicker = SmartFormDatePicker;
 SmartForm.DateTime = SmartFormDateTime;
 SmartForm.EditableList = SmartFormEditableList;
-SmartForm.Images = SmartFormImages;
+SmartForm.Assets = SmartFormAssets;
 SmartForm.JsonInput = SmartFormJsonInput;
 SmartForm.MultiSelect = SmartFormMultiSelect;
 SmartForm.NumberInput = SmartFormNumberInput;

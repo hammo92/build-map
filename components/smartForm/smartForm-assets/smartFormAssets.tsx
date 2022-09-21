@@ -5,7 +5,7 @@ import { forwardRef } from "react";
 import { SmartFormDefaultController } from "../smartForm-defaultController";
 import { SmartFormInputBaseProps } from "../types";
 
-type SmartFormImagesProps = SmartFormInputBaseProps &
+type SmartFormAssetsProps = SmartFormInputBaseProps &
     Omit<AssetManagerProps, "assetIds"> &
     Omit<InputWrapperProps, "children">;
 
@@ -34,6 +34,7 @@ const WrappedAssetManager = forwardRef(
             defaultValue,
             onChange,
             readOnly,
+            hidden,
             ...rest
         } = props;
         return (
@@ -48,6 +49,7 @@ const WrappedAssetManager = forwardRef(
                 labelElement={labelElement}
                 labelProps={labelProps}
                 size={props.size}
+                hidden={props.hidden}
                 sx={{ display: "flex", flexDirection: "column" }}
             >
                 <AssetManager
@@ -64,7 +66,7 @@ const WrappedAssetManager = forwardRef(
 
 WrappedAssetManager.displayName = "WrappedAssetManager";
 
-export const SmartFormImages = (props: SmartFormImagesProps) => {
+export const SmartFormAssets = (props: SmartFormAssetsProps) => {
     return (
         <SmartFormDefaultController {...props}>
             <WrappedAssetManager />

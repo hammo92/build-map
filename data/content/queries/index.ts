@@ -102,6 +102,13 @@ export async function updateContentFields({
     return camelcaseKeys(data, { deep: true });
 }
 
+export async function repeatGroup({ contentId, groupId }: { contentId: string; groupId: string }) {
+    const { data } = await apiClient.post<{
+        Content: CleanedSnake<Content>;
+    }>(`/content/${contentId}/groups/${groupId}`);
+    return camelcaseKeys(data, { deep: true });
+}
+
 export async function updateContentFromTemplate({ contentId }: { contentId: string }) {
     const { data } = await apiClient.patch<{
         Content: CleanedSnake<Content>;

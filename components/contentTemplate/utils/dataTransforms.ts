@@ -87,6 +87,7 @@ export const transformTreeGroupsToModel = (treeData: TreeData) => {
                         id: item.id,
                         name: item.data.name,
                         repeatable: item.data.repeatable,
+                        type: "propertyGroup",
                     });
                 }
                 return acc;

@@ -10,6 +10,7 @@ import {
     deleteContent,
     getContent,
     getContentOfTemplate,
+    repeatGroup,
     updateContentFields,
     updateContentFromTemplate,
     updateContentStatus,
@@ -176,6 +177,25 @@ export function useUpdateContentValues() {
 export function useUpdateContentFields() {
     const queryClient = useQueryClient();
     return useMutation(updateContentFields, {
+        mutationKey: Keys.CREATE_CONTENT,
+        onSuccess: (data) => {
+            queryClient.invalidateQueries(Keys.GET_PROJECT_CONTENT_OF_TYPE);
+            queryClient.invalidateQueries([Keys.GET_CONTENT, data?.content.id]);
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.log(`error`, error?.response?.data);
+            showNotification({
+                title: "Error",
+                message: error?.response?.data.message,
+                color: "red",
+            });
+        },
+    });
+}
+
+export function useRepeatGroup() {
+    const queryClient = useQueryClient();
+    return useMutation(repeatGroup, {
         mutationKey: Keys.CREATE_CONTENT,
         onSuccess: (data) => {
             queryClient.invalidateQueries(Keys.GET_PROJECT_CONTENT_OF_TYPE);

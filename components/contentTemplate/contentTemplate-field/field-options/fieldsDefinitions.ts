@@ -53,7 +53,7 @@ export const FIELD_TYPES: { [key in FieldType]: FieldTypeProps } = {
         description: "Numbers (integers, float, decimal)",
         label: "Number",
         icon: fa1,
-        subtypes: [
+        variants: [
             {
                 type: "integer",
                 description: "Whole numbers (ex: 10)",
@@ -76,7 +76,7 @@ export const FIELD_TYPES: { [key in FieldType]: FieldTypeProps } = {
         description: "Short or long text",
         label: "Text",
         icon: faText,
-        subtypes: [
+        variants: [
             {
                 type: "shortText",
                 description: "Good for titles, and names",
@@ -100,7 +100,7 @@ export const FIELD_TYPES: { [key in FieldType]: FieldTypeProps } = {
         description: "Single or multiple images",
         label: "Image",
         icon: faImage,
-        subtypes: [
+        variants: [
             {
                 type: "single",
                 description: "Add a single image",
@@ -118,7 +118,7 @@ export const FIELD_TYPES: { [key in FieldType]: FieldTypeProps } = {
         description: "Date and time",
         label: "Date",
         icon: faCalendar,
-        subtypes: [
+        variants: [
             {
                 type: "date",
                 description: "Day, month, and year",

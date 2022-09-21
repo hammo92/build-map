@@ -39,10 +39,9 @@ export async function createProject({
     errorIfUndefined({ user }, "notFound");
 
     // create project
-    const newProject = new Project();
+    const newProject = new Project({ userId });
 
     newProject.name = name;
-    newProject.creatorId = userId;
     newProject.organisationId = organisationId;
     if (address) {
         newProject.address = address;
@@ -50,8 +49,6 @@ export async function createProject({
     if (jobNumber) {
         newProject.jobNumber = jobNumber;
     }
-    newProject.id = ulid();
-    newProject.date = new Date().toISOString();
     newProject.isActive = true;
 
     // find postcode coordinates if only postcode provided
@@ -64,12 +61,12 @@ export async function createProject({
         newProject.address.latitude = latitude;
         newProject.address.longitude = longitude;
     }
-
     // create projectUser for creator
     const newProjectUser = new ProjectUser();
+
     newProjectUser.projectId = newProject.id;
     newProjectUser.userId = userId;
-    newProjectUser.roleId = "none";
+    console.log("newProjectUser :>> ", newProjectUser);
     await Promise.all([
         oso.tell("has_role", user!, "owner", newProject),
         newProject.save(),
@@ -185,7 +182,6 @@ export async function createProjectUser({
     const newProjectUser = new ProjectUser();
     newProjectUser.projectId = projectId;
     newProjectUser.userId = userId;
-    newProjectUser.roleId = "none";
     await newProjectUser.save();
     return newProjectUser;
 }

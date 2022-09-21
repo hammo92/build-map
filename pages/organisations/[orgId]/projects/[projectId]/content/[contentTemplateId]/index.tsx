@@ -86,7 +86,7 @@ function ContentPage({ contentTemplate, projectId, content }: ContentPageProps) 
                         })}
                         p={0}
                     >
-                        <Stack px="md" py="sm" spacing="sm">
+                        <Stack px="sm" py="sm" spacing="sm">
                             {data?.content?.length
                                 ? data.content
                                       .sort((a, b) =>
@@ -108,7 +108,7 @@ function ContentPage({ contentTemplate, projectId, content }: ContentPageProps) 
                                 : "No content entries found"}
                         </Stack>
                     </Grid.Col>
-                    <Grid.Col span={9} sx={{ height: "100%", overflow: "auto" }} px="md">
+                    <Grid.Col span={9} sx={{ height: "100%", overflow: "auto" }} p={0}>
                         {getActiveContent ? (
                             <Content content={getActiveContent} contentTemplate={contentTemplate} />
                         ) : (

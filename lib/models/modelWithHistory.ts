@@ -9,11 +9,6 @@ export abstract class ModelWithHistory<T extends BaseModel<T>> extends BaseModel
         super(obj);
     }
 
-    async initialise({ createdBy }: { createdBy: string }) {
-        super.initialise({ createdBy });
-        this.history = [];
-    }
-
     async saveWithHistory(props: Omit<HistoryEntry, "id" | "createdTime">) {
         const date = new Date().toISOString();
         const historyEntry = new HistoryEntry(props);
@@ -21,7 +16,7 @@ export abstract class ModelWithHistory<T extends BaseModel<T>> extends BaseModel
         this.lastEditedTime = date;
         this.history.unshift(historyEntry);
         await super.save();
-        await events.publish("contentTemplate.updated", {
+        await events.publish(`${this.type}.updated`, {
             templateId: this.id,
             historyEntry,
         });

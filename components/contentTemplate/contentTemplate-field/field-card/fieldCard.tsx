@@ -22,9 +22,9 @@ const fieldSubtitle = (field: Property) => {
     const typeString = splitCamel(field.type);
     switch (field.type) {
         case "number":
-            return `${typeString} - ${splitCamel(field.subtype)}`;
+            return `${typeString} - ${splitCamel(field.variant)}`;
         case "text":
-            return `${typeString} - ${splitCamel(field.subtype)}`;
+            return `${typeString} - ${splitCamel(field.variant)}`;
         default:
             return typeString;
     }

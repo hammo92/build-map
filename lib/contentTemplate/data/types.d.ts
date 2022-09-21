@@ -33,7 +33,7 @@ export type PropertyComponent = PropertyBase<"component"> & {
 };
 
 export type PropertyDate = PropertyBase<"date"> & {
-    subtype: "dateTime" | "date" | "time";
+    variant: "dateTime" | "date" | "time";
     defaultValue?: any;
 };
 
@@ -42,7 +42,7 @@ export type PropertyEmail = PropertyBase<"email"> & {
 };
 
 export type PropertyImage = PropertyBase<"image"> & {
-    subtype: "single" | "multiple";
+    variant: "single" | "multiple";
     defaultValue?: any;
 };
 
@@ -52,7 +52,7 @@ export type PropertyMultiSelect = PropertyBase<"multiSelect"> & {
 };
 
 export type PropertyNumber = PropertyBase<"number"> & {
-    subtype: "integer" | "decimal" | "float";
+    variant: "integer" | "decimal" | "float";
     defaultValue?: number;
     min?: NumberInputProps["min"];
     max?: NumberInputProps["max"];
@@ -68,7 +68,7 @@ export type PropertySelect = PropertyBase<"select"> & {
 };
 
 export type PropertyText = PropertyBase<"text"> & {
-    subtype: "shortText" | "longText";
+    variant: "shortText" | "longText";
     defaultValue?: string;
 };
 

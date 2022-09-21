@@ -1,5 +1,6 @@
 /* organisation.model.ts */
 
+import { BaseModel, BaseModelId } from "../../../lib/models";
 import { buildIndex, indexBy, Model } from "serverless-cloud-data-utils";
 
 //* Organisation model and indexes //
@@ -17,13 +18,8 @@ export const OrganisationCreator = (creatorId: string) =>
     });
 
 //model: Organisation */
-export class Organisation extends Model<Organisation> {
-    id: string;
+export class Organisation extends BaseModel<Organisation> {
     type = "Organisation";
-    createdTime: string;
-    createdBy: string;
-    lastEditedTime: string;
-    lastEditedBy: string;
     archived: boolean;
     name: string;
     path: string;
@@ -31,6 +27,7 @@ export class Organisation extends Model<Organisation> {
         return [
             indexBy(OrganisationId).exact(this.id),
             indexBy(OrganisationCreator(this.createdBy)).exact(this.id),
+            indexBy(BaseModelId).exact(this.id),
         ];
     }
 }

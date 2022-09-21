@@ -6,6 +6,7 @@ import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model
 import {
     Box,
     Card,
+    createStyles,
     Divider,
     Grid,
     Group,
@@ -23,17 +24,59 @@ import { Required } from "utility-types";
 import { AdditionalFieldCreate } from "./content-additionalField/additionalField-create";
 import { ContentFieldManager } from "./content-fieldManager";
 import { ContentFields } from "./content-fields";
+import { FieldsGroup, groupFields } from "./content-fields/fields-group";
 import { ContentHeader } from "./content-header";
 import { ContentHistory } from "./content-history";
 import { ContentStatusBadge } from "./content-status/status-badge";
 dayjs.extend(relativeTime);
 
+export const FIELD_SUFFIXES = {
+    NOTE: "-note",
+    ASSETS: "-assets",
+};
+
 function convertContentDataForSmartForm(fields: Required<Partial<ContentField>, "id">[]) {
-    return fields.reduce((ac, a) => ({ ...ac, [a.id]: a.value ?? null }), {});
+    console.log("fields :>> ", fields);
+    return fields.reduce((acc, field) => {
+        return {
+            ...acc,
+            [field.id]: field.value ?? null,
+            [`${field.id}${FIELD_SUFFIXES.NOTE}`]: field.note ?? null,
+            [`${field.id}${FIELD_SUFFIXES.ASSETS}`]: field.assets ?? null,
+        };
+    }, {});
 }
 
-//check contentTemplate id is defined before fetching
-// has to be a seperate component to respect hooks order on rerender
+const convertFormData = (values: Record<string, any>) => {
+    return Object.entries(values).reduce<Record<string, any>>((acc, [key, value]) => {
+        const [id, property = "value"] = key.split("-");
+        if (!acc[id]) {
+            acc[id] = {};
+        }
+        acc[id][property] = value;
+        return acc;
+    }, {});
+};
+
+const useStyles = createStyles((theme, _params, getRef) => ({
+    group: {
+        //backgroundColor: theme.colors.dark[7],
+        //paddingBottom: `${theme.spacing.sm}px`,
+    },
+    child: {
+        ref: getRef("child"),
+        display: "flex",
+        //padding: `0 ${theme.spacing.sm}px`,
+    },
+    indent: {
+        backgroundColor: theme.colors.dark[5],
+
+        width: "2px",
+        margin: `0 ${theme.spacing.sm}px`,
+        alignSelf: "stretch",
+    },
+}));
+
 export const Content = ({
     content,
     contentTemplate,
@@ -69,9 +112,10 @@ export const Content = ({
             { active: [], hidden: [], additional: [] }
         );
         const onSubmit = async (values: any) => {
+            console.log("convertFormData(values), :>> ", convertFormData(values));
             await mutateAsync({
                 contentId: content.id,
-                values,
+                values: convertFormData(values),
             });
         };
         return (
@@ -89,17 +133,16 @@ export const Content = ({
                         contentTemplate={contentTemplate}
                         loading={mutateLoading}
                     />
-                    <Grid>
+                    <Grid px="md">
                         <Grid.Col span={9}>
                             <Box
-                                //p="md"
                                 sx={(theme) => ({
                                     background: theme.colors.dark[7],
                                     borderRadius: theme.radius[theme.defaultRadius as "sm"],
                                 })}
                             >
                                 <Tabs defaultValue="templateFields">
-                                    <Tabs.List grow mb="sm">
+                                    <Tabs.List>
                                         <Tabs.Tab value="templateFields" p="md">
                                             {contentTemplate.name} Template Fields
                                         </Tabs.Tab>
@@ -109,28 +152,33 @@ export const Content = ({
                                     </Tabs.List>
 
                                     <Tabs.Panel value="templateFields">
-                                        <Stack p="md" pt={0} spacing="sm">
-                                            {hidden && hidden?.length > 0 && (
-                                                <>
-                                                    <Group position="apart">
-                                                        <Text size="sm" color="dimmed">
-                                                            {hidden?.length}{" "}
-                                                            {hidden?.length === 1
-                                                                ? "tempate field is"
-                                                                : "tempate fields are"}{" "}
-                                                            hidden
-                                                        </Text>
-                                                        <ContentFieldManager content={content} />
-                                                    </Group>
-                                                    <Divider />
-                                                </>
-                                            )}
-                                            {active && (
-                                                <ContentFields
-                                                    fields={active}
-                                                    contentId={content.id}
-                                                />
-                                            )}
+                                        <Stack pt={0} spacing="sm" p="xs">
+                                            <>
+                                                {hidden && hidden?.length > 0 && (
+                                                    <>
+                                                        <Group position="apart">
+                                                            <Text size="sm" color="dimmed">
+                                                                {hidden?.length}{" "}
+                                                                {hidden?.length === 1
+                                                                    ? "tempate field is"
+                                                                    : "tempate fields are"}{" "}
+                                                                hidden
+                                                            </Text>
+                                                            <ContentFieldManager
+                                                                content={content}
+                                                            />
+                                                        </Group>
+                                                        <Divider />
+                                                    </>
+                                                )}
+
+                                                {active && (
+                                                    <FieldsGroup
+                                                        fieldGroup={groupFields({ content })}
+                                                        content={content}
+                                                    />
+                                                )}
+                                            </>
                                         </Stack>
                                     </Tabs.Panel>
                                     <Tabs.Panel value="additionalContent">

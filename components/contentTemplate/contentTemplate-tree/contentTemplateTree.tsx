@@ -1,10 +1,4 @@
-import Tree, {
-    ItemId,
-    moveItemOnTree,
-    TreeData,
-    TreeDestinationPosition,
-    TreeSourcePosition,
-} from "@atlaskit/tree";
+import Tree, { ItemId, TreeDestinationPosition, TreeSourcePosition } from "@atlaskit/tree";
 import { useReorderPropertyGroups } from "@data/contentTemplate/hooks";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Group, Skeleton, Stack } from "@mantine/core";
@@ -12,7 +6,7 @@ import { useSetState } from "@mantine/hooks";
 import { FC } from "react";
 import { CleanedCamel } from "type-helpers";
 import { GroupCreate } from "../contentTemplate-group/group-create";
-import { transformTemplateToTree, transformTreeGroupsToModel } from "../utils/dataTransforms";
+import { transformTemplateToTree } from "../utils/dataTransforms";
 import { useStyles } from "./styles";
 import { TreeRenderItem } from "./tree-renderItem";
 
