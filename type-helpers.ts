@@ -17,6 +17,7 @@ export type StripModel<T> = Omit<
     | "__shadowSnapshots"
     | "secondaries"
     | "saveWithHistory"
+    | "modelKeys"
 >;
 
 // set all to partial except provided keys

@@ -8,11 +8,15 @@ export const BaseModelId = (type: string) => buildIndex({ namespace: `baseModel`
 
 export abstract class BaseModel<T extends Model<T>> extends Model<T> {
     id: string;
+    name: string;
     createdTime: string;
     createdBy: string;
     lastEditedTime: string;
     lastEditedBy: string;
-    type: string;
+    object: string;
+    parent?: string;
+    collection?: string;
+    archived?: boolean;
 
     //Todo update data-utils to allow editing of constructor obj
     constructor(obj?: any) {

@@ -7,16 +7,16 @@ import { ulid } from "ulid";
 import { Required } from "utility-types";
 import { getObjectChanges } from "../../../utils/objects";
 import { Icon } from "../../../components/ui/iconPicker/types";
-import { HistoryEntry } from "../../../lib/historyEntry/data/historyEntry.model";
+import { HistoryEntry } from "../../historyEntry/data/historyEntry.model";
 import { withOrdinalSuffix } from "../../../utils/numbers";
 import { capitalise, splitCamel } from "../../../utils/stringTransform";
 import { errorIfUndefined, errorRequiredPropsUndefined } from "../../utils";
 import {
-    ContentTemplate,
-    ContentTemplateId,
-    ContentTemplateOrganisation,
-    ContentTemplateTitle,
-} from "./contentTemplate.model";
+    Collection,
+    CollectionId,
+    CollectionOrganisation,
+    CollectionTitle,
+} from "./collection.model";
 import {
     createGroup,
     deleteGroup,
@@ -34,102 +34,88 @@ import { content } from "@lib/content/endpoints";
 
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
-//* Create contentTemplate */
-export async function createContentTemplate({
+//* Create collection */
+export async function createCollection({
     name,
     icon,
     organisationId,
     userId,
-    templateType,
 }: {
     name: string;
     icon: Icon;
     organisationId: string;
     userId: string;
-    templateType: ContentTemplate["templateType"];
 }) {
-    errorIfUndefined({ name, userId, organisationId, icon, templateType });
+    errorIfUndefined({ name, userId, organisationId, icon });
 
-    // create contentTemplate //
-    const newContentTemplate = new ContentTemplate({ userId });
+    // create collection //
+    const newCollection = new Collection({ userId });
 
     // set Content Template details
-    newContentTemplate.name = name;
-    newContentTemplate.icon = icon;
-    newContentTemplate.status = "draft";
-    newContentTemplate.templateType = templateType;
-    newContentTemplate.organisationId = organisationId;
-    newContentTemplate.fields = [];
-    newContentTemplate.propertyGroups = [
-        { id: "1", children: [], name: "root", repeatable: false, type: "propertyGroup" },
-    ];
-    newContentTemplate.title = {
+    newCollection.name = name;
+    newCollection.icon = icon;
+    newCollection.status = "draft";
+    newCollection.organisationId = organisationId;
+    newCollection.properties = [];
+    newCollection.title = {
         setType: "auto",
         type: "contentInfo",
         value: "id",
     };
 
-    await newContentTemplate.saveWithHistory({
+    await newCollection.saveWithHistory({
         editedBy: userId,
         title: `${name} content template created`,
     });
-    return newContentTemplate;
+    return newCollection;
 }
 
-//* Get contentTemplate by id */
-export async function getContentTemplateById(contentTemplateId: string) {
-    errorIfUndefined({ contentTemplateId });
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
-    return contentTemplate;
+//* Get collection by id */
+export async function getCollectionById(collectionId: string) {
+    errorIfUndefined({ collectionId });
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
+    return collection;
 }
 
-//* Get Organisation's contentTemplates */
-export async function getOrganisationContentTemplates(organisationId: string) {
+//* Get Organisation's collections */
+export async function getOrganisationCollections(organisationId: string) {
     errorIfUndefined({ organisationId });
-    const contentTemplates = await indexBy(ContentTemplateOrganisation(organisationId)).get(
-        ContentTemplate
-    );
-    return contentTemplates;
+    const collections = await indexBy(CollectionOrganisation(organisationId)).get(Collection);
+    return collections;
 }
 
-//* Delete contentTemplate by id */
-export async function deleteContentTemplateById(contentTemplateId: string) {
-    errorIfUndefined({ contentTemplateId });
-    // get contentTemplate
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
+//* Delete collection by id */
+export async function deleteCollectionById(collectionId: string) {
+    errorIfUndefined({ collectionId });
+    // get collection
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
 
-    errorIfUndefined({ contentTemplate }, "notFound");
+    errorIfUndefined({ collection }, "notFound");
 
-    await contentTemplate!.delete();
+    await collection!.delete();
 
-    return contentTemplate;
+    return collection;
 }
 
-//* Update contentTemplate */
-export async function updateContentTemplate({
-    contentTemplateId,
+//* Update collection */
+export async function updateCollection({
+    collectionId,
     name,
     status,
     icon,
     title,
     userId,
 }: {
-    contentTemplateId: string;
+    collectionId: string;
     name?: string;
     status?: "archived" | "published";
     icon?: Icon;
-    title?: ContentTemplateTitle;
+    title?: CollectionTitle;
     userId: string;
 }) {
-    errorIfUndefined({ contentTemplateId, userId });
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
-    if (!contentTemplate) throw new Error("No content template found");
+    errorIfUndefined({ collectionId, userId });
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
+    if (!collection) throw new Error("No content template found");
     let updateNotes: string[] = ["Template details updated"];
 
     // only one field updated on a single request
@@ -140,15 +126,15 @@ export async function updateContentTemplate({
     });
 
     if (status) {
-        historyEntry.title = `${contentTemplate.name} ${status}`;
-        historyEntry.subtitle = `${contentTemplate.status} to ${status}`;
-        contentTemplate.status = status;
+        historyEntry.title = `${collection.name} ${status}`;
+        historyEntry.subtitle = `${collection.status} to ${status}`;
+        collection.status = status;
     }
 
     if (name) {
         historyEntry.title = `Name Updated`;
-        historyEntry.subtitle = `${contentTemplate.name} to ${name}`;
-        contentTemplate.name = name;
+        historyEntry.subtitle = `${collection.name} to ${name}`;
+        collection.name = name;
     }
 
     if (icon) {
@@ -156,50 +142,48 @@ export async function updateContentTemplate({
         historyEntry.changes = [
             {
                 path: ["Icon"],
-                from: contentTemplate.icon,
+                from: collection.icon,
                 to: icon,
                 type: "icon",
             },
         ];
-        contentTemplate.icon = icon;
+        collection.icon = icon;
     }
 
     if (title) {
         historyEntry.title = `Title Property Updated`;
-        const getName = (title: ContentTemplate["title"]) => {
+        const getName = (title: Collection["title"]) => {
             if (title.type === "contentInfo") return splitCamel(title.value);
-            return contentTemplate.fields.find(({ id }) => id === title.value)?.name;
+            return collection.fields.find(({ id }) => id === title.value)?.name;
         };
-        historyEntry.subtitle = `${getName(contentTemplate.title)} to ${getName(title)}`;
-        contentTemplate.title = title;
+        historyEntry.subtitle = `${getName(collection.title)} to ${getName(title)}`;
+        collection.title = title;
     }
 
-    await contentTemplate.saveWithHistory({
+    await collection.saveWithHistory({
         ...historyEntry,
     });
 
-    return contentTemplate;
+    return collection;
 }
 
 //* Create property */
 export async function createProperty(props: {
-    contentTemplateId: string;
+    collectionId: string;
     fieldProperties: Required<Partial<CleanedCamel<Property>>, "name" | "type">;
     userId: string;
     groupId?: string;
 }) {
     errorRequiredPropsUndefined({
         props,
-        propPaths: ["contentTemplateId", "fieldProperties.name", "fieldProperties.type", "userId"],
+        propPaths: ["collectionId", "fieldProperties.name", "fieldProperties.type", "userId"],
     });
 
-    const { contentTemplateId, fieldProperties, userId, groupId } = props;
+    const { collectionId, fieldProperties, userId, groupId } = props;
 
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
 
-    if (!contentTemplate) throw new Error("No content template found");
+    if (!collection) throw new Error("No content template found");
 
     const date = new Date().toISOString();
     const newProperty = {
@@ -220,7 +204,7 @@ export async function createProperty(props: {
     ) {
         const relatedProperty = await createRelatedProperty({
             property: newProperty,
-            templateId: contentTemplateId,
+            templateId: collectionId,
             userId,
         });
         if (relatedProperty as PropertyRelation) {
@@ -229,52 +213,48 @@ export async function createProperty(props: {
         }
     }
 
-    contentTemplate.fields.push(newProperty);
+    collection.fields.push(newProperty);
 
     // add to root group if no group specified
-    contentTemplate?.propertyGroups
+    collection?.propertyGroups
         ?.find(({ id }) => id === (groupId ?? "1"))
         ?.children.push(newProperty.id);
 
     //const changes = getDifference({}, fieldProperties);
 
-    await contentTemplate.saveWithHistory({
+    await collection.saveWithHistory({
         title: `${newProperty.name} Created`,
         subtitle: `Type: ${capitalise(newProperty.type)}`,
         editedBy: userId,
     });
-    return { contentTemplate, property: newProperty };
+    return { collection, property: newProperty };
 }
 
 //* Update property */
 export async function updateProperty(props: {
-    contentTemplateId: string;
+    collectionId: string;
     /** Updated properties */
     fieldProperties: Property;
     userId: string;
 }) {
     errorRequiredPropsUndefined({
         props,
-        propPaths: ["contentTemplateId", "fieldProperties.id", "userId"],
+        propPaths: ["collectionId", "fieldProperties.id", "userId"],
     });
 
-    const { contentTemplateId, fieldProperties, userId } = props;
+    const { collectionId, fieldProperties, userId } = props;
 
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
 
-    if (!contentTemplate) throw new Error("No content template found");
+    if (!collection) throw new Error("No content template found");
 
-    const fieldIndexToUpdate = contentTemplate.fields.findIndex(
-        ({ id }) => id === fieldProperties.id
-    );
+    const fieldIndexToUpdate = collection.fields.findIndex(({ id }) => id === fieldProperties.id);
 
     // remove id as to not overwrite, and type as that cannot be changed once created
     // values should not be different, but removed as safeguard
     const { id, type, ...updates } = fieldProperties;
 
-    let property = contentTemplate.fields[fieldIndexToUpdate];
+    let property = collection.fields[fieldIndexToUpdate];
 
     let updatedProperty = { ...property, ...updates };
 
@@ -282,7 +262,7 @@ export async function updateProperty(props: {
         updatedProperty = await updateRelatedProperty({
             property: property,
             updatedProperty: updatedProperty as PropertyRelation,
-            templateId: contentTemplateId,
+            templateId: collectionId,
             userId,
         });
     }
@@ -292,19 +272,19 @@ export async function updateProperty(props: {
     //console.log("changes", changes);
 
     // update field on content template
-    contentTemplate.fields[fieldIndexToUpdate] = updatedProperty as Property;
+    collection.fields[fieldIndexToUpdate] = updatedProperty as Property;
 
-    await contentTemplate.saveWithHistory({
+    await collection.saveWithHistory({
         editedBy: userId,
         title: `${property.name} Updated`,
         changes,
     });
 
-    return contentTemplate;
+    return collection;
 }
 
 export interface CreatePropertyGroupProps {
-    contentTemplateId: string;
+    collectionId: string;
     userId: string;
     name: string;
     parentId?: string;
@@ -314,36 +294,34 @@ export interface CreatePropertyGroupProps {
 export async function createPropertyGroup(props: CreatePropertyGroupProps) {
     errorRequiredPropsUndefined({
         props,
-        propPaths: ["contentTemplateId", "name", "userId"],
+        propPaths: ["collectionId", "name", "userId"],
     });
 
-    const { contentTemplateId, name, userId, parentId } = props;
+    const { collectionId, name, userId, parentId } = props;
 
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
 
-    if (!contentTemplate) throw new Error("No content template found");
+    if (!collection) throw new Error("No content template found");
 
     const { updatedGroups, parent } = createGroup({
-        contentTemplate,
+        collection,
         parentId,
         name,
     });
 
-    contentTemplate.propertyGroups = updatedGroups;
+    collection.propertyGroups = updatedGroups;
 
-    await contentTemplate.saveWithHistory({
+    await collection.saveWithHistory({
         editedBy: userId,
         title: `Group created: ${name}`,
         ...(parentId && { subtitle: `In group ${parent.name}` }),
     });
 
-    return contentTemplate;
+    return collection;
 }
 
 export interface ReorderPropertyGroupsProps {
-    contentTemplateId: string;
+    collectionId: string;
     userId: string;
     source: TreeSourcePosition;
     destination: TreeDestinationPosition;
@@ -353,20 +331,18 @@ export interface ReorderPropertyGroupsProps {
 export async function reorderPropertyGroups(props: ReorderPropertyGroupsProps) {
     errorRequiredPropsUndefined({
         props,
-        propPaths: ["contentTemplateId", "source", "destination", "userId"],
+        propPaths: ["collectionId", "source", "destination", "userId"],
     });
 
-    const { contentTemplateId, source, destination, userId } = props;
+    const { collectionId, source, destination, userId } = props;
 
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
 
-    if (!contentTemplate) throw new Error("No content template found");
+    if (!collection) throw new Error("No content template found");
 
-    const reordered = reorderGroups({ contentTemplate, destination, source });
+    const reordered = reorderGroups({ collection, destination, source });
 
-    contentTemplate.propertyGroups = reordered.updatedGroups;
+    collection.propertyGroups = reordered.updatedGroups;
 
     const historyEntry = new HistoryEntry({
         title: "Groups updated",
@@ -392,13 +368,13 @@ export async function reorderPropertyGroups(props: ReorderPropertyGroupsProps) {
         );
     }
 
-    await contentTemplate.saveWithHistory(historyEntry);
+    await collection.saveWithHistory(historyEntry);
 
-    return contentTemplate;
+    return collection;
 }
 
 export interface UpdatePropertyGroupProps {
-    contentTemplateId: string;
+    collectionId: string;
     propertyGroupId: string;
     name?: string;
     repeatable?: boolean;
@@ -409,19 +385,17 @@ export interface UpdatePropertyGroupProps {
 export async function updatePropertyGroup(props: UpdatePropertyGroupProps) {
     errorRequiredPropsUndefined({
         props,
-        propPaths: ["contentTemplateId", "userId", "propertyGroupId"],
+        propPaths: ["collectionId", "userId", "propertyGroupId"],
     });
 
-    const { contentTemplateId, propertyGroupId, name, repeatable, userId } = props;
+    const { collectionId, propertyGroupId, name, repeatable, userId } = props;
 
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
 
-    if (!contentTemplate) throw new Error("No content template found");
+    if (!collection) throw new Error("No content template found");
 
     const { updatedGroup, index } = updateGroup({
-        contentTemplate,
+        collection,
         groupId: propertyGroupId,
         repeatable,
         name,
@@ -434,44 +408,42 @@ export async function updatePropertyGroup(props: UpdatePropertyGroupProps) {
 
     if (name) {
         historyEntry.title = `Group title changed`;
-        historyEntry.subtitle = `${contentTemplate.propertyGroups[index].name} to ${name}`;
+        historyEntry.subtitle = `${collection.propertyGroups[index].name} to ${name}`;
     }
 
     if (repeatable !== undefined) {
-        historyEntry.title = `${contentTemplate.propertyGroups[index].name} set to ${
+        historyEntry.title = `${collection.propertyGroups[index].name} set to ${
             repeatable ? "repeatable" : "non-repeatable"
         }`;
     }
 
-    contentTemplate.propertyGroups.splice(index, 1, updatedGroup);
+    collection.propertyGroups.splice(index, 1, updatedGroup);
 
-    await contentTemplate.saveWithHistory(historyEntry);
+    await collection.saveWithHistory(historyEntry);
 
-    return contentTemplate;
+    return collection;
 }
 
 //* Delete Property Group */
 export async function deletePropertyGroup(props: {
-    contentTemplateId: string;
+    collectionId: string;
     groupId: string;
     deleteContents?: boolean;
     userId: string;
 }) {
     errorRequiredPropsUndefined({
         props,
-        propPaths: ["contentTemplateId", "groupId", "userId"],
+        propPaths: ["collectionId", "groupId", "userId"],
     });
 
-    const { contentTemplateId, groupId, deleteContents, userId } = props;
+    const { collectionId, groupId, deleteContents, userId } = props;
 
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
 
-    if (!contentTemplate) throw new Error("No content template found");
+    if (!collection) throw new Error("No content template found");
 
     const { fields, propertyGroups, removedFields, removedGroups, targetGroup } = deleteGroup({
-        contentTemplate,
+        collection,
         groupId,
         deleteContents,
     });
@@ -486,81 +458,77 @@ export async function deletePropertyGroup(props: {
         editedBy: userId,
     });
 
-    contentTemplate.fields = fields;
-    contentTemplate.propertyGroups = propertyGroups;
+    collection.fields = fields;
+    collection.propertyGroups = propertyGroups;
 
-    await contentTemplate.saveWithHistory(historyEntry);
+    await collection.saveWithHistory(historyEntry);
 
-    return contentTemplate;
+    return collection;
 }
 
 //* Reorder properties */
 //? Groups now used instead
 export async function reorderProperties(props: {
-    contentTemplateId: string;
+    collectionId: string;
     fromIndex: number;
     toIndex: number;
     userId: string;
 }) {
     errorRequiredPropsUndefined({
         props,
-        propPaths: ["contentTemplateId", "fromIndex", "toIndex", "userId"],
+        propPaths: ["collectionId", "fromIndex", "toIndex", "userId"],
     });
 
-    const { contentTemplateId, fromIndex, toIndex, userId } = props;
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
+    const { collectionId, fromIndex, toIndex, userId } = props;
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
 
-    if (!contentTemplate) throw new Error("No content template found");
+    if (!collection) throw new Error("No content template found");
 
-    const clonedFields = [...contentTemplate.fields];
-    const field = contentTemplate.fields[fromIndex];
+    const clonedFields = [...collection.fields];
+    const field = collection.fields[fromIndex];
 
     clonedFields.splice(fromIndex, 1);
     clonedFields.splice(toIndex, 0, field);
 
     // update field on content template
-    contentTemplate.fields = clonedFields;
+    collection.fields = clonedFields;
 
     const updateNotes = [
         `Properties reordered, '${field.name}' moved to ${withOrdinalSuffix(toIndex + 1)} position`,
     ];
-    //await contentTemplate.saveWithHistory({ userId, action: "updated", updateNotes });
+    //await collection.saveWithHistory({ userId, action: "updated", updateNotes });
 
-    return contentTemplate;
+    return collection;
 }
 
-//* Delete contentTemplate property */
+//* Delete collection property */
 export async function deleteProperty(props: {
-    contentTemplateId: string;
+    collectionId: string;
     fieldId: string;
     userId: string;
 }) {
     errorRequiredPropsUndefined({
         props,
-        propPaths: ["contentTemplateId", "fieldId", "userId"],
+        propPaths: ["collectionId", "fieldId", "userId"],
     });
 
-    const { contentTemplateId, fieldId, userId } = props;
+    const { collectionId, fieldId, userId } = props;
 
-    // get contentTemplate
-    const [contentTemplate] = await indexBy(ContentTemplateId)
-        .exact(contentTemplateId)
-        .get(ContentTemplate);
+    // get collection
+    const [collection] = await indexBy(CollectionId).exact(collectionId).get(Collection);
 
-    if (!contentTemplate) throw new Error("No content template found");
+    if (!collection) throw new Error("No content template found");
 
-    if (contentTemplate.fields.length === 1) {
-        if (contentTemplate.status !== "draft") {
+    if (collection.fields.length === 1) {
+        if (collection.status !== "draft") {
             throw new Error("Published templates must have at least one field");
         }
     }
 
-    const propertyIndex = contentTemplate.fields.findIndex(({ id }) => id === fieldId);
+    const propertyIndex = collection.fields.findIndex(({ id }) => id === fieldId);
 
     // remove field and return it
-    const [property] = contentTemplate.fields.splice(propertyIndex, 1);
+    const [property] = collection.fields.splice(propertyIndex, 1);
 
     const historyEntry = new HistoryEntry({
         title: `Property Deleted: ${property.name}`,
@@ -576,11 +544,8 @@ export async function deleteProperty(props: {
     }
 
     // if removed field is title field
-    if (
-        contentTemplate.title.type === "contentProperty" &&
-        contentTemplate.title.value === property.id
-    ) {
-        contentTemplate.title = {
+    if (collection.title.type === "contentProperty" && collection.title.value === property.id) {
+        collection.title = {
             setType: "auto",
             type: "contentInfo",
             value: "id",
@@ -590,14 +555,14 @@ export async function deleteProperty(props: {
 
     //remove property from group
     const parentGroup = findParentGroup({
-        propertyGroups: contentTemplate.propertyGroups,
+        propertyGroups: collection.propertyGroups,
         itemId: fieldId,
     });
     // find group index in parent's children array and remove it
     const groupIndex = parentGroup.children.indexOf(fieldId);
     parentGroup.children.splice(groupIndex, 1);
 
-    await contentTemplate.saveWithHistory(historyEntry);
+    await collection.saveWithHistory(historyEntry);
 
-    return contentTemplate;
+    return collection;
 }

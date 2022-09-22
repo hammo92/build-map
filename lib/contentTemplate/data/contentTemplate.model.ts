@@ -1,7 +1,7 @@
 /* contentTemplate.model.ts */
 
 import { buildIndex, indexBy, timekey } from "serverless-cloud-data-utils";
-import { IconPickerIcon } from "../../../components/ui/iconPicker/types";
+import { Icon } from "../../../components/ui/iconPicker/types";
 import { BaseModelId, ModelWithHistory } from "../../models";
 import { Property } from "./types";
 
@@ -36,7 +36,7 @@ export const ContentTemplateOrganisation = (organisationId: string) =>
 
 interface ContentTemplateProps {
     name: string;
-    icon: IconPickerIcon;
+    icon: Icon;
     organisationId: string;
     status: "draft" | "archived" | "published";
     templateType: "collection" | "component";
@@ -47,9 +47,9 @@ interface ContentTemplateProps {
 
 //model: ContentTemplate */
 export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
-    type = "ContentTemplate";
+    object = "ContentTemplate";
     name: string;
-    icon: IconPickerIcon;
+    icon: Icon;
     organisationId: string;
     status: "draft" | "archived" | "published";
     templateType: "collection" | "component";

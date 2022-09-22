@@ -36,8 +36,7 @@ export const ContentOutdated = ({
     });
 
 //model: Content */
-export class Content extends ModelWithHistory<Content> {
-    type = "Content";
+export class Content extends ModelWithHistory<"Content", Content> {
     contentTemplateId: string;
     projectId: string;
     publishTime: string;

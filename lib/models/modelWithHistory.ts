@@ -19,7 +19,7 @@ export abstract class ModelWithHistory<T extends BaseModel<T>> extends BaseModel
         this.lastEditedTime = date;
         this.history.unshift(historyEntry);
         await super.save();
-        await events.publish(`${this.type}.updated`, {
+        await events.publish(`${this.object}.updated`, {
             templateId: this.id,
             historyEntry,
         });

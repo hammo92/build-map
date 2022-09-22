@@ -1,5 +1,5 @@
 import { IconPicker } from "@components/ui/iconPicker";
-import { IconPickerIcon } from "@components/ui/iconPicker/types";
+import { Icon } from "@components/ui/iconPicker/types";
 import { useUpdateContentTemplate } from "@data/contentTemplate/hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
@@ -14,7 +14,7 @@ export const ContentTemplateIcon = ({
     contentTemplate: CleanedCamel<ContentTemplate>;
     editable?: boolean;
 }) => {
-    const [icon, setIcon] = useState<IconPickerIcon>(contentTemplate.icon);
+    const [icon, setIcon] = useState<Icon>(contentTemplate.icon);
     const [opened, setOpened] = useState(false);
     const { mutateAsync, isLoading } = useUpdateContentTemplate();
 

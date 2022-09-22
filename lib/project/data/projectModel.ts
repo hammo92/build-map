@@ -27,9 +27,8 @@ export const ProjectOrg = (organisationId: string) =>
 
 //model: Project //
 export class Project extends BaseModel<Project> {
-    type = "Project";
+    object = "Project";
     jobNumber: string;
-    name: string;
     date: string;
     organisationId: string;
     address: Address;
@@ -62,7 +61,7 @@ export const ProjectUsers = (projectId: string) =>
 
 //model: ProjectUser //
 export class ProjectUser extends BaseModel<ProjectUser> {
-    type = "User";
+    object = "ProjectUser";
     projectId: string;
     userId: string;
     modelKeys() {

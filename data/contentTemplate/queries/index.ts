@@ -1,4 +1,4 @@
-import { IconPickerIcon } from "@components/ui/iconPicker/types";
+import { Icon } from "@components/ui/iconPicker/types";
 import {
     CreatePropertyGroupProps,
     ReorderPropertyGroupsProps,
@@ -26,7 +26,7 @@ export async function createContentTemplate({
 }: {
     name: string;
     organisationId: string;
-    icon: IconPickerIcon;
+    icon: Icon;
     templateType: ContentTemplate["templateType"];
 }) {
     const { data } = await apiClient.post<{
@@ -57,7 +57,7 @@ export async function updateContentTemplate({
     contentTemplateId: string;
     name?: string;
     status?: "draft" | "published";
-    icon?: IconPickerIcon;
+    icon?: Icon;
     title?: ContentTemplateTitle;
 }) {
     const { data } = await apiClient.patch<{

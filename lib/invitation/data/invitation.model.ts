@@ -42,7 +42,7 @@ export const InvitationEmail = (invitationEmail: string) =>
 
 //model: Invitation */
 export class Invitation extends BaseModel<Invitation> {
-    type = "Invitation";
+    object = "Invitation";
     email: string;
     organisationId: string;
     projectId?: string;

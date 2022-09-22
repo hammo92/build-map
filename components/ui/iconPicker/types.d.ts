@@ -16,7 +16,7 @@ type ColorOptions =
     | "orange"
     | "teal";
 
-export interface IconPickerIcon {
+export interface Icon {
     icon: IconDefinition;
     color: ColorOptions;
 }

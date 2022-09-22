@@ -22,7 +22,7 @@ import { useUncontrolled, useId } from "@mantine/hooks";
 import { forwardRef, useEffect, useState } from "react";
 import { chunkArray, removeDuplicatesFromArray } from "utils/arrayModify";
 import { useStyles } from "./styles";
-import { BaseIconPickerProps, BaseIconPickerStylesNames, IconPickerIcon } from "./types";
+import { BaseIconPickerProps, BaseIconPickerStylesNames, Icon } from "./types";
 
 const colors = [
     "red",
@@ -48,13 +48,13 @@ type IconPickerProps = BaseIconPickerProps &
         cols?: number;
 
         /** Controlled input value */
-        value?: IconPickerIcon;
+        value?: Icon;
 
         /** Uncontrolled input defaultValue */
-        defaultValue?: IconPickerIcon;
+        defaultValue?: Icon;
 
         /** Controlled input onChange handler */
-        onChange?(value: IconPickerIcon): void;
+        onChange?(value: Icon): void;
 
         /** Input size */
         size?: MantineSize;

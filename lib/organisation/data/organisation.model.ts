@@ -19,9 +19,7 @@ export const OrganisationCreator = (creatorId: string) =>
 
 //model: Organisation */
 export class Organisation extends BaseModel<Organisation> {
-    type = "Organisation";
-    archived: boolean;
-    name: string;
+    object = "Organisation";
     path: string;
     modelKeys() {
         return [
