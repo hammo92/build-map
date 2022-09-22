@@ -6,7 +6,10 @@ export abstract class ModelWithHistory<T extends BaseModel<T>> extends BaseModel
     history: HistoryEntry[];
 
     constructor(obj?: any) {
-        super(obj);
+        super({
+            ...obj,
+            history: [],
+        });
     }
 
     async saveWithHistory(props: Omit<HistoryEntry, "id" | "createdTime">) {
