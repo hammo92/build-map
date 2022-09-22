@@ -5,7 +5,6 @@ import { getContentTemplateById } from "../../contentTemplate/data";
 import { errorIfUndefined } from "../../utils";
 import {
     Content,
-    ContentHistory,
     ContentId,
     ContentStatus,
     ContentTemplate,
@@ -26,6 +25,7 @@ import { PropertyGroup } from "../../contentTemplate/data/contentTemplate.model"
 import { updateRelationValue } from "./functions/relation";
 import { fieldBaseValues, fieldFromTemplateProperty } from "./functions/field";
 import { duplicateGroup, generateFieldGroups } from "./functions/group";
+import { HistoryEntry } from "@lib/historyEntry/data/historyEntry.model";
 
 //* Create content */
 export async function createContent({
@@ -105,7 +105,7 @@ async function fetchLinkedContentPromises(field: ContentField) {
 //* Get content by id */
 export async function getContentById(contentId: string) {
     errorIfUndefined({ contentId });
-    const content = await indexBy(ContentId).exact(contentId).get(Content);
+    const [content] = await indexBy(ContentId).exact(contentId).get(Content);
     if (!content) {
         throw new Error(`Content not found from ${contentId}`);
     }
@@ -128,13 +128,13 @@ export async function updateContentStatus({
     userId: string;
 }) {
     errorIfUndefined({ contentId, userId });
-    const content = await indexBy(ContentId).exact(contentId).get(Content);
+    const [content] = await indexBy(ContentId).exact(contentId).get(Content);
     if (!content) throw new Error("No content found");
 
     if (status) {
         content.status = status;
         if (status === "archived" || status === "published") {
-            content.saveWithHistory({ action: status, userId });
+            content.saveWithHistory({ editedBy: userId, title: "Status Updated" });
         }
     }
 
@@ -144,7 +144,7 @@ export async function updateContentStatus({
 //* Delete content by id */
 export async function deleteContentById(contentId: string) {
     errorIfUndefined({ contentId });
-    const content = await indexBy(ContentId).exact(contentId).get(Content);
+    const [content] = await indexBy(ContentId).exact(contentId).get(Content);
     if (!content) {
         throw new Error("Cannot delete - Content not found");
     }
@@ -191,7 +191,7 @@ export async function updateContentValues(props: {
     const { contentId, values, userId } = props;
     errorIfUndefined({ contentId, userId, values });
 
-    const contentUpdates: ContentHistory["contentUpdates"] = [];
+    const contentUpdates: HistoryEntry[] = [];
 
     const { content } = await getContentById(contentId);
 
@@ -236,7 +236,7 @@ export async function updateContentValues(props: {
         })
     )) as unknown as ContentField[];
     content.fields = updatedFields;
-    await content.saveWithHistory({ userId, action: "updated", contentUpdates });
+    await content.saveWithHistory({ editedBy: userId, title: "Values Updated" });
     return content;
 }
 
@@ -284,7 +284,7 @@ export async function updateContentFields(props: {
     errorIfUndefined({ contentId, userId });
     const { content } = await getContentById(contentId);
 
-    const contentUpdates: ContentHistory["contentUpdates"] = [];
+    const contentUpdates: HistoryEntry[] = [];
 
     if (updates?.length) {
         const updateMap = objArrToKeyIndexedMap(updates, "id");
@@ -341,7 +341,7 @@ export async function updateContentFields(props: {
         content.fields = content.fields.filter(({ id }) => !deletionsMap.get(id));
     }
 
-    await content.saveWithHistory({ action: "updated", userId, contentUpdates });
+    await content.saveWithHistory({ editedBy: userId, title: "Fields Updated" });
     return content;
 }
 
@@ -429,7 +429,7 @@ export async function handleContentTemplateChange({
     historyEntry,
     templateId,
 }: {
-    historyEntry: ContentTemplateHistoryEntry;
+    historyEntry: HistoryEntry;
     templateId: string;
 }) {
     const { content, contentTemplate } = await getContentOfTemplate({
@@ -549,13 +549,6 @@ export async function UpdateContentFromTemplate({
           })
         : [];
 
-    content.outdated = false;
-    content.templateUpdates = [];
-    content.saveWithHistory({
-        action: "updated",
-        userId,
-        contentUpdates,
-        notes: ["Updated from content template"],
-    });
+    content.saveWithHistory({ editedBy: userId, title: "Updated from template" });
     return content;
 }

@@ -23,14 +23,14 @@ export interface PropertyGroup {
 
 // To get all contentTemplate by it's ID *//
 //namespace contentTemplate:${contentTemplateId} */
-export const ContentTemplateId = buildIndex({ namespace: `contentTemplate` });
+export const ContentTemplateId = buildIndex({ namespace: `contentTemplate`, label: "label1" });
 
 // To get all content templates for an organisation *//
 //namespace organisation_${organisationId}:contentTemplates:${lastEditedTime} */
 export const ContentTemplateOrganisation = (organisationId: string) =>
     buildIndex({
         namespace: `organisation_${organisationId}:contentTemplates`,
-        label: "label1",
+        label: "label2",
         converter: timekey,
     });
 
@@ -57,11 +57,10 @@ export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
     propertyGroups: PropertyGroup[];
     title: ContentTemplateTitle;
 
-    keys() {
+    modelKeys() {
         return [
             indexBy(ContentTemplateId).exact(this.id),
             indexBy(ContentTemplateOrganisation(this.organisationId)).exact(this.lastEditedTime),
-            indexBy(BaseModelId).exact(this.id),
         ];
     }
 }

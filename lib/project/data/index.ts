@@ -92,7 +92,7 @@ export async function getProjectById({ projectId, userId }: { projectId: string;
         throw new Error("You don's have access to this organisation");
     }*/
 
-    const project = await indexBy(ProjectId).exact(projectId).get(Project);
+    const [project] = await indexBy(ProjectId).exact(projectId).get(Project);
     return project;
 }
 
@@ -107,7 +107,7 @@ export async function updateProject({
     address?: Address;
 }) {
     errorIfUndefined({ projectId });
-    const project = await indexBy(ProjectId).exact(projectId).get(Project);
+    const [project] = await indexBy(ProjectId).exact(projectId).get(Project);
     if (!project) {
         throw new Error("No project found");
     }
@@ -133,7 +133,7 @@ export async function updateProject({
 export async function deleteProjectById(projectId: string) {
     errorIfUndefined({ projectId });
     // get project
-    const project = await indexBy(ProjectId).exact(projectId).get(Project);
+    const [project] = await indexBy(ProjectId).exact(projectId).get(Project);
     errorIfUndefined({ project }, "notFound");
 
     // get all ProjectUsers
@@ -195,7 +195,7 @@ export async function removeUserFromProject({
     userId: string;
 }) {
     errorIfUndefined({ projectId, userId });
-    const projectUser = await indexBy(UserProjects(userId)).exact(projectId).get(ProjectUser);
+    const [projectUser] = await indexBy(UserProjects(userId)).exact(projectId).get(ProjectUser);
     if (!projectUser) {
         throw new Error("No user found");
     }
@@ -217,9 +217,10 @@ export async function getUserProjects(userId: string) {
     errorIfUndefined({ userId });
     const projectUsers = await indexBy(UserProjects(userId)).get(ProjectUser);
     const projects = await Promise.all(
-        projectUsers.map(
-            async ({ projectId }) => await indexBy(ProjectId).exact(projectId).get(Project)
-        )
+        projectUsers.map(async ({ projectId }) => {
+            const [project] = await indexBy(ProjectId).exact(projectId).get(Project);
+            return project;
+        })
     );
     return projects;
 }
@@ -237,7 +238,7 @@ export async function getProjectUsers(projectId: string) {
     const projectUsers = await indexBy(ProjectUsers(projectId)).get(ProjectUser);
     const users = await Promise.all(
         projectUsers.map(async ({ userId }) => {
-            const user = await indexBy(UserId).exact(userId).get(User);
+            const [user] = await indexBy(UserId).exact(userId).get(User);
             return user;
         })
     );

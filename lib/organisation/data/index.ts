@@ -53,7 +53,7 @@ export async function getOrganisationById({
         throw new Error("You don's have access to this organisation");
     }
 
-    const organisation = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
+    const [organisation] = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
     return organisation;
 }
 
@@ -61,7 +61,7 @@ export async function getOrganisationById({
 export async function deleteOrganisationById(organisationId: string) {
     errorIfUndefined({ organisationId });
     // get organisation
-    const organisation = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
+    const [organisation] = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
 
     // delete organisation
     await Promise.all([organisation && organisation.delete()]);
@@ -94,7 +94,7 @@ export async function updateOrganisation({
         throw new Error("You don't have the correct permission to delete this organisation");
     }
 
-    const organisation = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
+    const [organisation] = await indexBy(OrganisationId).exact(organisationId).get(Organisation);
 
     errorIfUndefined({ organisation }, "notFound");
 
@@ -159,7 +159,7 @@ export async function getOrganisationUsers(organisationId: string) {
         authorisedUsers.map((fact) => {
             const [_, userInstance, role] = fact;
             const { id } = userInstance as { id: string };
-            return indexBy(UserId).exact(id).get(User);
+            return getUserById(id);
         })
     );
 
@@ -191,16 +191,12 @@ export async function getUserOrganisations(userId: string) {
         "Organisation"
     );
 
-    console.log("authorisedOrganisations", authorisedOrganisations);
-
     /** test get users for org */
     const org = new Organisation({
         id: authorisedOrganisations[0],
     });
     console.log("org", org);
     const authorisedUsers = await oso.get("has_role", null, "owner", org);
-
-    console.log("authorisedUsers", authorisedUsers);
     /** */
 
     const organisations = await Promise.all(
@@ -209,5 +205,5 @@ export async function getUserOrganisations(userId: string) {
         )
     );
 
-    return organisations;
+    return organisations.flat();
 }

@@ -1,4 +1,4 @@
-import { ContentTemplateHistoryEntry } from "@lib/contentTemplate/data/contentTemplate.model";
+import { HistoryEntry } from "@lib/historyEntry/data/historyEntry.model";
 import { api, events } from "@serverless/cloud";
 import {
     createContent,
@@ -198,7 +198,7 @@ export const content = () => {
             body,
         }: {
             body: {
-                historyEntry: ContentTemplateHistoryEntry;
+                historyEntry: HistoryEntry;
                 templateId: string;
             };
         }) => {

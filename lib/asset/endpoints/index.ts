@@ -126,11 +126,8 @@ export const asset = () => {
                 path,
                 ext,
                 size,
+                userId,
             });
-            file.createdAt = new Date().toISOString();
-            file.createdBy = userId;
-            file.lastEditedTime = new Date().toISOString();
-            file.lastEditedBy = userId;
             await file.save();
         }
     });

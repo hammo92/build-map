@@ -11,14 +11,14 @@ export type ContentStatus = "draft" | "published" | "archived";
 
 // To get content by it's ID *//
 //namespace content:${contentId} */
-export const ContentId = buildIndex({ namespace: `content` });
+export const ContentId = buildIndex({ namespace: `content`, label: "label1" });
 
 // To get a content by templateId, filter by project  *//
 //namespace content:template_${templateId}:${projectId} */
 export const ContentTemplate = ({ templateId }: { templateId: string }) =>
     buildIndex({
         namespace: `content:template_${templateId}`,
-        label: "label1",
+        label: "label2",
     });
 
 // To get a content by outdated status  *//
@@ -47,11 +47,10 @@ export class Content extends ModelWithHistory<Content> {
     contentTemplateVersion: string;
     title: string;
 
-    keys() {
+    modelKeys() {
         return [
             indexBy(ContentId).exact(this.id),
             indexBy(ContentTemplate({ templateId: this.contentTemplateId })).exact(this.projectId),
-            indexBy(BaseModelId).exact(this.id),
         ];
     }
 }

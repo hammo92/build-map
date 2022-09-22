@@ -6,14 +6,14 @@ import { buildIndex, indexBy, Model } from "serverless-cloud-data-utils";
 
 // To get invitation by id //
 //namespace invitations:invitationId */
-export const InvitationId = buildIndex({ namespace: "invitations" });
+export const InvitationId = buildIndex({ namespace: "invitations", label: "label1" });
 
 // To get invitation by creator //
 //namespace user_${userId}:sentInvitations:${invitationId} */
 export const InvitationCreator = (creatorId: string) =>
     buildIndex({
         namespace: `user_${creatorId}:sentInvitations`,
-        label: "label1",
+        label: "label2",
     });
 
 // To get invitations for organisation //
@@ -21,7 +21,7 @@ export const InvitationCreator = (creatorId: string) =>
 export const InvitationOrganisation = (organisationId: string) =>
     buildIndex({
         namespace: `org_${organisationId}:invitations`,
-        label: "label2",
+        label: "label3",
     });
 
 // To get invitations for project //
@@ -29,7 +29,7 @@ export const InvitationOrganisation = (organisationId: string) =>
 export const InvitationProject = (projectId: string) =>
     buildIndex({
         namespace: `project_${projectId}:invitations`,
-        label: "label2",
+        label: "label4",
     });
 
 // To get invitations for email //
@@ -48,13 +48,12 @@ export class Invitation extends BaseModel<Invitation> {
     projectId?: string;
     redeemed: boolean;
     creatorId: string;
-    keys() {
+    modelKeys() {
         return [
             indexBy(InvitationId).exact(this.id),
             indexBy(InvitationCreator(this.creatorId)).exact(this.id),
             indexBy(InvitationOrganisation(this.organisationId)).exact(this.id),
             indexBy(InvitationEmail(this.email)).exact(this.id),
-            indexBy(BaseModelId).exact(this.id),
         ];
     }
 }

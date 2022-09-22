@@ -52,7 +52,7 @@ export async function deleteAllContentRelations(contentId: string) {
     if (!relations) throw new Error("No relations found for content");
 
     // get all content entries where content id is a relation entry
-    const content = await Promise.all(
+    const [content] = await Promise.all(
         relations.map(({ contentId }) => indexBy(ContentId).exact(contentId).get(Content))
     );
 

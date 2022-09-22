@@ -10,7 +10,7 @@ import { AssetId, Asset, UserAssetsWithTypeFilter } from "./asset.model";
 //* Get asset by id */
 export async function getAssetById(assetId: string) {
     errorIfUndefined({ assetId });
-    const asset = await indexBy(AssetId).exact(assetId).get(Asset);
+    const [asset] = await indexBy(AssetId).exact(assetId).get(Asset);
     if (!asset) {
         throw new Error("No asset found with that Id");
     }
@@ -105,7 +105,7 @@ export async function getImageUrl({
     }${ext}`;
 
     // check if queried image exists if true return link
-    const requestedImage = await indexBy(AssetId).exact(resizedImageId).get(Asset);
+    const [requestedImage] = await indexBy(AssetId).exact(resizedImageId).get(Asset);
     if (requestedImage) {
         return await storage.getDownloadUrl(requestedImage.path);
     }
@@ -136,16 +136,13 @@ export async function getImageUrl({
     // create file item in data
     // Create an file item in data
     const newFile = new Asset({
+        userId,
         id: resizedImageId,
         filename: resizedImageId,
         fileType: asset.type,
         path: resizedFilePath,
         ext: asset.ext,
     });
-    newFile.createdAt = new Date().toISOString();
-    newFile.createdBy = userId;
-    newFile.lastEditedTime = new Date().toISOString();
-    newFile.lastEditedBy = userId;
     await newFile.save();
 
     return await storage.getDownloadUrl(resizedFilePath);

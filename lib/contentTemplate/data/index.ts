@@ -79,7 +79,7 @@ export async function createContentTemplate({
 //* Get contentTemplate by id */
 export async function getContentTemplateById(contentTemplateId: string) {
     errorIfUndefined({ contentTemplateId });
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
     return contentTemplate;
@@ -98,7 +98,7 @@ export async function getOrganisationContentTemplates(organisationId: string) {
 export async function deleteContentTemplateById(contentTemplateId: string) {
     errorIfUndefined({ contentTemplateId });
     // get contentTemplate
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
 
@@ -126,7 +126,7 @@ export async function updateContentTemplate({
     userId: string;
 }) {
     errorIfUndefined({ contentTemplateId, userId });
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
     if (!contentTemplate) throw new Error("No content template found");
@@ -195,7 +195,7 @@ export async function createProperty(props: {
 
     const { contentTemplateId, fieldProperties, userId, groupId } = props;
 
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
 
@@ -260,7 +260,7 @@ export async function updateProperty(props: {
 
     const { contentTemplateId, fieldProperties, userId } = props;
 
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
 
@@ -319,7 +319,7 @@ export async function createPropertyGroup(props: CreatePropertyGroupProps) {
 
     const { contentTemplateId, name, userId, parentId } = props;
 
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
 
@@ -358,7 +358,7 @@ export async function reorderPropertyGroups(props: ReorderPropertyGroupsProps) {
 
     const { contentTemplateId, source, destination, userId } = props;
 
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
 
@@ -414,7 +414,7 @@ export async function updatePropertyGroup(props: UpdatePropertyGroupProps) {
 
     const { contentTemplateId, propertyGroupId, name, repeatable, userId } = props;
 
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
 
@@ -464,7 +464,7 @@ export async function deletePropertyGroup(props: {
 
     const { contentTemplateId, groupId, deleteContents, userId } = props;
 
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
 
@@ -508,7 +508,7 @@ export async function reorderProperties(props: {
     });
 
     const { contentTemplateId, fromIndex, toIndex, userId } = props;
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
 
@@ -545,7 +545,7 @@ export async function deleteProperty(props: {
     const { contentTemplateId, fieldId, userId } = props;
 
     // get contentTemplate
-    const contentTemplate = await indexBy(ContentTemplateId)
+    const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
 

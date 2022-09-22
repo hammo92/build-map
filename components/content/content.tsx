@@ -200,7 +200,7 @@ export const Content = ({
                                 </Tabs>
                             </Box>
                         </Grid.Col>
-                        <Grid.Col span={3}>
+                        {/* <Grid.Col span={3}>
                             <Stack>
                                 <Card>
                                     <Card.Section
@@ -245,10 +245,10 @@ export const Content = ({
                                                 contentTemplate={contentTemplate}
                                             />
                                         </Card.Section>
-                                    )} */}
+                                    )} 
                                 </Card>
                             </Stack>
-                        </Grid.Col>
+                        </Grid.Col> */}
                     </Grid>
                 </Stack>
             </SmartForm>

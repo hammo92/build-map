@@ -38,7 +38,7 @@ export async function createInvitation({
 
 //* Get invitation by id */
 export async function getInvitationById(id: string) {
-    const invitation = await indexBy(InvitationId).exact(id).get(Invitation);
+    const [invitation] = await indexBy(InvitationId).exact(id).get(Invitation);
     return invitation;
 }
 
@@ -50,7 +50,7 @@ export async function getInvitationsByEmail(email: string) {
 
 //* Get invitations by userId */
 export async function getinvitationsByUserId(userId: string) {
-    const user = await indexBy(UserId).exact(userId).get(User);
+    const [user] = await indexBy(UserId).exact(userId).get(User);
     if (!user) throw new Error("No user found");
     const invitations = await indexBy(InvitationEmail(user.email)).get(Invitation);
     return invitations;
@@ -76,7 +76,7 @@ export async function getInvitationsByCreator(creatorId: string) {
 
 //* Delete invite by id */
 export async function deleteInvitationById(id: string) {
-    const invitation = await indexBy(InvitationId).exact(id).get(Invitation);
+    const [invitation] = await indexBy(InvitationId).exact(id).get(Invitation);
     if (!invitation) throw new Error("No invitation found");
     await invitation.delete();
     return invitation;
@@ -84,7 +84,7 @@ export async function deleteInvitationById(id: string) {
 
 //* Redeem invitation by id*/
 export async function redeemInvitationById(id: string) {
-    const invitation = await indexBy(InvitationId).exact(id).get(Invitation);
+    const [invitation] = await indexBy(InvitationId).exact(id).get(Invitation);
     if (!invitation) throw new Error("No invitation found");
     const { organisationId, email, projectId } = invitation;
 

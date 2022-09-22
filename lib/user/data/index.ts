@@ -102,7 +102,7 @@ export async function updateUser(
     const { id, hashedPassword, salt, password, name, nickname, userId, ...rest } = props;
     errorIfUndefined([userId]);
 
-    const user = await indexBy(UserId).exact(userId).get(User);
+    const [user] = await indexBy(UserId).exact(userId).get(User);
     if (!user) {
         throw new Error("No user exists with provided Id");
     }
@@ -138,7 +138,7 @@ export async function updateUser(
 
 //* Get user //
 async function getUser(userId: string) {
-    const user = await indexBy(UserId).exact(userId).get(User);
+    const [user] = await indexBy(UserId).exact(userId).get(User);
     if (user?.picture) {
         const [xs, sm, md, lg, xl, full] = await Promise.all([
             getImageUrl({ imageId: user?.picture, userId, height: 50 }),
@@ -164,7 +164,7 @@ export async function getUserById(userId: string) {
 //* Delete user by id */
 export async function deleteUserById(userId: string) {
     errorIfUndefined([userId]);
-    const user = await indexBy(UserId).exact(userId).get(User);
+    const [user] = await indexBy(UserId).exact(userId).get(User);
     if (!user) {
         throw new Error("No user exists for this email");
     }
