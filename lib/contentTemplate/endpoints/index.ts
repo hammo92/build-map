@@ -3,7 +3,6 @@ import { api, params } from "@serverless/cloud";
 import snakecaseKeys from "snakecase-keys";
 import {
     createContentTemplate,
-    createProperty,
     createPropertyGroup,
     deleteContentTemplateById,
     deleteProperty,
@@ -15,6 +14,7 @@ import {
     updateProperty,
     updatePropertyGroup,
     reorderPropertyGroups,
+    addProperty,
 } from "../data";
 
 export const contentTemplates = () => {
@@ -143,13 +143,15 @@ export const contentTemplates = () => {
 
     //* Create contentTemplate Property */
     api.post("/contentTemplates/:contentTemplateId/fields", async function (req: any, res: any) {
-        const { fieldProperties, groupId } = req.body;
+        const { propertyDetails, groupId, name, type } = req.body;
         const { contentTemplateId } = req.params;
         const { user } = req;
         try {
-            const { contentTemplate, property } = await createProperty({
+            const { contentTemplate, property } = await addProperty({
                 contentTemplateId,
-                fieldProperties,
+                name,
+                type,
+                propertyDetails,
                 userId: user.id,
                 groupId,
             });

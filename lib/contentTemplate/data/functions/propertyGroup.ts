@@ -1,9 +1,9 @@
 import { TreeDestinationPosition, TreeSourcePosition } from "@atlaskit/tree";
+import { Property } from "@lib/field/data/field.model";
 import { CleanedCamel } from "type-helpers";
 import { ulid } from "ulid";
 import { objArrToKeyIndexedMap } from "../../../../utils/arrayModify";
 import { ContentTemplate, PropertyGroup } from "../contentTemplate.model";
-import { Property } from "../types";
 
 interface CreateGroupProps {
     contentTemplate: CleanedCamel<ContentTemplate>;
