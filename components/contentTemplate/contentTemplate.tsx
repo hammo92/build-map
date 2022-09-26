@@ -1,11 +1,16 @@
 import { History } from "@components/history";
+import { PropertyCreate } from "@components/property/property-create";
+import { PropertyList } from "@components/property/property-list";
+import { PropertyManager } from "@components/property/property-manager";
 import { useGetContentTemplate } from "@data/contentTemplate/hooks";
 import { ContentTemplate as ContentTemplateProps } from "@lib/contentTemplate/data/contentTemplate.model";
 import { Card, Container, Divider, Grid, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import { useSetState } from "@mantine/hooks";
 import { contentTemplateState } from "@state/contentTemplate";
 import dayjs from "dayjs";
 import Image from "next/image";
 import { CleanedCamel } from "type-helpers";
+import { objArrayToHashmap } from "utils/arrayModify";
 import Illustration from "../../public/images/tokyo/2.0-04.svg";
 import { FieldCreate } from "./contentTemplate-field/field-create";
 import { ContentTemplateHeader } from "./contentTemplate-header/contentTemplateHeader";
@@ -30,6 +35,7 @@ export const ContentTemplate = ({
 }) => {
     contentTemplateState.contentTemplateId = contentTemplate.id;
     const { data } = useGetContentTemplate(contentTemplate.id, { contentTemplate });
+
     if (data?.contentTemplate) {
         return (
             <Stack>
@@ -37,10 +43,9 @@ export const ContentTemplate = ({
                     <ContentTemplateHeader contentTemplate={data?.contentTemplate} />
                     <Grid>
                         <Grid.Col span={9}>
-                            <ContentTemplateTree contentTemplate={data?.contentTemplate} />
-                            <FieldCreate
-                                contentTemplateId={data?.contentTemplate.id}
-                                variant={"button"}
+                            <PropertyManager
+                                properties={data?.contentTemplate.properties}
+                                propertyGroups={data?.contentTemplate.propertyGroups}
                             />
                         </Grid.Col>
                         <Grid.Col span={3}>

@@ -54,9 +54,11 @@ export const FieldCreate = ({
 
     const onSubmit = async (values: any) => {
         const data = await mutateAsync({
-            fieldProperties: {
+            propertyDetails: {
                 ...values,
             },
+            name: values.name,
+            type: values.type,
             groupId,
             contentTemplateId: contentTemplate.id,
         });

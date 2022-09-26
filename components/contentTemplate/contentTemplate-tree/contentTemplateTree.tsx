@@ -41,26 +41,6 @@ export const ContentTemplateTree: FC<{ contentTemplate: CleanedCamel<ContentTemp
         });
     }
 
-    function getParent(itemId: string | number): string | null {
-        let parent = null;
-        Object.values(tree.items).forEach((item) => {
-            if (item.hasChildren && item.children.includes(itemId)) {
-                parent = item.id;
-            }
-        });
-        return parent;
-    }
-
-    // Recursively find parents
-    function getNumberOfParents(parent_id: string | number, childNesting = 0): number {
-        let parent = getParent(parent_id);
-
-        if (!parent) return childNesting;
-
-        childNesting++;
-        return getNumberOfParents(parent, childNesting);
-    }
-
     const onExpand = async (itemId: ItemId) => {
         setState({ [itemId]: false });
     };
@@ -70,6 +50,7 @@ export const ContentTemplateTree: FC<{ contentTemplate: CleanedCamel<ContentTemp
     };
 
     const onDragEnd = async (source: TreeSourcePosition, destination?: TreeDestinationPosition) => {
+        console.log("destination :>> ", destination);
         if (!destination) {
             return;
         }

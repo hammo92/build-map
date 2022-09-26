@@ -1,7 +1,7 @@
 import { FieldType } from "./fieldsDefinitions";
 
 interface variant<T> {
-    type: T;
+    type: string;
     description: string;
     label: string;
 }

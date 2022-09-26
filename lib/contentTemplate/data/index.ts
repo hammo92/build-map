@@ -1,14 +1,14 @@
 import { TreeDestinationPosition, TreeSourcePosition } from "@atlaskit/tree";
+import { Field, FieldDiscriminator, FieldTypes } from "../../../lib/field/data/field.model";
 import { params } from "@serverless/cloud";
 import { Oso } from "oso-cloud";
 import { indexBy } from "serverless-cloud-data-utils";
-import { CleanedCamel } from "type-helpers";
+import { DistributiveClean, StripModel } from "type-helpers";
 import { ulid } from "ulid";
-import { Required } from "utility-types";
-import { getObjectChanges } from "../../../utils/objects";
 import { Icon } from "../../../components/ui/iconPicker/types";
 import { HistoryEntry } from "../../../lib/historyEntry/data/historyEntry.model";
 import { withOrdinalSuffix } from "../../../utils/numbers";
+import { getObjectChanges } from "../../../utils/objects";
 import { capitalise, splitCamel } from "../../../utils/stringTransform";
 import { errorIfUndefined, errorRequiredPropsUndefined } from "../../utils";
 import {
@@ -29,8 +29,7 @@ import {
     removeRelatedProperty,
     updateRelatedProperty,
 } from "./functions/relation";
-import { Property, PropertyRelation } from "./types";
-import { content } from "@lib/content/endpoints";
+import { PropertyRelation } from "./types";
 
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
@@ -59,7 +58,7 @@ export async function createContentTemplate({
     newContentTemplate.status = "draft";
     newContentTemplate.templateType = templateType;
     newContentTemplate.organisationId = organisationId;
-    newContentTemplate.fields = [];
+    newContentTemplate.properties = [];
     newContentTemplate.propertyGroups = [
         { id: "1", children: [], name: "root", repeatable: false, type: "propertyGroup" },
     ];
@@ -168,7 +167,7 @@ export async function updateContentTemplate({
         historyEntry.title = `Title Property Updated`;
         const getName = (title: ContentTemplate["title"]) => {
             if (title.type === "contentInfo") return splitCamel(title.value);
-            return contentTemplate.fields.find(({ id }) => id === title.value)?.name;
+            return contentTemplate.properties.find(({ id }) => id === title.value)?.name;
         };
         historyEntry.subtitle = `${getName(contentTemplate.title)} to ${getName(title)}`;
         contentTemplate.title = title;
@@ -181,19 +180,48 @@ export async function updateContentTemplate({
     return contentTemplate;
 }
 
-//* Create property */
-export async function createProperty(props: {
+export type Property<T extends FieldTypes | undefined = undefined> = T extends FieldTypes
+    ? StripModel<FieldDiscriminator<T>, "value" | "note" | "assets">
+    : DistributiveClean<Field, "value" | "note" | "assets">;
+
+export const createProperty = <T extends FieldTypes>({
+    type,
+    name,
+    userId,
+    propertyDetails,
+}: {
+    type: T;
+    name: string;
+    userId?: string;
+    propertyDetails: Partial<Omit<Property<T>, "name" | "type">>;
+}): Property<T> => {
+    const date = new Date().toISOString();
+    const property = {
+        object: "Property",
+        type,
+        name,
+        id: ulid(),
+        createdTime: date,
+        createdBy: userId ?? "system",
+        lastEditedTime: date,
+        lastEditedBy: userId ?? "system",
+        archived: false,
+        ...propertyDetails,
+    };
+    return property as Property<T>;
+};
+
+//* add property */
+export async function addProperty<T extends FieldTypes>(props: {
     contentTemplateId: string;
-    fieldProperties: Required<Partial<CleanedCamel<Property>>, "name" | "type">;
+    propertyDetails: Partial<Omit<Property<T>, "name" | "type">>;
+    type: T;
+    name: string;
     userId: string;
     groupId?: string;
 }) {
-    errorRequiredPropsUndefined({
-        props,
-        propPaths: ["contentTemplateId", "fieldProperties.name", "fieldProperties.type", "userId"],
-    });
-
-    const { contentTemplateId, fieldProperties, userId, groupId } = props;
+    const { contentTemplateId, propertyDetails, name, type, userId, groupId } = props;
+    errorIfUndefined({ userId, name, type, contentTemplateId });
 
     const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
@@ -201,16 +229,7 @@ export async function createProperty(props: {
 
     if (!contentTemplate) throw new Error("No content template found");
 
-    const date = new Date().toISOString();
-    const newProperty = {
-        ...fieldProperties,
-        id: ulid(),
-        active: true,
-        createdTime: date,
-        createdBy: userId,
-        lastEditedTime: date,
-        lastEditedBy: userId,
-    } as Property;
+    const newProperty = createProperty({ name, propertyDetails, type, userId });
 
     // if reciprocal relation create property on related content Template
     if (
@@ -229,7 +248,7 @@ export async function createProperty(props: {
         }
     }
 
-    contentTemplate.fields.push(newProperty);
+    contentTemplate.properties.push(newProperty);
 
     // add to root group if no group specified
     contentTemplate?.propertyGroups
@@ -266,7 +285,7 @@ export async function updateProperty(props: {
 
     if (!contentTemplate) throw new Error("No content template found");
 
-    const fieldIndexToUpdate = contentTemplate.fields.findIndex(
+    const fieldIndexToUpdate = contentTemplate.properties.findIndex(
         ({ id }) => id === fieldProperties.id
     );
 
@@ -274,7 +293,7 @@ export async function updateProperty(props: {
     // values should not be different, but removed as safeguard
     const { id, type, ...updates } = fieldProperties;
 
-    let property = contentTemplate.fields[fieldIndexToUpdate];
+    let property = contentTemplate.properties[fieldIndexToUpdate];
 
     let updatedProperty = { ...property, ...updates };
 
@@ -292,7 +311,7 @@ export async function updateProperty(props: {
     //console.log("changes", changes);
 
     // update field on content template
-    contentTemplate.fields[fieldIndexToUpdate] = updatedProperty as Property;
+    contentTemplate.properties[fieldIndexToUpdate] = updatedProperty as Property;
 
     await contentTemplate.saveWithHistory({
         editedBy: userId,
@@ -486,7 +505,7 @@ export async function deletePropertyGroup(props: {
         editedBy: userId,
     });
 
-    contentTemplate.fields = fields;
+    contentTemplate.properties = fields;
     contentTemplate.propertyGroups = propertyGroups;
 
     await contentTemplate.saveWithHistory(historyEntry);
@@ -514,14 +533,14 @@ export async function reorderProperties(props: {
 
     if (!contentTemplate) throw new Error("No content template found");
 
-    const clonedFields = [...contentTemplate.fields];
-    const field = contentTemplate.fields[fromIndex];
+    const clonedFields = [...contentTemplate.properties];
+    const field = contentTemplate.properties[fromIndex];
 
     clonedFields.splice(fromIndex, 1);
     clonedFields.splice(toIndex, 0, field);
 
     // update field on content template
-    contentTemplate.fields = clonedFields;
+    contentTemplate.properties = clonedFields;
 
     const updateNotes = [
         `Properties reordered, '${field.name}' moved to ${withOrdinalSuffix(toIndex + 1)} position`,
@@ -551,16 +570,16 @@ export async function deleteProperty(props: {
 
     if (!contentTemplate) throw new Error("No content template found");
 
-    if (contentTemplate.fields.length === 1) {
+    if (contentTemplate.properties.length === 1) {
         if (contentTemplate.status !== "draft") {
             throw new Error("Published templates must have at least one field");
         }
     }
 
-    const propertyIndex = contentTemplate.fields.findIndex(({ id }) => id === fieldId);
+    const propertyIndex = contentTemplate.properties.findIndex(({ id }) => id === fieldId);
 
     // remove field and return it
-    const [property] = contentTemplate.fields.splice(propertyIndex, 1);
+    const [property] = contentTemplate.properties.splice(propertyIndex, 1);
 
     const historyEntry = new HistoryEntry({
         title: `Property Deleted: ${property.name}`,

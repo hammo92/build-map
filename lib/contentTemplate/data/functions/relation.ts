@@ -75,7 +75,7 @@ export const updateRelatedProperty = async ({
 
     // update names
     if (nameChanged || reciprocalPropertyNameChanged) {
-        const relatedTemplate = await indexBy(ContentTemplateId)
+        const [relatedTemplate] = await indexBy(ContentTemplateId)
             .exact(property.relatedTo)
             .get(ContentTemplate);
         if (!relatedTemplate) {
@@ -122,7 +122,7 @@ export const removeRelatedProperty = async ({
     property: PropertyRelation;
     userId: string;
 }) => {
-    const relatedTemplate = await indexBy(ContentTemplateId)
+    const [relatedTemplate] = await indexBy(ContentTemplateId)
         .exact(property.relatedTo)
         .get(ContentTemplate);
     if (!relatedTemplate) {
@@ -138,14 +138,8 @@ export const removeRelatedProperty = async ({
         const [relatedProperty] = relatedTemplate.fields.splice(relationPropertyIndex, 1);
 
         await relatedTemplate.saveWithHistory({
-            userId,
-            action: "updated",
-            propertyUpdate: {
-                action: "deleted",
-                fieldName: relatedProperty.name,
-                fieldType: "TemplateProperty",
-                fieldId: relatedProperty.id,
-            },
+            editedBy: userId,
+            title: "Related template updated",
         });
     }
 };

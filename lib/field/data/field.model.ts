@@ -96,6 +96,7 @@ export class NumberField extends BaseField {
     defaultValue?: number;
     minimumValue?: number;
     maximumValue?: number;
+    variant: "integer" | "decimal" | "float";
     constructor(obj?: any) {
         super(obj);
         this.type = "number";

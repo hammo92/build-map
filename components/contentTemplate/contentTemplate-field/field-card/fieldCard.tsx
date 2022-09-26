@@ -39,42 +39,36 @@ export const FieldCard: FC<FieldCardProps> = ({
 }) => {
     return (
         <Card radius={0} withBorder sx={{ flex: grow ? 1 : "auto" }}>
-            <Card.Section
-                sx={(theme) => ({
-                    background: theme.colors.dark[6],
-                })}
-            >
-                <Group position="apart">
-                    <Group p="md">
-                        {leftContent !== undefined && leftContent}
-                        <Group
-                            sx={{
-                                flex: "1",
-                                alignSelf: "stretch",
-                            }}
-                        >
-                            <IconTitle
-                                title={field.name}
-                                subtitle={fieldSubtitle(field)}
-                                icon={FIELD_TYPES[field.type].icon}
-                            />
-                        </Group>
+            <Group position="apart">
+                <Group>
+                    {leftContent !== undefined && leftContent}
+                    <Group
+                        sx={{
+                            flex: "1",
+                            alignSelf: "stretch",
+                        }}
+                    >
+                        <IconTitle
+                            title={field.name}
+                            subtitle={fieldSubtitle(field)}
+                            icon={FIELD_TYPES[field.type].icon}
+                        />
                     </Group>
-                    {withActions && (
-                        <Group
-                            p="md"
-                            grow
-                            sx={(theme) => ({
-                                alignSelf: "stretch",
-                            })}
-                        >
-                            <FieldEdit field={field} />
-                            <Divider variant="solid" orientation="vertical" />
-                            <FieldDelete field={field} />
-                        </Group>
-                    )}
                 </Group>
-            </Card.Section>
+                {withActions && (
+                    <Group
+                        p="md"
+                        grow
+                        sx={(theme) => ({
+                            alignSelf: "stretch",
+                        })}
+                    >
+                        <FieldEdit field={field} />
+                        <Divider variant="solid" orientation="vertical" />
+                        <FieldDelete field={field} />
+                    </Group>
+                )}
+            </Group>
         </Card>
     );
 };

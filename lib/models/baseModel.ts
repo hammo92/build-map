@@ -13,7 +13,7 @@ export abstract class BaseModel<T extends Model<T>> extends Model<T> {
     createdBy: string;
     lastEditedTime: string;
     lastEditedBy: string;
-    object: string;
+    abstract readonly object: string;
     parent?: string;
     collection?: string;
     archived?: boolean;

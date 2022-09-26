@@ -1,4 +1,5 @@
 import { Icon } from "@components/ui/iconPicker/types";
+import { FieldGroup } from "@lib/content/data/content.model";
 import {
     CreatePropertyGroupProps,
     ReorderPropertyGroupsProps,
@@ -9,7 +10,7 @@ import {
     ContentTemplateTitle,
     PropertyGroup,
 } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Property } from "@lib/contentTemplate/data/types";
+import { FieldTypes, Property } from "@lib/field/data/field.model";
 import camelcaseKeys from "camelcase-keys";
 import { apiClient } from "data/config";
 import { CleanedCamel, CleanedSnake, ModelRequired } from "type-helpers";
@@ -94,18 +95,24 @@ export async function getProjectContentTemplates(projectId: string) {
 
 export async function createProperty({
     contentTemplateId,
-    fieldProperties,
+    propertyDetails,
     groupId,
+    type,
+    name,
 }: {
     contentTemplateId: string;
-    fieldProperties: CleanedCamel<Property>;
+    propertyDetails: Partial<Omit<Property, "name" | "type">>;
     groupId?: string;
+    type: FieldTypes;
+    name: string;
 }) {
     const { data } = await apiClient.post<{
         contentTemplate: CleanedSnake<ContentTemplate>;
     }>(`/contentTemplates/${contentTemplateId}/fields`, {
-        fieldProperties,
+        propertyDetails,
         groupId,
+        name,
+        type,
     });
     return camelcaseKeys(data, { deep: true });
 }

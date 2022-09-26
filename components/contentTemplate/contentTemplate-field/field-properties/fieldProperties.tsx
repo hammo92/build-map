@@ -1,11 +1,11 @@
 import { SmartForm } from "@components/smartForm";
+import { Property } from "@lib/contentTemplate/data";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Property } from "@lib/contentTemplate/data/types";
+import { FieldTypes } from "@lib/field/data/field.model";
 import { Button, Group, Tabs } from "@mantine/core";
 import { FC } from "react";
 import { useFormContext } from "react-hook-form";
 import { CleanedCamel } from "type-helpers";
-import { FieldType } from "../field-options/fieldsDefinitions";
 import { PropertiesAdvancedFields } from "./properties-advancedFields";
 import { PropertiesBasicFields } from "./properties-basicFields";
 
@@ -16,15 +16,14 @@ interface FieldPropertiesProps {
     onSubmit: (values: any) => void;
     action: "edit" | "create";
     isSubmitting?: boolean;
-    fieldOptions?: Partial<
-        Record<
-            FieldType,
-            {
-                basic?: any;
-                advanced?: any;
-            }
-        >
+    fieldOptions?: Record<
+        FieldTypes,
+        {
+            basic?: any;
+            advanced?: any;
+        }
     >;
+
     contentTemplate?: CleanedCamel<ContentTemplate>;
 }
 

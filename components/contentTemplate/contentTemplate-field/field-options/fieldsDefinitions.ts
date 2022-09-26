@@ -12,6 +12,7 @@ import {
     faText,
     faUser,
 } from "@fortawesome/pro-regular-svg-icons";
+import { FieldTypes } from "@lib/field/data/field.model";
 import { FieldTypeProps } from "./contentTemplateTypes";
 
 export type FieldType =
@@ -29,7 +30,7 @@ export type FieldType =
     | "person";
 
 // object key must match type
-export const FIELD_TYPES: { [key in FieldType]: FieldTypeProps } = {
+export const FIELD_TYPES: { [key in FieldTypes]: FieldTypeProps } = {
     select: {
         type: "select",
         description: "Pick a single option from a list",
@@ -142,24 +143,24 @@ export const FIELD_TYPES: { [key in FieldType]: FieldTypeProps } = {
         label: "Email",
         icon: faAt,
     },
-    component: {
+    /*component: {
         type: "component",
         description: "A custom component",
         label: "Component",
         icon: faTableCellsLarge,
-    },
+    },*/
     relation: {
         type: "relation",
         description: "refer to another content entry",
         label: "Relation",
         icon: faLink,
     },
-    person: {
+    /*person: {
         type: "person",
         description: "refer to a person",
         label: "Person",
         icon: faUser,
-    },
+    },*/
 };
 
 export const FIELD_OPTIONS = Object.keys(FIELD_TYPES).map(

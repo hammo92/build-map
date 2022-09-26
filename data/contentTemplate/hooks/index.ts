@@ -6,7 +6,6 @@ import {
     reorderGroups,
     updateGroup,
 } from "@lib/contentTemplate/data/functions/propertyGroup";
-import { Property } from "@lib/contentTemplate/data/types";
 import { showNotification } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -30,6 +29,7 @@ import {
     updatePropertyGroup,
     reorderPropertyGroups,
 } from "../queries";
+import { createProperty as generateProperty } from "@lib/contentTemplate/data";
 
 export function useCreateContentTemplate() {
     const queryClient = useQueryClient();
@@ -176,7 +176,7 @@ export function useCreateProperty() {
 
     return useMutation(createProperty, {
         mutationKey: Keys.CREATE_CONTENT_TEMPLATE_FIELD,
-        onMutate: async ({ contentTemplateId, fieldProperties, groupId }) => {
+        onMutate: async ({ contentTemplateId, propertyDetails, groupId, name, type }) => {
             const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries(queryId);
@@ -185,10 +185,9 @@ export function useCreateProperty() {
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
                 // add new field to end with placeholder default values
-                contentTemplate.fields.push({
-                    ...(fieldProperties as Property),
-                    id: "newProperty",
-                });
+                /*contentTemplate.fields.push({
+                    ...generateProperty({ name, propertyDetails, type }),
+                });*/
 
                 contentTemplate?.propertyGroups
                     ?.find(({ id }) => id === (groupId ?? "1"))

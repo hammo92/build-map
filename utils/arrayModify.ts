@@ -51,7 +51,10 @@ export function objArrToKeyIndexedMap<T, X extends keyof T>(array: T[], key: X):
     return map;
 }
 
-export function objArrayToHashmap<T, X extends keyof T>(array: T[], path: X): { [key: string]: T } {
+export function objArrayToHashmap<T, X extends keyof T>(
+    array: T[] = [],
+    path: X
+): { [key: string]: T } {
     const hashmap = array.reduce((prev, currObj) => {
         const key = currObj[path];
         if (typeof key === "string") {

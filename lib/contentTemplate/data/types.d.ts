@@ -1,3 +1,4 @@
+import { Field } from "../../../lib/field/data/field.model";
 import {
     SelectProps,
     TextInputProps,
@@ -5,6 +6,7 @@ import {
     MultiSelectProps,
     NumberInputProps,
 } from "@mantine/core";
+import { DistributiveOmit } from "type-helpers";
 import { Required } from "utility-types";
 
 export interface PropertyBase<T extends FieldType> {
@@ -85,19 +87,6 @@ export type PropertyRelation = PropertyBase<"relation"> & {
 
     reciprocalPropertyName?: string;
 };
-
-export type Property =
-    | PropertyCheckbox
-    | PropertyComponent
-    | PropertyDate
-    | PropertyImage
-    | PropertyEmail
-    | PropertyMultiSelect
-    | PropertyNumber
-    | PropertyRichText
-    | PropertySelect
-    | PropertyText
-    | PropertyRelation;
 
 export const isRelationProperty = (
     field: Required<Partial<Property>, "type">

@@ -2,7 +2,7 @@ import { SnakeCase, CamelCase } from "type-fest";
 import { Required } from "utility-types";
 
 // strip properties from model that are not data keys
-export type StripModel<T> = Omit<
+export type StripModel<T, K extends keyof any = ""> = Omit<
     T,
     | "clean"
     | "__snapshot"
@@ -18,6 +18,7 @@ export type StripModel<T> = Omit<
     | "secondaries"
     | "saveWithHistory"
     | "modelKeys"
+    | K
 >;
 
 // set all to partial except provided keys
@@ -91,3 +92,26 @@ export type ToCamel<M extends Record<string, any>> = {
 export type CleanedSnake<T> = ToSnake<StripModel<T>>;
 
 export type CleanedCamel<T> = ToCamel<StripModel<T>>;
+
+export type DistributiveOmit<T, K extends keyof any> = T extends any ? Omit<T, K> : never;
+
+export type DistributiveClean<T extends any, K extends keyof any = ""> = T extends any
+    ? Omit<
+          T,
+          | "clean"
+          | "__snapshot"
+          | "save"
+          | "delete"
+          | "keys"
+          | "primary"
+          | "shadowKeys"
+          | "updateShadowSnapshots"
+          | "resolveShadowKeys"
+          | "UNSAFE_shadowKeysUnbounded"
+          | "__shadowSnapshots"
+          | "secondaries"
+          | "saveWithHistory"
+          | "modelKeys"
+          | K
+      >
+    : never;

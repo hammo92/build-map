@@ -1,9 +1,9 @@
 /* contentTemplate.model.ts */
 
+import { Property } from "@lib/field/data/field.model";
 import { buildIndex, indexBy, timekey } from "serverless-cloud-data-utils";
 import { Icon } from "../../../components/ui/iconPicker/types";
 import { BaseModelId, ModelWithHistory } from "../../models";
-import { Property } from "./types";
 
 export interface ContentTemplateTitle {
     setType: "manual" | "auto";
@@ -40,7 +40,7 @@ interface ContentTemplateProps {
     organisationId: string;
     status: "draft" | "archived" | "published";
     templateType: "collection" | "component";
-    fields: Property[];
+    properties: Property[];
     propertyGroups: PropertyGroup[];
     title: ContentTemplateTitle;
 }
@@ -48,12 +48,11 @@ interface ContentTemplateProps {
 //model: ContentTemplate */
 export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
     object = "ContentTemplate";
-    name: string;
     icon: Icon;
     organisationId: string;
     status: "draft" | "archived" | "published";
     templateType: "collection" | "component";
-    fields: Property[];
+    properties: Property[];
     propertyGroups: PropertyGroup[];
     title: ContentTemplateTitle;
 

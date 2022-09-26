@@ -34,7 +34,7 @@ export const BlockOrganisation = (organisationId: string) =>
     });
 
 class BaseBlock<T extends string> extends BaseModel<BaseBlock<T>> {
-    object = "block";
+    object = "Block";
     type?: T;
     archived = false;
     required?: boolean;
