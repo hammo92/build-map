@@ -24,7 +24,7 @@ export const ContentTemplateTitleSelect = ({
             },
         });
     };
-    const titlePropertyOptions = contentTemplate.fields
+    const titlePropertyOptions = contentTemplate.properties
         .filter((property) => ["date", "email", "number", "text"].includes(property.type))
         .map(({ id, name }) => ({
             label: capitalise(name),

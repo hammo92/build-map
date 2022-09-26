@@ -185,7 +185,7 @@ export function useCreateProperty() {
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
                 // add new field to end with placeholder default values
-                /*contentTemplate.fields.push({
+                /*contentTemplate.properties.push({
                     ...generateProperty({ name, propertyDetails, type }),
                 });*/
 
@@ -237,14 +237,14 @@ export function useUpdateProperty() {
 
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
-                const fieldIndex = contentTemplate.fields.findIndex(
+                const fieldIndex = contentTemplate.properties.findIndex(
                     ({ id }) => id === fieldProperties.id
                 );
 
                 const { type, id, ...rest } = fieldProperties;
 
-                contentTemplate.fields[fieldIndex] = {
-                    ...contentTemplate.fields[fieldIndex],
+                contentTemplate.properties[fieldIndex] = {
+                    ...contentTemplate.properties[fieldIndex],
                     ...rest,
                 };
 
@@ -426,7 +426,7 @@ export function useDeleteProperty() {
 
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
-                const updatedFields = contentTemplate.fields.filter(({ id }) => id !== fieldId);
+                const updatedFields = contentTemplate.properties.filter(({ id }) => id !== fieldId);
 
                 //remove property from group
                 const parentGroup = findParentGroup({
@@ -437,7 +437,7 @@ export function useDeleteProperty() {
                 const groupIndex = parentGroup.children.indexOf(fieldId);
                 parentGroup.children.splice(groupIndex, 1);
 
-                contentTemplate.fields = updatedFields;
+                contentTemplate.properties = updatedFields;
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {
                     return {
@@ -486,7 +486,7 @@ export function useDeletePropertyGroup() {
                     deleteContents,
                 });
 
-                contentTemplate.fields = fields;
+                contentTemplate.properties = fields;
                 contentTemplate.propertyGroups = propertyGroups;
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {
@@ -530,7 +530,7 @@ export function useReorderProperties() {
             if (currentData?.contentTemplate) {
                 const { contentTemplate } = currentData;
                 const updatedProperties = moveInArray(contentTemplate!.fields, fromIndex, toIndex);
-                contentTemplate.fields = updatedProperties;
+                contentTemplate.properties = updatedProperties;
 
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {

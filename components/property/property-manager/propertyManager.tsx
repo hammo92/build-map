@@ -1,3 +1,4 @@
+import { GroupCreate } from "@components/contentTemplate/contentTemplate-group/group-create";
 import { Property, PropertyGroup } from "@lib/field/data/field.model";
 import { Stack } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
@@ -11,14 +12,13 @@ interface PropertyManagerProps {
 }
 
 export const PropertyManager = ({ properties, propertyGroups }: PropertyManagerProps) => {
-    const [propertiesMap, setProperties] = useSetState(objArrayToHashmap(properties, "id"));
-    const [propertyGroupsMap, setPropertyGroups] = useSetState(
-        objArrayToHashmap(propertyGroups, "id")
-    );
     return (
         <Stack>
-            <PropertyList properties={properties} propertyGroups={propertyGroups}  onMove={console.log} />                                                                                                                                                                                                                                                                                                                                                                                                                                           />
+            <PropertyList
+                properties={properties}
+                propertyGroups={propertyGroups}
+                onMove={console.log}
+            />
         </Stack>
-    )
-
+    );
 };

@@ -16,6 +16,7 @@ export interface PropertyGroup {
     children: (string | number)[];
     name: string;
     repeatable: boolean;
+    parent: string;
 }
 
 //* Field model and indexes //

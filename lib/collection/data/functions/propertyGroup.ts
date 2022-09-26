@@ -48,7 +48,7 @@ export const reorderGroups = ({ contentTemplate, source, destination }: ReorderG
     const moveItemId = moveItemSourceGroup.children[source.index];
     let moveItem =
         propertyGroupMap.get(moveItemId) ??
-        contentTemplate.fields.find(({ id }) => id === moveItemId);
+        contentTemplate.properties.find(({ id }) => id === moveItemId);
 
     if (!moveItemId || !moveItem) throw new Error("Can't find item");
 
@@ -115,10 +115,10 @@ export const deleteGroup = ({
         parentGroup.children.push(...propertyGroup.children);
     }
 
-    let fields = [...contentTemplate.fields];
+    let fields = [...contentTemplate.properties];
 
     if (deleteContents) {
-        const fieldsMap = objArrToKeyIndexedMap(contentTemplate.fields, "id");
+        const fieldsMap = objArrToKeyIndexedMap(contentTemplate.properties, "id");
         const deleteChildren = (propertyGroup: PropertyGroup) => {
             propertyGroup.children.forEach((id) => {
                 /** Check if id belongs to a field, if true remove field */

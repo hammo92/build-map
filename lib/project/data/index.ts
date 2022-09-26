@@ -68,7 +68,7 @@ export async function createProject({
     newProjectUser.userId = userId;
     console.log("newProjectUser :>> ", newProjectUser);
     await Promise.all([
-        oso.tell("has_role", user!, "owner", newProject),
+        oso.tell("has_role", user!, "owner", { type: "Project", id: newProject.id }),
         newProject.save(),
         newProjectUser.save(),
     ]);

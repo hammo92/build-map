@@ -28,7 +28,7 @@ export const ContentTemplateStatus = ({
                 { value: "draft", label: "Draft" },
                 { value: "published", label: "Published" },
             ]}
-            disabled={!contentTemplate.fields.length}
+            disabled={!contentTemplate.properties.length}
             onChange={onChange}
         />
     );

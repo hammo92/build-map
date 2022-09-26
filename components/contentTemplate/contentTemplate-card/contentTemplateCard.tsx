@@ -35,7 +35,7 @@ export const ContentTemplateCard: FC<ContentTemplateCardProps> = ({ contentTempl
             </Card.Section>
             <Card.Section p="md">
                 <Stack spacing="xs">
-                    <Text>{`${contentTemplate.fields.length} fields`}</Text>
+                    <Text>{`${contentTemplate.properties.length} fields`}</Text>
                 </Stack>
             </Card.Section>
         </Card>

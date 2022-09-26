@@ -3,13 +3,7 @@ import { ulid } from "ulid";
 import { getAssetById } from "../../../lib/asset/data";
 import { getContentTemplateById } from "../../contentTemplate/data";
 import { errorIfUndefined } from "../../utils";
-import {
-    Content,
-    ContentId,
-    ContentStatus,
-    ContentTemplate,
-    FieldGroup,
-} from "./content.model";
+import { Content, ContentId, ContentStatus, ContentTemplate, FieldGroup } from "./content.model";
 import { ContentField } from "./types";
 /*import {
     ContentTemplateHistory,
@@ -48,7 +42,7 @@ export async function createContent({
 
     const contentUpdates: ContentHistory["contentUpdates"] = [];
 
-    const contentFields = contentTemplate.fields.map((property) => {
+    const contentFields = contentTemplate.properties.map((property) => {
         const field = fieldFromTemplateProperty({ property, userId, date });
         return field;
     });
@@ -381,7 +375,7 @@ export async function updateContentFields(props: {
     const { content, contentTemplate } = await getContentOfTemplate({
         contentTemplateId: templateId,
     });
-    const templateFieldMap = objArrToKeyIndexedMap(contentTemplate.fields, "id");
+    const templateFieldMap = objArrToKeyIndexedMap(contentTemplate.properties, "id");
 
     content.forEach(({ fields }) => {
         const clonedMap = new Map(templateFieldMap);
@@ -466,7 +460,7 @@ export async function handleContentTemplateChange({
 
             // if proprty added, add property to content but set as inactive
             if (propertyUpdate.action === "created") {
-                const property = contentTemplate.fields.find(
+                const property = contentTemplate.properties.find(
                     ({ id }) => id === propertyUpdate.fieldId
                 );
                 if (property) {
@@ -518,7 +512,7 @@ export async function UpdateContentFromTemplate({
     const date = new Date().toISOString();
     // update field if exists on content, else create or remove
     content.fields = contentTemplate?.fields
-        ? contentTemplate.fields.map((field) => {
+        ? contentTemplate.properties.map((field) => {
               const fieldId = contentMap[field?.id]?.id ?? ulid();
 
               // if value doesn't exist for field and default value does

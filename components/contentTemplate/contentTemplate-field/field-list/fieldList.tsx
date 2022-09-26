@@ -18,14 +18,14 @@ const FieldListSkeleton = () => (
 export const FieldList: FC<{ contentTemplate: CleanedCamel<ContentTemplate> }> = ({
     contentTemplate,
 }) => {
-    const [state, { setState, reorder }] = useListState(contentTemplate.fields);
+    const [state, { setState, reorder }] = useListState(contentTemplate.properties);
     const { mutateAsync, error } = useReorderProperties();
 
     useEffect(() => {
-        setState(contentTemplate.fields ?? []);
-    }, [contentTemplate.fields, setState]);
+        setState(contentTemplate.properties ?? []);
+    }, [contentTemplate.properties, setState]);
 
-    const items = contentTemplate.fields ? (
+    const items = contentTemplate.properties ? (
         state.map((field, index) => (
             <Draggable key={field.name} index={index} draggableId={field.name}>
                 {(provided, snapshot) => (

@@ -19,11 +19,15 @@ export async function createOrganisation({ name, userId }: { name: string; userI
     errorIfUndefined({ user }, "notFound");
     // create organisation
     const newOrganisation = new Organisation({ userId });
+    console.log("newOrganisation :>> ", newOrganisation);
     newOrganisation.name = name;
     newOrganisation.archived = false;
 
     await Promise.all([
-        oso.tell("has_role", user!, "owner", newOrganisation),
+        oso.tell("has_role", { type: "User", id: user.id }!, "owner", {
+            id: newOrganisation.id,
+            type: "Organisation",
+        }),
         newOrganisation.save(),
     ]);
 
@@ -42,13 +46,10 @@ export async function getOrganisationById({
 
     // check user has permission to read organisation
     if (
-        !(await oso.authorize(
-            new User({ id: userId }),
-            "read",
-            new Organisation({
-                id: organisationId,
-            })
-        ))
+        !(await oso.authorize({ type: "User", id: userId }, "read", {
+            type: "Organisation",
+            id: organisationId,
+        }))
     ) {
         throw new Error("You don's have access to this organisation");
     }
@@ -83,13 +84,10 @@ export async function updateOrganisation({
 
     // check user has permission to delete organisation
     if (
-        !(await oso.authorize(
-            new User({ id: userId }),
-            "delete",
-            new Organisation({
-                id: organisationId,
-            })
-        ))
+        !(await oso.authorize({ type: "User", id: userId }, "delete", {
+            type: "Organisation",
+            id: organisationId,
+        }))
     ) {
         throw new Error("You don't have the correct permission to delete this organisation");
     }
@@ -118,14 +116,10 @@ export async function addUserToOrganisation({
 }) {
     errorIfUndefined({ organisationId, userId });
 
-    await oso.tell(
-        "has_role",
-        new User({ id: userId }),
-        role,
-        new Organisation({
-            id: organisationId,
-        })
-    );
+    await oso.tell("has_role", { type: "User", id: userId }, role, {
+        type: "Organisation",
+        id: organisationId,
+    });
 }
 
 //* Check if user is in an Organisation */
@@ -138,11 +132,10 @@ export async function checkUserInOrganisation({
 }) {
     errorIfUndefined({ organisationId, userId });
 
-    const inOrganisation = await oso.authorize(
-        new User({ id: userId }),
-        "read",
-        new Organisation({ id: organisationId })
-    );
+    const inOrganisation = await oso.authorize({ type: "User", id: userId }, "read", {
+        type: "Organisation",
+        id: organisationId,
+    });
     return inOrganisation;
 }
 
@@ -183,20 +176,20 @@ export async function getOrganisationUsers(organisationId: string) {
 export async function getUserOrganisations(userId: string) {
     errorIfUndefined({ userId });
 
-    console.log("userId", userId);
-
     const authorisedOrganisations = await oso.list(
-        new User({ id: userId }),
+        { type: "User", id: userId },
         "read",
         "Organisation"
     );
 
+    if (!authorisedOrganisations.length) return [];
+
     /** test get users for org */
-    const org = new Organisation({
+    /*const org = new Organisation({
         id: authorisedOrganisations[0],
-    });
-    console.log("org", org);
-    const authorisedUsers = await oso.get("has_role", null, "owner", org);
+    });*/
+
+    //const authorisedUsers = await oso.get("has_role", null, "owner", org);
     /** */
 
     const organisations = await Promise.all(

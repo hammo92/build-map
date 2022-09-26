@@ -31,7 +31,7 @@ const ContentCreateForm: FC<{
     return (
         <Box>
             <SmartForm onSubmit={onSubmit} formName="contentCreate">
-                <ContentFields fields={contentTemplate.fields} />
+                <ContentFields fields={contentTemplate.properties} />
                 <Group position="right" mt="md" grow>
                     <Button
                         disabled={isLoading}
