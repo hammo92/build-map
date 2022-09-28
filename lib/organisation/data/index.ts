@@ -175,7 +175,7 @@ export async function getOrganisationUsers(organisationId: string) {
 //* Get all organisations a user is a member of */
 export async function getUserOrganisations(userId: string) {
     errorIfUndefined({ userId });
-
+    console.log("userId", userId);
     const authorisedOrganisations = await oso.list(
         { type: "User", id: userId },
         "read",

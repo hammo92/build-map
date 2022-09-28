@@ -53,7 +53,7 @@ export class DateField extends BaseField {
     readonly type: "date";
     value?: string;
     defaultValue?: string;
-
+    variant: "dateTime" | "date" | "time";
     constructor(obj?: any) {
         super(obj);
         this.type = "date";

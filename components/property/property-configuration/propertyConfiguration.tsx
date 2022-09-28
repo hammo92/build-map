@@ -1,7 +1,6 @@
 import { SmartForm } from "@components/smartForm";
 import { FieldTypes, Property } from "@lib/field/data/field.model";
-import { Button, ButtonProps, Group, Tabs } from "@mantine/core";
-import React from "react";
+import { Button, ButtonProps, Group } from "@mantine/core";
 import { useFormContext } from "react-hook-form";
 import { ConfigurationFields } from "./configuration-fields";
 
@@ -65,14 +64,15 @@ export const PropertyConfiguration = <T extends FieldTypes>({
     return (
         <SmartForm onSubmit={onSubmit} formName="fieldBasicDetails" defaultValues={currentConfig}>
             <SmartForm.TextInput hidden name="type" />
-            <Tabs defaultValue="details">
+            <ConfigurationFields type={type} />
+            {/* <Tabs defaultValue="details">
                 <Tabs.List grow>
                     <Tabs.Tab value="details">Details</Tabs.Tab>
                 </Tabs.List>
                 <Tabs.Panel value="details" py="sm">
                     <ConfigurationFields type={type} />
                 </Tabs.Panel>
-            </Tabs>
+            </Tabs> */}
             <Buttons
                 cancelButtonProps={cancelButtonProps}
                 isSubmitting={isSubmitting}

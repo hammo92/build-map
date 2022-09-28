@@ -9,9 +9,8 @@ export const UserId = buildIndex({ namespace: `user`, label: "label1" });
 
 //model: User */
 export class User extends BaseModel<User> {
-    type = "User";
+    object = "User";
     email: string;
-    name: string;
     picture: string;
     hashedPassword: string;
     emailVerified: boolean;

@@ -61,6 +61,7 @@
         "next": "12.2.0",
         "oso-cloud": "^0.8.3",
         "pluralize": "^8.0.0",
+        "proxy-memoize": "^1.2.0",
         "react": "^17.0.2",
         "react-alice-carousel": "^2.6.4",
         "react-avatar-editor": "^13.0.0",

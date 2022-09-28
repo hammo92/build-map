@@ -1,5 +1,5 @@
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Group } from "@mantine/core";
+import { Button, Group } from "@mantine/core";
 import React, { FC } from "react";
 import { CleanedCamel } from "type-helpers";
 import { ContentTemplateDelete } from "../contentTemplate-delete";
@@ -24,6 +24,7 @@ export const ContentTemplateHeader: FC<{ contentTemplate: CleanedCamel<ContentTe
 
             <Group noWrap sx={{ flexShrink: 0 }} spacing="sm">
                 <ContentTemplateStatus contentTemplate={contentTemplate} />
+                <Button>Save</Button>
                 <ContentTemplateDelete contentTemplate={contentTemplate} />
                 <FieldCreate variant="icon" contentTemplate={contentTemplate} />
             </Group>

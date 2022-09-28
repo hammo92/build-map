@@ -92,7 +92,8 @@ export async function redeemInvitationById(id: string) {
     // find id from email
     const userId = await uuidv5(email, USER_UUID_NAMESPACE);
 
-    await addUserToOrganisation({ organisationId, userId });
+    await addUserToOrganisation({ organisationId, userId, role: "owner" });
+
     //Todo: if project is defined on invitation
     // if (invitation.projectId) {
     //     await createProjectUser({ projectId, userId });

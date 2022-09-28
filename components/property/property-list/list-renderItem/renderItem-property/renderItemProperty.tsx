@@ -4,7 +4,7 @@ import { PropertyItem } from "@components/property/property-item";
 import { faGripVertical } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export const RenderItemField = ({ item, provided }: RenderItemParams) => {
+export const RenderItemProperty = ({ item, provided }: RenderItemParams) => {
     return (
         <PropertyItem
             property={item.data}

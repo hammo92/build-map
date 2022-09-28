@@ -83,7 +83,7 @@ export async function createUser({
     const salt = crypto.randomBytes(16).toString();
     const hashedPassword = (await pbkdf2(password, salt, 310000, 32, "sha256")).toString();
 
-    const newUser = new User();
+    const newUser = new User({ id });
     newUser.name = name;
     newUser.email = email;
     newUser.nickname = name.split(" ")[0];

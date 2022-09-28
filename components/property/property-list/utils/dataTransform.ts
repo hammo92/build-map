@@ -47,7 +47,7 @@ export const transformToTree = ({
                         children: children.length ? children : [addPlaceholder()],
                         hasChildren: true,
                         isChildrenLoading: false,
-                        isExpanded: !collapsed,
+                        isExpanded: !collapsed[id],
                         data: {
                             name,
                             repeatable,

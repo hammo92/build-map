@@ -8,7 +8,6 @@ import { transformToTree } from "./utils/dataTransform";
 export interface PropertyListProps {
     propertyGroups: PropertyGroup[] | Record<string, PropertyGroup>;
     properties: Property[] | Record<string, Property>;
-    onMove: (source: TreeSourcePosition, destination: TreeDestinationPosition) => void;
 }
 
 /** to set initial collased state for groups in tree */
@@ -39,7 +38,7 @@ const destinationMatchesOrigin = ({
 };
 
 /** List uses @atlaskit/tree */
-export const PropertyList = ({ propertyGroups, properties, onMove }: PropertyListProps) => {
+export const PropertyList = ({ propertyGroups, properties }: PropertyListProps) => {
     const { classes } = useStyles();
     const [collapsed, setState] = useSetState(isCollapsedReducer(propertyGroups));
     const tree = transformToTree({ properties, propertyGroups, collapsed });
@@ -50,10 +49,6 @@ export const PropertyList = ({ propertyGroups, properties, onMove }: PropertyLis
     const onCollapse = async (itemId: ItemId) => {
         setState({ [itemId]: true });
     };
-    const onDragEnd = async (source: TreeSourcePosition, destination?: TreeDestinationPosition) => {
-        if (destinationMatchesOrigin({ source, destination })) return;
-        onMove(source, destination!);
-    };
 
     return (
         <Tree
@@ -61,9 +56,7 @@ export const PropertyList = ({ propertyGroups, properties, onMove }: PropertyLis
             renderItem={ListRenderItem}
             onExpand={onExpand}
             onCollapse={onCollapse}
-            onDragEnd={onDragEnd}
-            onDragStart={onCollapse}
-            isDragEnabled
+            isDragEnabled={false}
             isNestingEnabled={false}
             //offsetPerLevel={20}
         />

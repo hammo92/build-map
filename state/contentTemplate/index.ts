@@ -6,6 +6,7 @@ export interface ContentTemplateStateProps {
     contentTemplateId: string;
     deletingGroup: string | number;
     processingItems: (string | number)[];
+    editing: boolean;
 }
 
 export const contentTemplateState = proxy<ContentTemplateStateProps>({
@@ -13,4 +14,5 @@ export const contentTemplateState = proxy<ContentTemplateStateProps>({
     contentTemplateId: "",
     deletingGroup: "",
     processingItems: [],
+    editing: false,
 });

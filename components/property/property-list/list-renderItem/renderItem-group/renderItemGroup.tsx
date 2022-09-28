@@ -1,9 +1,11 @@
 import { ItemId, RenderItemParams, TreeItem } from "@atlaskit/tree";
-import { GroupActions } from "@components/contentTemplate/contentTemplate-group/group-actions";
+import { GroupActions } from "@components/property/property-group/group-actions";
 import { useUpdatePropertyGroup } from "@data/contentTemplate/hooks";
 import { faChevronDown, faChevronRight, faGripVertical } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ActionIcon, Card, Checkbox, Group, Text, TextInput } from "@mantine/core";
+import { propertyManager, updateGroup } from "@state/propertyManager";
+import { useSnapshot } from "valtio";
 import { useStyles } from "./styles";
 
 const getIcon = (
@@ -30,7 +32,7 @@ export const RenderItemGroup = ({
     snapshot,
 }: RenderItemParams) => {
     const { classes } = useStyles();
-    const { mutateAsync } = useUpdatePropertyGroup();
+    const { editing } = useSnapshot(propertyManager);
     return (
         <Card
             p="md"
@@ -50,21 +52,22 @@ export const RenderItemGroup = ({
                     </Group>
                     <Text>{item.data ? item.data.name : ""}</Text>
                 </Group>
-                <Group>
-                    <Checkbox
-                        style={{ cursor: "pointer" }}
-                        label="repeatable"
-                        defaultChecked={item.data.repeatable}
-                        onChange={(event) =>
-                            mutateAsync({
-                                contentTemplateId: item.data.templateId,
-                                propertyGroupId: `${item.id}`,
-                                repeatable: event.currentTarget.checked,
-                            })
-                        }
-                    />
-                    <GroupActions group={item} />
-                </Group>
+                {editing && (
+                    <Group>
+                        <Checkbox
+                            style={{ cursor: "pointer" }}
+                            label="repeatable"
+                            defaultChecked={item.data.repeatable}
+                            onChange={(event) =>
+                                updateGroup({
+                                    groupId: `${item.id}`,
+                                    repeatable: event.currentTarget.checked,
+                                })
+                            }
+                        />
+                        <GroupActions group={item} />
+                    </Group>
+                )}
             </Group>
         </Card>
     );

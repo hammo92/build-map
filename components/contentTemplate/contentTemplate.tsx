@@ -4,13 +4,25 @@ import { PropertyList } from "@components/property/property-list";
 import { PropertyManager } from "@components/property/property-manager";
 import { useGetContentTemplate } from "@data/contentTemplate/hooks";
 import { ContentTemplate as ContentTemplateProps } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Card, Container, Divider, Grid, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import {
+    Button,
+    Card,
+    Container,
+    Divider,
+    Grid,
+    SimpleGrid,
+    Stack,
+    Text,
+    Title,
+} from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
 import { contentTemplateState } from "@state/contentTemplate";
+import { propertyManager } from "@state/propertyManager";
 import dayjs from "dayjs";
 import Image from "next/image";
 import { CleanedCamel } from "type-helpers";
 import { objArrayToHashmap } from "utils/arrayModify";
+import { useSnapshot } from "valtio";
 import Illustration from "../../public/images/tokyo/2.0-04.svg";
 import { FieldCreate } from "./contentTemplate-field/field-create";
 import { ContentTemplateHeader } from "./contentTemplate-header/contentTemplateHeader";
@@ -35,7 +47,8 @@ export const ContentTemplate = ({
 }) => {
     contentTemplateState.contentTemplateId = contentTemplate.id;
     const { data } = useGetContentTemplate(contentTemplate.id, { contentTemplate });
-
+    // propertyManager.properties = contentTemplate.properties;
+    // propertyManager.propertyGroups = contentTemplate.propertyGroups;
     if (data?.contentTemplate) {
         return (
             <Stack>
