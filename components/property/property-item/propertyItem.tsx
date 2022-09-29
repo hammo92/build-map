@@ -1,11 +1,14 @@
-import { FIELD_TYPES } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
 import { IconTitle } from "@components/ui/iconTitle/iconTitle";
+import { faEdit } from "@fortawesome/pro-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Property } from "@lib/field/data/field.model";
-import { Card, Group } from "@mantine/core";
+import { ActionIcon, Card, Divider, Group } from "@mantine/core";
 import { propertyManager } from "@state/propertyManager";
 import { splitCamel } from "utils/stringTransform";
 import { useSnapshot } from "valtio";
 import { PropertyDelete } from "../property-delete";
+import { PropertyEdit } from "../property-edit";
+import { FIELD_TYPES } from "../property-type/type-select/options";
 import { useStyles } from "./styles";
 
 interface PropetyItemProps {
@@ -51,8 +54,16 @@ export const PropertyItem = ({ property, hideActions, leftContent, grow }: Prope
                             alignSelf: "stretch",
                         })}
                     >
-                        {/* <FieldEdit field={field} />
-                        <Divider variant="solid" orientation="vertical" /> */}
+                        <PropertyEdit
+                            property={property}
+                            isModal
+                            buttonElement={
+                                <ActionIcon>
+                                    <FontAwesomeIcon icon={faEdit} />
+                                </ActionIcon>
+                            }
+                        />
+                        <Divider variant="solid" orientation="vertical" />
                         <PropertyDelete property={property} />
                     </Group>
                 )}

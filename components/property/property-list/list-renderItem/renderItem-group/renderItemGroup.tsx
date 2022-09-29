@@ -1,10 +1,9 @@
 import { ItemId, RenderItemParams, TreeItem } from "@atlaskit/tree";
 import { GroupActions } from "@components/property/property-group/group-actions";
-import { useUpdatePropertyGroup } from "@data/contentTemplate/hooks";
 import { faChevronDown, faChevronRight, faGripVertical } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ActionIcon, Card, Checkbox, Group, Text, TextInput } from "@mantine/core";
-import { propertyManager, updateGroup } from "@state/propertyManager";
+import { propertyManager, updateGroupDetails } from "@state/propertyManager";
 import { useSnapshot } from "valtio";
 import { useStyles } from "./styles";
 
@@ -59,7 +58,7 @@ export const RenderItemGroup = ({
                             label="repeatable"
                             defaultChecked={item.data.repeatable}
                             onChange={(event) =>
-                                updateGroup({
+                                updateGroupDetails({
                                     groupId: `${item.id}`,
                                     repeatable: event.currentTarget.checked,
                                 })

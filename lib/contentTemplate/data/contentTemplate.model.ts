@@ -1,6 +1,6 @@
 /* contentTemplate.model.ts */
 
-import { Property } from "@lib/field/data/field.model";
+import { Property, PropertyGroup } from "@lib/field/data/field.model";
 import { buildIndex, indexBy, timekey } from "serverless-cloud-data-utils";
 import { Icon } from "../../../components/ui/iconPicker/types";
 import { BaseModelId, ModelWithHistory } from "../../models";
@@ -10,15 +10,6 @@ export interface ContentTemplateTitle {
     type: "contentInfo" | "contentProperty";
     value: string;
 }
-
-export interface PropertyGroup {
-    type: "propertyGroup";
-    id: string | number;
-    children: (string | number)[];
-    name: string;
-    repeatable: boolean;
-}
-
 //* contentTemplate model and indexes //
 
 // To get all contentTemplate by it's ID *//

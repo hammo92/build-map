@@ -5,4 +5,5 @@ export const commonState = proxy({
         url: "/",
         text: "Home",
     },
+    userId: "",
 });

@@ -1,9 +1,7 @@
-import { FieldType } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
 import { IconTitle } from "@components/ui/iconTitle/iconTitle";
 import { FieldTypes } from "@lib/field/data/field.model";
-import { Button, Modal, Text } from "@mantine/core";
+import { Button, Text } from "@mantine/core";
 import { closeAllModals, useModals } from "@mantine/modals";
-import { ModalSettings } from "@mantine/modals/lib/context";
 import { createProperty } from "@state/propertyManager";
 import React, { useState } from "react";
 import { splitCamel } from "utils/stringTransform";
@@ -15,7 +13,7 @@ import { getFieldDefaults } from "./create-utils/getFieldDefaults";
 
 interface PropertyCreatePropsBase {
     onCreate?: (values: any) => void;
-    parentId: string;
+    parentId?: string;
 }
 
 interface PropertyCreateModalProps extends PropertyCreatePropsBase {
@@ -78,7 +76,7 @@ export const PropertyCreate = ({
     onCreate,
     isModal,
     buttonElement,
-    parentId,
+    parentId = "1",
 }: PropertyCreateProps) => {
     const modals = useModals();
 

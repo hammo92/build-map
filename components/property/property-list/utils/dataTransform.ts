@@ -1,6 +1,5 @@
 import { TreeData, TreeItem } from "@atlaskit/tree";
-import { ContentTemplate, PropertyGroup } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Property } from "@lib/field/data/field.model";
+import { Property, PropertyGroup } from "@lib/field/data/field.model";
 import { CleanedCamel } from "type-helpers";
 import { PropertyListProps } from "../propertyList";
 

@@ -3,7 +3,7 @@ import React from "react";
 import { SmartForm } from "@components/smartForm";
 import { Button, Group, Stack } from "@mantine/core";
 import { closeAllModals, openModal } from "@mantine/modals";
-import { propertyManager, updateGroup } from "@state/propertyManager";
+import { propertyManager, updateGroupDetails } from "@state/propertyManager";
 import { useSnapshot } from "valtio";
 
 interface GroupRenameProps {
@@ -21,7 +21,7 @@ const GroupRenameForm = ({ groupId }: GroupCreateFormProps) => {
         <SmartForm
             formName="ContentTemplate Group Name"
             onSubmit={(values: { name: string }) => {
-                updateGroup({ groupId, name: values.name });
+                updateGroupDetails({ groupId, name: values.name });
                 closeAllModals();
             }}
         >

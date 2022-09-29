@@ -17,7 +17,8 @@ interface GroupDeleteFormProps {
 const GroupDeleteConfirm = ({ groupId, deleteContents = false }: GroupDeleteFormProps) => {
     const { propertyGroupMap } = useSnapshot(propertyManager);
     const group = propertyGroupMap[groupId];
-    const parent = propertyGroupMap[group.parent];
+    const parent = propertyGroupMap[group?.parent ?? "1"];
+    if (!group || !parent) return null;
     return (
         <Stack>
             <Text>

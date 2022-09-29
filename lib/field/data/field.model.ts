@@ -16,7 +16,7 @@ export interface PropertyGroup {
     children: (string | number)[];
     name: string;
     repeatable: boolean;
-    parent: string;
+    parent?: string;
 }
 
 //* Field model and indexes //
@@ -140,7 +140,7 @@ export class RelationField extends BaseField {
     readonly type: "relation";
     value?: string;
     defaultValue?: never;
-    relatedTo: string;
+    relatedTo?: string;
     isReciprocal?: boolean;
     reciprocalPropertyId?: string;
     reciprocalPropertyName?: string;
@@ -149,8 +149,6 @@ export class RelationField extends BaseField {
         this.type = "relation";
     }
 }
-
-const Field = new NumberField();
 
 export type Field =
     | CheckboxField
