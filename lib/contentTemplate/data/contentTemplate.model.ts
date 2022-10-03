@@ -1,9 +1,10 @@
 /* contentTemplate.model.ts */
 
 import { Property, PropertyGroup } from "@lib/field/data/field.model";
+import { HistoryEntry } from "@lib/historyEntry/data/historyEntry.model";
 import { buildIndex, indexBy, timekey } from "serverless-cloud-data-utils";
 import { Icon } from "../../../components/ui/iconPicker/types";
-import { BaseModelId, ModelWithHistory } from "../../models";
+import { BaseModel, BaseModelId, ModelWithHistory } from "../../models";
 
 export interface ContentTemplateTitle {
     setType: "manual" | "auto";
@@ -12,7 +13,7 @@ export interface ContentTemplateTitle {
 }
 //* contentTemplate model and indexes //
 
-// To get all contentTemplate by it's ID *//
+// To get contentTemplate by it's ID *//
 //namespace contentTemplate:${contentTemplateId} */
 export const ContentTemplateId = buildIndex({ namespace: `contentTemplate`, label: "label1" });
 
@@ -51,6 +52,44 @@ export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
         return [
             indexBy(ContentTemplateId).exact(this.id),
             indexBy(ContentTemplateOrganisation(this.organisationId)).exact(this.lastEditedTime),
+        ];
+    }
+
+    async saveWithHistory(props: Omit<HistoryEntry, "id" | "createdTime">): Promise<void> {
+        const propertyHistoryEntry = new PropertyHistory();
+        propertyHistoryEntry.contentTemplateId = this.id;
+        propertyHistoryEntry.properties = this.properties;
+        propertyHistoryEntry.propertyGroups = this.propertyGroups;
+        await propertyHistoryEntry.save();
+        super.saveWithHistory({
+            ...props,
+            linked: { id: propertyHistoryEntry.id, type: "PropertyHistory" },
+        });
+    }
+}
+
+// To get  propertyHistory by it's ID *//
+//namespace propertyHistory:${propertyHistoryId} */
+export const PropertyHistoryId = buildIndex({ namespace: `propertyHistory`, label: "label1" });
+
+// To get all propertyHistory entries for a contentTemplate *//
+//namespace contentTemplate_${contentTemplateId}:propertyHistories:${lastEditedTime} */
+export const TemplatePropertyHistory = (contentTemplateId: string) =>
+    buildIndex({
+        namespace: `contentTemplate_${contentTemplateId}:propertyHistories`,
+        label: "label2",
+        converter: timekey,
+    });
+
+export class PropertyHistory extends BaseModel<PropertyHistory> {
+    object = "PropertyHistory";
+    contentTemplateId: string;
+    properties: Property[];
+    propertyGroups: PropertyGroup[];
+    modelKeys() {
+        return [
+            indexBy(ContentTemplateId).exact(this.id),
+            indexBy(ContentTemplateOrganisation(this.contentTemplateId)).exact(this.lastEditedTime),
         ];
     }
 }

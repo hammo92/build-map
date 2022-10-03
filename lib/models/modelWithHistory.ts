@@ -1,4 +1,4 @@
-import { HistoryEntry } from "../../lib/historyEntry/data/historyEntry.model";
+import { HistoryEntry, Note } from "../historyEntry/data/historyEntry.model";
 import { events } from "@serverless/cloud";
 import { BaseModel } from "./baseModel";
 
@@ -8,7 +8,6 @@ export abstract class ModelWithHistory<T extends BaseModel<T>> extends BaseModel
     constructor(obj?: any) {
         super({
             ...obj,
-            history: [],
         });
     }
 
@@ -17,6 +16,9 @@ export abstract class ModelWithHistory<T extends BaseModel<T>> extends BaseModel
         const historyEntry = new HistoryEntry(props);
         this.lastEditedBy = props.editedBy;
         this.lastEditedTime = date;
+        if (!Array.isArray(this.history)) {
+            this.history = [];
+        }
         this.history.unshift(historyEntry);
         await super.save();
         await events.publish(`${this.object}.updated`, {

@@ -181,7 +181,7 @@ export const Content = ({
                                             </>
                                         </Stack>
                                     </Tabs.Panel>
-                                    <Tabs.Panel value="additionalContent">
+                                    {/* <Tabs.Panel value="additionalContent">
                                         <Stack p="md" pt={0} spacing="sm">
                                             {additional && (
                                                 <ContentFields
@@ -196,7 +196,7 @@ export const Content = ({
                                                 variant="button"
                                             />
                                         </Stack>
-                                    </Tabs.Panel>
+                                    </Tabs.Panel> */}
                                 </Tabs>
                             </Box>
                         </Grid.Col>

@@ -28,6 +28,7 @@ export const FieldId = buildIndex({ namespace: `Field`, label: "label1" });
 abstract class BaseField extends BaseModel<BaseField> {
     readonly object = "Field";
     abstract readonly type: string;
+    templateId?: string;
     archived = false;
     required?: boolean;
     active?: boolean;
@@ -169,3 +170,8 @@ export type FieldDiscriminator<T extends FieldTypes = "checkbox"> = Extract<Fiel
 export type Property<T extends FieldTypes | undefined = undefined> = T extends FieldTypes
     ? StripModel<FieldDiscriminator<T>, "value" | "note" | "assets">
     : DistributiveClean<Field, "value" | "note" | "assets">;
+
+type DiscriminatedProperty<T extends FieldTypes> = StripModel<
+    FieldDiscriminator<T>,
+    "value" | "note" | "assets"
+>;

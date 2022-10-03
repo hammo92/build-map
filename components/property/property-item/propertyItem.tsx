@@ -2,7 +2,7 @@ import { IconTitle } from "@components/ui/iconTitle/iconTitle";
 import { faEdit } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Property } from "@lib/field/data/field.model";
-import { ActionIcon, Card, Divider, Group } from "@mantine/core";
+import { ActionIcon, Box, Card, Divider, Group } from "@mantine/core";
 import { propertyManager } from "@state/propertyManager";
 import { splitCamel } from "utils/stringTransform";
 import { useSnapshot } from "valtio";
@@ -34,7 +34,7 @@ export const PropertyItem = ({ property, hideActions, leftContent, grow }: Prope
     const { classes } = useStyles();
     const { editing } = useSnapshot(propertyManager);
     return (
-        <Card radius={0} withBorder sx={{ flex: grow ? 1 : "auto" }}>
+        <Card sx={{ flex: grow ? 1 : "auto" }} py="sm">
             <Group position="apart">
                 <Group>
                     {!!leftContent && leftContent}
@@ -48,7 +48,6 @@ export const PropertyItem = ({ property, hideActions, leftContent, grow }: Prope
                 </Group>
                 {editing && !hideActions && (
                     <Group
-                        p="md"
                         grow
                         sx={(theme) => ({
                             alignSelf: "stretch",

@@ -4,142 +4,107 @@ import { Required } from "utility-types";
 import { splitCamel } from "../../../../utils/stringTransform";
 import { ContentTemplate, ContentTemplateId } from "../contentTemplate.model";
 import { PropertyRelation } from "../types";
-import { createProperty } from "..";
+import { createProperty, updateProperties } from "..";
+import { Property } from "@lib/field/data/field.model";
+import pluralize from "pluralize";
+import { ulid } from "ulid";
+import { content } from "@lib/content/endpoints";
+import structuredClone from "@ungap/structured-clone";
 
 export const createRelatedProperty = async ({
     property,
-    templateId,
     userId,
+    templateId,
 }: {
-    property: PropertyRelation;
-    templateId: string;
+    property: Property<"relation">;
     userId: string;
-}) => {
-    const properties: Required<Partial<CleanedCamel<PropertyRelation>>, "name" | "type"> = {
-        permissions: property.permissions,
+    templateId: string;
+}): Promise<Property<"relation"> | undefined> => {
+    const { isReciprocal, reciprocalPropertyId, reciprocalPropertyName, relatedTo } = property;
+
+    // if reciprocalPropertyId is set then linked content has already been created
+    // if not reciprocal then no linked field needed
+    if (reciprocalPropertyId || !isReciprocal) return;
+    if (!relatedTo) throw new Error("No relation found");
+
+    const [relatedTemplate] = await indexBy(ContentTemplateId)
+        .exact(relatedTo)
+        .get(ContentTemplate);
+
+    if (!relatedTemplate) throw new Error("No related content template found");
+
+    // create new property
+    const relation = await createProperty({
         type: "relation",
-        name: property.reciprocalPropertyName!,
-        isReciprocal: true,
-        relatedTo: templateId,
-        reciprocalPropertyId: property.id,
-        reciprocalPropertyName: property.name,
-    };
-    const { property: relatedProperty } = await createProperty({
-        contentTemplateId: property.relatedTo,
-        fieldProperties: properties,
+        name: reciprocalPropertyName ?? pluralize(property.name),
         userId,
+        templateId,
+        propertyDetails: {
+            reciprocalPropertyId: property.id,
+            isReciprocal: true,
+            reciprocalPropertyName: property.name,
+            parent: "1",
+            relatedTo: templateId,
+            id: ulid(),
+        },
     });
-    return relatedProperty;
+
+    relatedTemplate.properties.push(relation);
+    relatedTemplate.propertyGroups.find(({ id }) => id === "1")?.children.push(relation.id);
+
+    // save property on linked template
+    await relatedTemplate.save();
+
+    return { ...property, reciprocalPropertyId: relation.id };
 };
 
 export const updateRelatedProperty = async ({
     property,
-    updatedProperty,
-    templateId,
     userId,
 }: {
-    property: PropertyRelation;
-    updatedProperty: PropertyRelation;
-    templateId: string;
-    userId: string;
-}) => {
-    const reciprocalChangedToTrue = updatedProperty.isReciprocal && !property.isReciprocal;
-    const reciprocalChangedToFalse =
-        updatedProperty.isReciprocal === false && property.isReciprocal;
-    const relatedToChanged =
-        updatedProperty.relatedTo && updatedProperty.relatedTo !== property.relatedTo;
-    const nameChanged = updatedProperty.name && updatedProperty.name !== property.name;
-    const reciprocalPropertyNameChanged =
-        updatedProperty.reciprocalPropertyName &&
-        updatedProperty.reciprocalPropertyName !== property.reciprocalPropertyName;
-    const isReciprocal = updatedProperty.isReciprocal;
-
-    // delete relation field on related
-    if (reciprocalChangedToFalse || relatedToChanged) {
-        await removeRelatedProperty({ property, userId });
-        delete updatedProperty.reciprocalPropertyId;
-        if (reciprocalChangedToFalse) delete updatedProperty.reciprocalPropertyName;
-    }
-
-    // create new field on related
-    if (reciprocalChangedToTrue || (relatedToChanged && isReciprocal)) {
-        const related = await createRelatedProperty({
-            property: updatedProperty,
-            templateId,
-            userId,
-        });
-        updatedProperty.reciprocalPropertyName = related?.name;
-        updatedProperty.isReciprocal = true;
-        updatedProperty.reciprocalPropertyId = related?.id;
-    }
-
-    // update names
-    if (nameChanged || reciprocalPropertyNameChanged) {
-        const [relatedTemplate] = await indexBy(ContentTemplateId)
-            .exact(property.relatedTo)
-            .get(ContentTemplate);
-        if (!relatedTemplate) {
-            throw new Error("No content template found");
-        }
-        const relatedPropertyIndex = relatedTemplate.fields.findIndex(
-            ({ id }) => id === property.reciprocalPropertyId
-        );
-
-        // change reciprocalPropertyName on related
-        if (nameChanged) {
-            (relatedTemplate.fields[relatedPropertyIndex] as PropertyRelation) = {
-                ...(relatedTemplate.fields[relatedPropertyIndex] as PropertyRelation),
-                reciprocalPropertyName: updatedProperty.name,
-            };
-        }
-
-        // update name of property on related
-        if (reciprocalPropertyNameChanged) {
-            relatedTemplate.fields[relatedPropertyIndex] = {
-                ...relatedTemplate.fields[relatedPropertyIndex],
-                name: updatedProperty.reciprocalPropertyName!,
-            };
-        }
-
-        /*await relatedTemplate.saveWithHistory({
-            userId,
-            action: "updated",
-            propertyUpdate: {
-                action: "deleted",
-                fieldName: relatedTemplate.fields[relatedPropertyIndex].name,
-                fieldType: "TemplateProperty",
-                fieldId: relatedTemplate.fields[relatedPropertyIndex].id,
-            },
-        });*/
-    }
-    return updatedProperty as PropertyRelation;
-};
-
-export const removeRelatedProperty = async ({
-    property,
-    userId,
-}: {
-    property: PropertyRelation;
+    property: Property<"relation">;
     userId: string;
 }) => {
     const [relatedTemplate] = await indexBy(ContentTemplateId)
         .exact(property.relatedTo)
         .get(ContentTemplate);
-    if (!relatedTemplate) {
-        throw new Error("No content template found");
+
+    if (!relatedTemplate) throw new Error("No related content template found");
+
+    // find related property if exists on related template
+    const relatedPropertyIndex = relatedTemplate.properties.findIndex((relatedTemplateProperty) => {
+        if (relatedTemplateProperty.type === "relation") {
+            return relatedTemplateProperty.reciprocalPropertyId === property.id;
+        }
+        return false;
+    });
+
+    // if there is no related property no changes needed
+    if (relatedPropertyIndex === -1) return;
+
+    // remove link if changed to non recoprocal remove related property
+    if (!property.isReciprocal) {
+        const relatedProperty = relatedTemplate.properties[relatedPropertyIndex];
+        await updateProperties({
+            contentTemplateId: relatedTemplate.id,
+            deletedProperties: { [relatedProperty.id]: relatedProperty },
+            userId,
+        });
+        return;
     }
-    const relationPropertyIndex = relatedTemplate.fields.findIndex(
-        ({ id }) => id === property.reciprocalPropertyId
+
+    const clone = structuredClone(
+        relatedTemplate.properties[relatedPropertyIndex] as Property<"relation">
     );
 
-    // check that property exists on related template
-    if (relationPropertyIndex > -1) {
-        // remove field and return it
-        const [relatedProperty] = relatedTemplate.fields.splice(relationPropertyIndex, 1);
-
-        await relatedTemplate.saveWithHistory({
-            editedBy: userId,
-            title: "Related template updated",
-        });
+    if (property.name !== clone.reciprocalPropertyName) {
+        clone.reciprocalPropertyName = property.name;
     }
+
+    if (property.reciprocalPropertyName && property.reciprocalPropertyName !== clone.name) {
+        clone.name = property.reciprocalPropertyName;
+    }
+
+    relatedTemplate.properties[relatedPropertyIndex] = clone;
+    await relatedTemplate.save();
 };

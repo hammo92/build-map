@@ -1,12 +1,11 @@
-import { FIELD_TYPES } from "@components/contentTemplate/contentTemplate-field/field-options/fieldsDefinitions";
-import { FieldProperties } from "@components/contentTemplate/contentTemplate-field/field-properties";
+import { FIELD_TYPES } from "@components/property/property-type/type-select/options";
 import { IconTitle } from "@components/ui/iconTitle/iconTitle";
 import { useUpdateContentFields } from "@data/content/hooks";
 import { faEdit, faEllipsisVertical, faTrash } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Content } from "@lib/content/data/content.model";
 import { ContentField } from "@lib/content/data/types";
-import { Property } from "@lib/contentTemplate/data/types";
+
 import { ActionIcon, Button, Menu, Modal, Stack, UnstyledButton } from "@mantine/core";
 import { FC, useState } from "react";
 import { CleanedCamel } from "type-helpers";
@@ -78,7 +77,7 @@ export const AdditionalFieldActions: FC<FieldEditProps> = ({
                 </Menu.Dropdown>
             </Menu>
 
-            <Modal
+            {/* <Modal
                 opened={opened}
                 onClose={() => setOpened(false)}
                 size="xl"
@@ -115,7 +114,7 @@ export const AdditionalFieldActions: FC<FieldEditProps> = ({
                         }}
                     />
                 </Stack>
-            </Modal>
+            </Modal> */}
         </>
     );
 };

@@ -1,11 +1,12 @@
-import { params } from "@serverless/cloud";
+import { data, params } from "@serverless/cloud";
 import { PartialProperty } from "@state/propertyManager";
+
 import { Oso } from "oso-cloud";
 import { indexBy } from "serverless-cloud-data-utils";
 import { ulid } from "ulid";
 import { Icon } from "../../../components/ui/iconPicker/types";
 import { FieldTypes, Property, PropertyGroup } from "../../../lib/field/data/field.model";
-import { HistoryEntry } from "../../../lib/historyEntry/data/historyEntry.model";
+import { HistoryEntry, Note, Notes } from "../../../lib/historyEntry/data/historyEntry.model";
 import { splitCamel } from "../../../utils/stringTransform";
 import { errorIfUndefined } from "../../utils";
 import {
@@ -14,6 +15,7 @@ import {
     ContentTemplateOrganisation,
     ContentTemplateTitle,
 } from "./contentTemplate.model";
+import { createRelatedProperty, updateRelatedProperty } from "./functions/relation";
 
 const oso = new Oso("https://cloud.osohq.com", params.OSO_API_KEY);
 
@@ -65,6 +67,7 @@ export async function getContentTemplateById(contentTemplateId: string) {
     const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
+
     return contentTemplate;
 }
 
@@ -164,36 +167,67 @@ export async function updateContentTemplate({
     return contentTemplate;
 }
 
-export const createProperty = <T extends FieldTypes>({
+export const createProperty = async <T extends FieldTypes>({
     type,
     name,
     userId,
     propertyDetails,
+    templateId,
 }: {
     type: T;
     name: string;
-    userId?: string;
+    userId: string;
     propertyDetails: Partial<Omit<Property<T>, "name" | "type">>;
-}): Property<T> => {
+    templateId: string;
+}): Promise<Property<T>> => {
     const date = new Date().toISOString();
     const property = {
         object: "Property",
-        type,
-        name,
         id: ulid(),
         createdTime: date,
         createdBy: userId ?? "system",
         lastEditedTime: date,
         lastEditedBy: userId ?? "system",
         archived: false,
+        templateId: templateId,
         ...propertyDetails,
+        type,
+        name,
     };
+    if (type === "relation") {
+        const propertyWithRelated = await createRelatedProperty({
+            property: property as Property<"relation">,
+            userId,
+            templateId,
+        });
+        return (propertyWithRelated ?? property) as Property<T>;
+    }
     return property as Property<T>;
+};
+
+const updateProperty = async <T extends FieldTypes>({
+    property,
+    type,
+    userId,
+}: {
+    property: Property;
+    type: T;
+    userId: string;
+}) => {
+    const updatedProperty = {
+        ...property,
+        lastEditedBy: userId,
+        lastEditedTime: new Date().toISOString(),
+    };
+    if (type === "relation") {
+        await updateRelatedProperty({ property: updatedProperty as Property<"relation">, userId });
+    }
+    return updatedProperty;
 };
 
 export interface UpdatePropertiesProps {
     createdProperties?: Record<string, PartialProperty>;
-    updatedProperties?: Record<string, PartialProperty>;
+    updatedProperties?: Record<string, Property>;
     deletedProperties?: Record<string, PartialProperty>;
     contentTemplateId: string;
     createdGroups?: Record<string, PropertyGroup>;
@@ -214,54 +248,99 @@ export async function updateProperties({
     userId: string;
 }) {
     errorIfUndefined({ userId, contentTemplateId });
-
     const [contentTemplate] = await indexBy(ContentTemplateId)
         .exact(contentTemplateId)
         .get(ContentTemplate);
 
     if (!contentTemplate) throw new Error("No content template found");
 
-    const newProperties: Property[] = Object.values(createdProperties).map(
+    // initiate object for history
+    const notes: Record<string, Note> = {
+        createdGroups: { title: "Groups Created", entries: [] },
+        createdProperties: { title: "Properties Created", entries: [] },
+        deletedGroups: { title: "Groups Deleted", entries: [] },
+        deletedProperties: { title: "Properties Deleted", entries: [] },
+        updatedGroups: { title: "Groups Updated", entries: [] },
+        updatedProperties: { title: "Properties Updated", entries: [] },
+    };
+
+    const newProperties: Promise<Property>[] = Object.values(createdProperties).map(
         ({ name, type, ...rest }) => {
-            return createProperty({ name, propertyDetails: rest, type, userId });
+            notes.createdProperties.entries!.push(name);
+            return createProperty({
+                name,
+                propertyDetails: rest,
+                type,
+                userId,
+                templateId: contentTemplateId,
+            });
         }
     );
 
-    const properties = contentTemplate.properties.reduce<Property[]>(
+    const properties = contentTemplate.properties.reduce<Promise<Property>[]>(
         (acc, property) => {
             //remove deleted properties
-            if (deletedProperties[property.id]) return acc;
+            if (deletedProperties[property.id]) {
+                notes.deletedProperties.entries!.push(property.name);
+                return acc;
+            }
             // update properties
             if (updatedProperties[property.id]) {
-                acc.push({
-                    ...(updatedProperties[property.id] as Property),
-                    lastEditedBy: userId,
-                    lastEditedTime: new Date().toISOString(),
-                });
+                notes.updatedProperties.entries!.push(property.name);
+                acc.push(
+                    updateProperty({
+                        property: updatedProperties[property.id],
+                        type: property.type,
+                        userId,
+                    })
+                );
                 return acc;
             }
             // return unchanged properties
-            acc.push(property);
+            acc.push(Promise.resolve(property));
             return acc;
         },
         [...newProperties]
     );
 
-    const propertyGroups = contentTemplate.propertyGroups.reduce<PropertyGroup[]>(
-        (acc, group) => {
-            if (deletedGroups[group.id]) return acc;
-            if (updatedGroups[group.id]) {
-                acc.push(updatedGroups[group.id]);
-                return acc;
-            }
-            acc.push(group);
+    const propertyGroups = [
+        ...contentTemplate.propertyGroups,
+        ...Object.values(createdGroups),
+    ].reduce<PropertyGroup[]>((acc, group) => {
+        if (deletedGroups[group.id]) {
+            notes.deletedGroups.entries!.push(group.name);
             return acc;
-        },
-        [...Object.values(createdGroups)]
-    );
+        }
+        let tmpGroup = group;
+        if (updatedGroups[group.id]) {
+            notes.updatedGroups.entries!.push(group.name);
+            tmpGroup = updatedGroups[group.id];
+        }
 
-    contentTemplate.properties = properties;
+        if (createdGroups[group.id]) {
+            notes.createdGroups.entries!.push(group.name);
+            tmpGroup = createdGroups[group.id];
+        }
+
+        // ensure no id's for removed items remain
+        tmpGroup.children = tmpGroup.children.filter(
+            (id) =>
+                ![...Object.keys(deletedProperties), ...Object.keys(deletedGroups)].includes(
+                    `${id}`
+                )
+        );
+
+        acc.push(tmpGroup);
+        return acc;
+    }, []);
+
+    const propertyUpdates = await Promise.all(properties);
+    contentTemplate.properties = propertyUpdates;
     contentTemplate.propertyGroups = propertyGroups;
-    await contentTemplate.save();
+    await contentTemplate.saveWithHistory({
+        editedBy: userId,
+        title: `${contentTemplate.name} Updated`,
+        notes: Object.values(notes).filter(({ entries }) => entries?.length),
+    });
     return contentTemplate;
 }

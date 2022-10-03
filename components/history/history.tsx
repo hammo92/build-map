@@ -7,6 +7,7 @@ import { HistoryEntry } from "@lib/historyEntry/data/historyEntry.model";
 import { StrippedUser } from "@lib/user/data";
 import {
     ActionIcon,
+    Card,
     Group,
     List,
     Modal,
@@ -18,14 +19,15 @@ import {
 } from "@mantine/core";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { type } from "os";
 import { useState } from "react";
 import { CleanedCamel } from "type-helpers";
 import { HistoryChanges } from "./history-changes";
+import { HistoryNote } from "./history-note";
 dayjs.extend(relativeTime);
 
 export const History = ({ historyEntries }: { historyEntries: HistoryEntry[] }) => {
     const [opened, setOpened] = useState(false);
-
     // get all unique user values from updates
     const updatingUsers = Array.from(
         new Set(
@@ -79,19 +81,22 @@ export const History = ({ historyEntries }: { historyEntries: HistoryEntry[] }) 
                                     )
                                 }
                             >
-                                {!!historyEntry.subtitle && (
-                                    <Text size="sm">{historyEntry.subtitle}</Text>
-                                )}
-                                <List size="sm">
+                                <Stack spacing="xs" pt="xs">
+                                    {!!historyEntry.subtitle && (
+                                        <Text size="sm">{historyEntry.subtitle}</Text>
+                                    )}
                                     {historyEntry?.notes?.length &&
                                         historyEntry?.notes.map((note) => (
-                                            <List.Item key={note}>{note}</List.Item>
+                                            <HistoryNote
+                                                note={note}
+                                                key={typeof note === "string" ? note : note.title}
+                                            />
                                         ))}
-                                </List>
-                                <HistoryChanges changes={historyEntry.changes} variant="slim" />
-                                <Text color="dimmed" size="sm">
-                                    {dayjs(historyEntry.editedTime).from(dayjs())}
-                                </Text>
+                                    <HistoryChanges changes={historyEntry.changes} variant="slim" />
+                                    <Text color="dimmed" size="sm">
+                                        {dayjs(historyEntry.editedTime).from(dayjs())}
+                                    </Text>
+                                </Stack>
                             </Timeline.Item>
                         ))}
                     </Timeline>
@@ -121,12 +126,12 @@ export const History = ({ historyEntries }: { historyEntries: HistoryEntry[] }) 
                             {!!historyEntry.subtitle && (
                                 <Text size="sm">{historyEntry.subtitle}</Text>
                             )}
-                            <List size="sm">
+                            {/* <List size="sm">
                                 {historyEntry?.notes?.length &&
                                     historyEntry?.notes.map((note) => (
                                         <List.Item key={note}>{note}</List.Item>
                                     ))}
-                            </List>
+                            </List> */}
                             <HistoryChanges changes={historyEntry.changes} variant="full" />
                             <Text color="dimmed" size="sm">
                                 {dayjs(historyEntry.editedTime).from(dayjs())}

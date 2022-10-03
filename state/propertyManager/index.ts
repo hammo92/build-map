@@ -224,7 +224,7 @@ export const updatePropertyDetails = ({
     propertyId: string;
     property: Property;
 }) => {
-    const { propertyMap, updatedProperties, propertyMapInitial } = propertyManager;
+    const { propertyMap } = propertyManager;
     if (!propertyMap[propertyId]) {
         showError("Could not update property");
     }
@@ -244,7 +244,6 @@ export const deleteProperty = (propertyId: string) => {
         showError("Couldn't delete property");
         return;
     }
-
     const parent = propertyGroupMap[property.parent ?? 1];
 
     // update parent group
@@ -253,16 +252,16 @@ export const deleteProperty = (propertyId: string) => {
         newConfig: { children: parent.children.filter((id) => id !== propertyId) },
     });
 
-    // remove property form state
-    delete updatedProperties[propertyId];
-    delete propertyMap[propertyId];
-
     // if new property remove from created
     if (createdProperties[propertyId]) {
         delete createdProperties[propertyId];
     } else {
         deletedProperties[propertyId] = propertyMap[propertyId];
     }
+
+    // remove property form state
+    delete updatedProperties[propertyId];
+    delete propertyMap[propertyId];
 };
 
 export const createGroup = ({ name, parentId = "1" }: { name: string; parentId?: string }) => {
@@ -317,6 +316,12 @@ export const deleteGroup = ({
 
     // move children into parent if keeping contents
     if (!deleteContents) {
+        // update parent for all children
+        group.children.forEach((id) => {
+            const child = propertyMap[id] ?? propertyGroupMap[id];
+            child.parent = `${parentGroup.id}`;
+        });
+
         updateGroup({
             groupId: `${parentGroup.id}`,
             newConfig: {

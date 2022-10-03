@@ -59,7 +59,6 @@ const PropertyCreateSteps = ({ onCreate }: { onCreate: (values: any) => void }) 
 
 const Title = () => {
     const { type } = useSnapshot(typeState);
-    console.log("type :>> ", type);
     if (type) {
         return (
             <IconTitle

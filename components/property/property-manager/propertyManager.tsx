@@ -11,6 +11,7 @@ import {
     reorderGroup,
     resetState,
 } from "@state/propertyManager";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useSnapshot } from "valtio";
 import { PropertyCreate } from "../property-create";
@@ -22,7 +23,10 @@ export interface PropertyManagerProps {
     propertyGroups: PropertyGroup[];
 }
 
-export const PropertyManager = ({ properties, propertyGroups }: PropertyManagerProps) => {
+export const PropertyManager = ({ properties, propertyGroups = [] }: PropertyManagerProps) => {
+    const { changed, tree } = useSnapshot(propertyManager);
+    const router = useRouter();
+
     useEffect(() => {
         // set initial state of all groups to open
         propertyManager.collapsed = propertyGroups.reduce<Record<string, boolean>>((acc, group) => {
@@ -36,17 +40,32 @@ export const PropertyManager = ({ properties, propertyGroups }: PropertyManagerP
         return () => resetState();
     }, [properties, propertyGroups]);
 
-    const snap = useSnapshot(propertyManager);
-    console.log("snap", snap);
+    // prompt the user if they try and leave with unsaved changes
+    useEffect(() => {
+        const warningText = "You have unsaved changes - are you sure you wish to leave this page?";
+        const handleWindowClose = (e: BeforeUnloadEvent) => {
+            if (!changed) return;
+            e.preventDefault();
+            return (e.returnValue = warningText);
+        };
+        const handleBrowseAway = () => {
+            if (!changed) return;
+            if (window.confirm(warningText)) return;
+            router.events.emit("routeChangeError");
+            throw "routeChange aborted.";
+        };
+        window.addEventListener("beforeunload", handleWindowClose);
+        router.events.on("routeChangeStart", handleBrowseAway);
+        return () => {
+            window.removeEventListener("beforeunload", handleWindowClose);
+            router.events.off("routeChangeStart", handleBrowseAway);
+        };
+    }, [changed, router.events]);
+
     return (
         <Stack sx={{ height: "80vh", width: "100%", overflow: "auto" }} align="stretch">
-            {/* <PropertyList
-                properties={properties}
-                propertyGroups={propertyGroups}
-                onMove={console.log}
-            /> */}
             <Tree
-                tree={snap.tree}
+                tree={tree}
                 renderItem={ListRenderItem}
                 onExpand={onExpand}
                 onCollapse={onCollapse}

@@ -10,14 +10,26 @@ type ChangedItem = Change & {
 
 export type Changes = ChangedItem[];
 
+export type Note = {
+    title?: string;
+    subtitle?: string;
+    entries?: Note[] | string[];
+};
+
+export type Notes = Note[];
+
 export class HistoryEntry {
     id: string;
     title: string;
     subtitle?: string;
-    notes?: string[];
+    notes?: Notes;
     changes?: Changes;
     editedTime?: string;
     editedBy: string;
+    linked?: {
+        type: string;
+        id: string;
+    };
 
     constructor({
         editedBy,
@@ -27,7 +39,7 @@ export class HistoryEntry {
         editedBy: string;
         title: string;
         subtitle?: string;
-        notes?: string[];
+        notes?: Notes;
         changes?: Changes;
     }) {
         const date = new Date().toISOString();
