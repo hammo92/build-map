@@ -1,5 +1,5 @@
 import { ContentField } from "@lib/content/data/types";
-import { Property } from "@lib/contentTemplate/data/types";
+import { Property } from "@lib/field/data/field.model";
 import { Group } from "@mantine/core";
 import { AdditionalFieldActions } from "../content-additionalField/additionalField-actions";
 import { FieldsDate } from "./fields-date";

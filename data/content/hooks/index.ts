@@ -1,5 +1,6 @@
 import { Content } from "@lib/content/data/content.model";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { Field } from "@lib/field/data/field.model";
 import { showNotification } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -45,6 +46,7 @@ export function useGetContent(
     initialData?: {
         content?: CleanedCamel<Content>;
         contentTemplate?: CleanedCamel<ContentTemplate>;
+        contentFields?: CleanedCamel<Field>[];
     }
 ) {
     return useQuery([Keys.GET_CONTENT, contentId], () => getContent(contentId), {

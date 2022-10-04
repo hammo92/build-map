@@ -1,6 +1,6 @@
 /* Field.model.ts */
 
-import { BaseModel } from "@lib/models";
+import { BaseModel } from "../../../lib/models";
 import { buildIndex, indexBy } from "serverless-cloud-data-utils";
 import { DistributiveClean, StripModel } from "type-helpers";
 
@@ -21,14 +21,20 @@ export interface PropertyGroup {
 
 //* Field model and indexes //
 
-// To get all Field by it's ID *//
-//namespace Field:${FieldId} */
-export const FieldId = buildIndex({ namespace: `Field`, label: "label1" });
+// To get Field by it's ID *//
+//namespace field:${FieldId} */
+export const FieldId = buildIndex({ namespace: `field`, label: "label1" });
+
+// To get all Fields by collection *//
+//namespace fieldCollection_${collectionId}:field:${FieldId} */
+export const FieldCollection = (collectionId: string) =>
+    buildIndex({ namespace: `fieldCollection_${collectionId}:field:`, label: "label2" });
 
 abstract class BaseField extends BaseModel<BaseField> {
     readonly object = "Field";
     abstract readonly type: string;
     templateId?: string;
+    templatePropertyId?: string;
     archived = false;
     required?: boolean;
     active?: boolean;
@@ -36,7 +42,10 @@ abstract class BaseField extends BaseModel<BaseField> {
     note?: string;
     assets?: string[];
     modelKeys() {
-        return [indexBy(FieldId).exact(this.id)];
+        return [
+            indexBy(FieldId).exact(this.id),
+            ...(this.parent ? [indexBy(FieldCollection(this.parent)).exact(this.id)] : []),
+        ];
     }
 }
 

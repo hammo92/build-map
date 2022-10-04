@@ -1,4 +1,3 @@
-import { PropertyGroup } from "../../../contentTemplate/data/contentTemplate.model";
 import { ulid } from "ulid";
 import { objArrayToHashmap } from "../../../../utils/arrayModify";
 import { Content, FieldGroup } from "../content.model";
@@ -6,6 +5,7 @@ import { ContentField } from "../types";
 import { duplicateField, fieldFromTemplateProperty } from "./field";
 import pluralize from "pluralize";
 import { groupFields } from "@components/content/content-fields/fields-group";
+import { Field, PropertyGroup } from "@lib/field/data/field.model";
 
 // restructure repeatable group to nest inside a parent
 export function processGroup(group: PropertyGroup): FieldGroup[] {
@@ -30,10 +30,10 @@ export const generateFieldGroups = ({
     fields,
     propertyGroups,
 }: {
-    fields: ContentField[];
+    fields: Field[];
     propertyGroups: PropertyGroup[];
 }): FieldGroup[] => {
-    const fieldMap = objArrayToHashmap(fields, "templateFieldId");
+    const fieldMap = objArrayToHashmap(fields, "templatePropertyId");
     const fieldGroups = propertyGroups.map((propertyGroup) => {
         // replace templateFieldId with field id
         const children = propertyGroup.children.map((id) => {

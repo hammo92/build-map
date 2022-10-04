@@ -15,7 +15,6 @@ import { Required } from "utility-types";
 import { deleteAllContentRelations } from "../../../lib/relation/data";
 import { objArrayToHashmap, objArrToKeyIndexedMap } from "../../../utils/arrayModify";
 import { getObjectChanges } from "../../../utils/objects";
-import { PropertyGroup } from "../../contentTemplate/data/contentTemplate.model";
 import { updateRelationValue } from "./functions/relation";
 import { fieldBaseValues, fieldFromTemplateProperty } from "./functions/field";
 import { duplicateGroup, generateFieldGroups } from "./functions/group";
@@ -40,19 +39,19 @@ export async function createContent({
     }
     const date = new Date().toISOString();
 
-    const contentUpdates: ContentHistory["contentUpdates"] = [];
-
-    const contentFields = contentTemplate.properties.map((property) => {
-        const field = fieldFromTemplateProperty({ property, userId, date });
+    const contentFieldPromises = contentTemplate.properties.map((property) => {
+        const field = fieldFromTemplateProperty({ property, userId });
         return field;
     });
+
+    const contentFields = await Promise.all(contentFieldPromises);
 
     // create contentTemplate //
     const newContent = new Content({ userId });
     newContent.contentTemplateId = contentTemplateId;
     newContent.projectId = projectId;
     newContent.status = "draft";
-    newContent.fields = contentFields;
+    newContent.fields = contentFields.map(({ id }) => id);
     newContent.fieldGroups = generateFieldGroups({
         fields: contentFields,
         propertyGroups: contentTemplate.propertyGroups,

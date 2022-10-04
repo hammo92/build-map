@@ -1,9 +1,9 @@
 //* content model and indexes //
 
-import { PropertyGroup } from "../../../lib/contentTemplate/data/contentTemplate.model";
 import { BaseModelId, ModelWithHistory } from "../../../lib/models";
 import { buildIndex, indexBy } from "serverless-cloud-data-utils";
 import { ContentField } from "./types";
+import { PropertyGroup } from "../../../lib/field/data/field.model";
 
 export type FieldGroup = PropertyGroup;
 
@@ -42,7 +42,7 @@ export class Content extends ModelWithHistory<Content> {
     projectId: string;
     publishTime: string;
     status: "draft" | "published" | "archived";
-    fields: ContentField[];
+    fields: string[];
     fieldGroups: FieldGroup[];
     contentTemplateVersion: string;
     title: string;

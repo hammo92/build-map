@@ -1,6 +1,7 @@
 import { Content, ContentStatus } from "@lib/content/data/content.model";
 import { ContentField } from "@lib/content/data/types";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { Field } from "@lib/field/data/field.model";
 import camelcaseKeys from "camelcase-keys";
 import { apiClient } from "data/config";
 import { CleanedCamel, CleanedSnake } from "type-helpers";
@@ -26,6 +27,7 @@ export async function getContent(contentId: string) {
     const { data } = await apiClient.get<{
         content: CleanedSnake<Content>;
         contentTemplate: CleanedSnake<ContentTemplate>;
+        contentFields?: CleanedCamel<Field>[];
     }>(`/content/${contentId}`);
     return camelcaseKeys(data, { deep: true });
 }
