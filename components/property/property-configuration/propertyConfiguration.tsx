@@ -1,5 +1,5 @@
 import { SmartForm } from "@components/smartForm";
-import { FieldTypes, Property } from "@lib/field/data/field.model";
+import { FieldType, Property } from "@lib/field/data/field.model";
 import { Button, ButtonProps, Group } from "@mantine/core";
 import { useFormContext } from "react-hook-form";
 import { ConfigurationFields } from "./configuration-fields";
@@ -12,7 +12,7 @@ interface ButtonsProps {
     view?: "edit" | "create";
 }
 
-interface PropertyConfigurationProps<T extends FieldTypes> extends ButtonsProps {
+interface PropertyConfigurationProps<T extends FieldType> extends ButtonsProps {
     type: T;
     currentConfig?: Partial<Property<T>>;
     onSubmit: (values: any) => void;
@@ -51,7 +51,7 @@ const Buttons = ({
     );
 };
 
-export const PropertyConfiguration = <T extends FieldTypes>({
+export const PropertyConfiguration = <T extends FieldType>({
     type,
     currentConfig,
     onSubmit,

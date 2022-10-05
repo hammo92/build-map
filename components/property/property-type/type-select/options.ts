@@ -13,7 +13,7 @@ import {
     faUser,
 } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
-import { FieldTypes } from "@lib/field/data/field.model";
+import { FieldType } from "@lib/field/data/field.model";
 
 interface variant {
     type: string;
@@ -22,7 +22,7 @@ interface variant {
 }
 
 interface FieldTypeProps {
-    type: FieldTypes;
+    type: FieldType;
     description: string;
     label: string;
     icon: FontAwesomeIconProps["icon"];
@@ -30,7 +30,7 @@ interface FieldTypeProps {
 }
 
 // object key must match type
-export const FIELD_TYPES: { [key in FieldTypes]: FieldTypeProps } = {
+export const FIELD_TYPES: { [key in FieldType]: FieldTypeProps } = {
     select: {
         type: "select",
         description: "Pick a single option from a list",

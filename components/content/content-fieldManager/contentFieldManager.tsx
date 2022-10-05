@@ -1,4 +1,4 @@
-import { FieldCard } from "@components/contentTemplate/contentTemplate-field/field-card";
+import { Field } from "@components/field";
 import { SmartForm } from "@components/smartForm";
 import { useUpdateContentFields } from "@data/content/hooks";
 import { faExclamationCircle } from "@fortawesome/pro-regular-svg-icons";
@@ -39,7 +39,7 @@ const ContentFields = ({ fields }: { fields: ContentField[] }) => {
         <Stack>
             {fields.map((field) => {
                 return (
-                    <FieldCard
+                    <Field
                         key={field.id}
                         field={field}
                         withActions={false}

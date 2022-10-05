@@ -4,8 +4,10 @@ import { CleanedCamel } from "type-helpers";
 import { Content, ContentId } from "../content.model";
 import { ContentFieldRelation } from "../types";
 import { PropertyRelation } from "../../../../lib/contentTemplate/data/types";
-import { getContentById } from "..";
+import { getContentById, getContentFields } from "..";
 import { ulid } from "ulid";
+import { Field } from "../../../../lib/field/data/field.model";
+import { arrayDifference } from "../../../../utils/array";
 
 // if template has a reciprocal relation property but content has not yet been updated
 // may need to selectively update the content to add relation field if referenced
@@ -58,7 +60,7 @@ export const updateRelationValue = async ({
     userId,
     content,
 }: {
-    field: ContentFieldRelation;
+    field: CleanedCamel<Field<"relation">>;
     value: string[];
     userId: string;
     content: CleanedCamel<Content>;
@@ -215,4 +217,96 @@ export const updateRelationValue = async ({
             .filter((value) => value);
         await Promise.all(relatedContentPromises);
     }
+};
+
+export const updateRelation = async ({
+    field,
+    prevField,
+}: {
+    field: CleanedCamel<Field<"relation">>;
+    prevField: CleanedCamel<Field<"relation">>;
+}) => {
+    if (!field.isReciprocal || !field.parent) return;
+
+    // get an array of id's removed or added from value array
+    const changes = arrayDifference(field.value ?? [], prevField.value ?? []);
+    if (!changes.length) return;
+
+    /** update linked fields */
+    // get all fields for each content entry id in value array
+    const relatedContentFields = await Promise.all(changes.map((id) => getContentFields(id)));
+    console.log("relatedContentFields", relatedContentFields);
+
+    await Promise.all(
+        relatedContentFields.reduce<Promise<void>[]>((acc, contentFields) => {
+            const relatedField = contentFields.find(
+                ({ reciprocalPropertyId }) => reciprocalPropertyId === field.templatePropertyId
+            ) as Field<"relation">;
+
+            //Todo check edge case where related field doesn't exist
+            if (!relatedField) return acc;
+
+            const index = field.value?.findIndex((id) => id === relatedField.parent);
+            const indexOnRelated = relatedField.value
+                ? relatedField.value.findIndex((id) => id === field.parent)
+                : -1;
+
+            // fields linked succesfully, or not linked at all
+            if (
+                (index !== -1 && indexOnRelated !== -1) ||
+                (index === -1 && indexOnRelated === -1)
+            ) {
+                console.log("linked or unlinked");
+                return acc;
+            }
+
+            // field links to related, related doesn't link back
+            if (index !== -1 && indexOnRelated === -1) {
+                console.log("points out");
+                // add parent value to related
+                relatedField.value = [
+                    ...(relatedField.value ? relatedField.value : []),
+                    field.parent!,
+                ];
+                acc.push(relatedField.save());
+            }
+
+            // related links to field, field doesn't link back
+            if (index === -1 && indexOnRelated !== -1) {
+                console.log("points back");
+                // remove parent value from related
+                relatedField.value!.splice(indexOnRelated, 1);
+                acc.push(relatedField.save());
+            }
+
+            return acc;
+        }, [])
+    );
+};
+
+export const deleteRelation = async ({ field }: { field: CleanedCamel<Field<"relation">> }) => {
+    if (!field.isReciprocal || !field.parent || !field?.value?.length) return;
+
+    // get all fields for each content entry id in value array
+    const relatedContentFields = await Promise.all(field.value.map((id) => getContentFields(id)));
+
+    await Promise.all(
+        relatedContentFields.reduce<Promise<void>[]>((acc, contentFields) => {
+            const relatedField = contentFields.find(
+                ({ reciprocalPropertyId }) => reciprocalPropertyId === field.templatePropertyId
+            ) as Field<"relation">;
+
+            if (!relatedField?.value) return acc;
+
+            const indexOnRelated = relatedField.value.findIndex((id) => id === field.parent);
+
+            // remove fied from related if exists
+            if (indexOnRelated !== -1) {
+                relatedField.value.splice(indexOnRelated, 1);
+                acc.push(relatedField.save());
+            }
+
+            return acc;
+        }, [])
+    );
 };

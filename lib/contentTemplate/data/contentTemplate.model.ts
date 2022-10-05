@@ -1,6 +1,6 @@
 /* contentTemplate.model.ts */
 
-import { Property, PropertyGroup } from "@lib/field/data/field.model";
+import { FieldType, Property, PropertyGroup } from "@lib/field/data/field.model";
 import { HistoryEntry } from "@lib/historyEntry/data/historyEntry.model";
 import { buildIndex, indexBy, timekey } from "serverless-cloud-data-utils";
 import { Icon } from "../../../components/ui/iconPicker/types";
@@ -44,7 +44,7 @@ export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
     organisationId: string;
     status: "draft" | "archived" | "published";
     templateType: "collection" | "component";
-    properties: Property[];
+    properties: Property<FieldType>[];
     propertyGroups: PropertyGroup[];
     title: ContentTemplateTitle;
 
@@ -84,7 +84,7 @@ export const TemplatePropertyHistory = (contentTemplateId: string) =>
 export class PropertyHistory extends BaseModel<PropertyHistory> {
     object = "PropertyHistory";
     contentTemplateId: string;
-    properties: Property[];
+    properties: Property<FieldType>[];
     propertyGroups: PropertyGroup[];
     modelKeys() {
         return [

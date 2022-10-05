@@ -6,9 +6,7 @@ import { ContentField } from "../types";
 } from "../../../lib/contentTemplate/data/contentTemplate.model";*/
 
 import structuredClone from "@ungap/structured-clone";
-import { Field, FieldDiscriminator, Property } from "../../../../lib/field/data/field.model";
-import { createField } from "../../../../lib/field/data";
-import { CleanedCamel } from "type-helpers";
+import { Field, FieldType, Property } from "../../../field/data/field.model";
 
 export function fieldBaseValues({
     userId,
@@ -27,29 +25,35 @@ export function fieldBaseValues({
     };
 }
 
-export function fieldFromTemplateProperty({
+export function fieldFromTemplateProperty<T extends FieldType>({
     property,
+    type,
     userId,
     overrides,
+    parent,
 }: {
-    property: Property;
+    property: Property<T>;
+    type: T;
     userId: string;
-    overrides?: Partial<CleanedCamel<Field>>;
-}): Promise<Field> {
-    const newField = createField({
-        type: property.type,
-        props: {
-            ...property,
-            ...(property.defaultValue && {
-                value: property.defaultValue,
-                defaultValue: property.defaultValue,
-            }),
-            templatePropertyId: property.id,
-            ...overrides,
-        },
-        userId,
-    });
+    date: string;
+    overrides?: Partial<Field>;
+    parent: string;
+}): Field<T> {
+    const { id, createdBy, createdTime, lastEditedBy, lastEditedTime, active, archived, ...rest } =
+        property;
 
+    const newField = new Field<T>({
+        ...rest,
+        type,
+        ...(property.defaultValue && {
+            value: property?.defaultValue,
+            defaultValue: property.defaultValue,
+        }),
+        templatePropertyId: property.id,
+        parent,
+        userId,
+        ...overrides,
+    });
     return newField;
 }
 

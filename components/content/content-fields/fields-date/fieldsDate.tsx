@@ -1,7 +1,9 @@
 import { SmartForm } from "@components/smartForm";
 import { ContentFieldDate } from "@lib/content/data/types";
 import { PropertyDate } from "@lib/contentTemplate/data/types";
-export const FieldsDate = ({ field }: { field: ContentFieldDate | PropertyDate }) => {
+import { Field } from "@lib/field/data/field.model";
+import { CleanedCamel } from "type-helpers";
+export const FieldsDate = ({ field }: { field: CleanedCamel<Field<"date">> }) => {
     switch (field.variant) {
         case "dateTime":
             return <SmartForm.DateTime name={field.id} label={field.name} />;

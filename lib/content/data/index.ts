@@ -3,22 +3,23 @@ import { ulid } from "ulid";
 import { getAssetById } from "../../../lib/asset/data";
 import { getContentTemplateById } from "../../contentTemplate/data";
 import { errorIfUndefined } from "../../utils";
-import { Content, ContentId, ContentStatus, ContentTemplate, FieldGroup } from "./content.model";
-import { ContentField } from "./types";
+import { Content, ContentId, ContentStatus, ContentTemplate } from "./content.model";
 /*import {
     ContentTemplateHistory,
     ContentTemplate as ContentTemplateModel,
 } from "../../../lib/contentTemplate/data/contentTemplate.model";*/
 
-import pluralize from "pluralize";
+import { HistoryEntry } from "@lib/historyEntry/data/historyEntry.model";
 import { Required } from "utility-types";
 import { deleteAllContentRelations } from "../../../lib/relation/data";
-import { objArrayToHashmap, objArrToKeyIndexedMap } from "../../../utils/arrayModify";
+import { objArrToKeyIndexedMap } from "../../../utils/arrayModify";
 import { getObjectChanges } from "../../../utils/objects";
-import { updateRelationValue } from "./functions/relation";
 import { fieldBaseValues, fieldFromTemplateProperty } from "./functions/field";
 import { duplicateGroup, generateFieldGroups } from "./functions/group";
-import { HistoryEntry } from "@lib/historyEntry/data/historyEntry.model";
+import { updateRelationValue } from "./functions/relation";
+import { Field, FieldCollection } from "../../../lib/field/data/field.model";
+import { accessTokenFactory } from "@auth0/nextjs-auth0/dist/session";
+import { events, PublishResult } from "@serverless/cloud";
 
 //* Create content */
 export async function createContent({
@@ -30,7 +31,7 @@ export async function createContent({
     contentTemplateId: string;
     projectId: string;
     userId: string;
-    fields?: ContentField[];
+    fields?: Field[];
 }) {
     errorIfUndefined({ contentTemplateId, projectId, userId });
     const contentTemplate = await getContentTemplateById(contentTemplateId);
@@ -39,21 +40,27 @@ export async function createContent({
     }
     const date = new Date().toISOString();
 
-    const contentFieldPromises = contentTemplate.properties.map((property) => {
-        const field = fieldFromTemplateProperty({ property, userId });
-        return field;
-    });
-
-    const contentFields = await Promise.all(contentFieldPromises);
-
     // create contentTemplate //
     const newContent = new Content({ userId });
     newContent.contentTemplateId = contentTemplateId;
     newContent.projectId = projectId;
     newContent.status = "draft";
-    newContent.fields = contentFields.map(({ id }) => id);
+    console.log("contentTemplate.properties", contentTemplate.properties);
+    const Fields = contentTemplate.properties
+        .filter((property) => property.active !== false && !property.archived)
+        .map((property) => {
+            const field = fieldFromTemplateProperty({
+                property,
+                type: property.type,
+                userId,
+                date,
+                parent: newContent.id,
+            });
+            return field;
+        });
+    newContent.fields = Fields.map(({ id }) => id);
     newContent.fieldGroups = generateFieldGroups({
-        fields: contentFields,
+        fields: Fields,
         propertyGroups: contentTemplate.propertyGroups,
     });
     /*newContent.fields = 
@@ -78,7 +85,7 @@ export async function createContent({
 
         
     });*/
-
+    await Promise.all(Fields.map((field) => field.save()));
     await newContent.saveWithHistory({
         editedBy: userId,
         title: `${contentTemplate.name} Created`,
@@ -87,12 +94,18 @@ export async function createContent({
     return { newContent, contentTemplate };
 }
 
-async function fetchLinkedContentPromises(field: ContentField) {
+async function fetchLinkedContentPromises(field: Field) {
     if (field.type === "image" && field?.value?.length) {
         const assets = await Promise.all(field.value.map((assetId) => getAssetById(assetId)));
         return { ...field, assets };
     }
     return field;
+}
+
+export async function getContentFields(contentId: string) {
+    errorIfUndefined({ contentId });
+    const fields = await indexBy(FieldCollection(contentId)).get(Field);
+    return fields;
 }
 
 //* Get content by id */
@@ -107,7 +120,8 @@ export async function getContentById(contentId: string) {
     );
     content.fields = fieldsWithContent;*/
     const contentTemplate = await getContentTemplateById(content.contentTemplateId);
-    return { content, contentTemplate };
+    const contentFields = await getContentFields(content.id);
+    return { content, contentTemplate, contentFields };
 }
 
 //* Update contentStatus */
@@ -174,9 +188,9 @@ export async function updateContentValues(props: {
     contentId: string;
     values: {
         [fieldId: string]: {
-            value?: ContentField["value"];
-            note?: ContentField["note"];
-            assets?: ContentField["assets"];
+            value?: Field["value"];
+            note?: Field["note"];
+            assets?: Field["assets"];
         };
     };
     userId: string;
@@ -186,12 +200,49 @@ export async function updateContentValues(props: {
 
     const contentUpdates: HistoryEntry[] = [];
 
-    const { content } = await getContentById(contentId);
+    const { content, contentFields } = await getContentById(contentId);
 
     if (!content) throw new Error("No content found");
+    if (!contentFields) throw new Error("No fields to update");
 
-    const updatedFields = (await Promise.all(
-        content.fields.map(async (field) => {
+    await Promise.all(
+        contentFields.reduce<(Promise<void> | Promise<PublishResult>)[]>((acc, field) => {
+            if (values[field.id]) {
+                // create event for relation so related fields can be lazily updated
+                console.log("values[field.id]", values[field.id]);
+                if (field.type === "relation") {
+                    acc.push(
+                        events.publish("relationField.updated", {
+                            field,
+                            content,
+                            userId,
+                            value: values[field.id]["value"],
+                        })
+                    );
+                }
+
+                field.lastEditedBy = userId;
+                field.lastEditedTime = new Date().toISOString();
+                if (values[field.id]["value"]) {
+                    field.value = values[field.id]["value"];
+                }
+                if (values[field.id]["note"]) {
+                    field.note = values[field.id]["note"];
+                }
+                if (values[field.id]["assets"]) {
+                    field.assets = values[field.id]["assets"];
+                }
+
+                acc.push(field.save());
+
+                return acc;
+            }
+            return acc;
+        }, [])
+    );
+
+    /*onst updatedFields = (await Promise.all(
+        contentFields.map(async (field) => {
             const { id } = field;
             if (values[id]) {
                 // create content history for change
@@ -205,7 +256,7 @@ export async function updateContentValues(props: {
                     fieldName: field.name,
 
                     note: null,
-                });*/
+                });
 
                 if (field.type === "relation" && values[id]["value"]) {
                     await updateRelationValue({
@@ -225,11 +276,10 @@ export async function updateContentValues(props: {
                     ...(values[id]["assets"] && { assets: values[id]["assets"] }),
                 };
             }
-            return field;
+            return field.save();
         })
-    )) as unknown as ContentField[];
-    content.fields = updatedFields;
-    await content.saveWithHistory({ editedBy: userId, title: "Values Updated" });
+    )) as unknown as Field[];*/
+    //await content.saveWithHistory({ editedBy: userId, title: "Values Updated" });
     return content;
 }
 
@@ -266,10 +316,10 @@ export async function repeatGroup(props: { contentId: string; groupId: string; u
 }
 
 //* Update content fields */
-export async function updateContentFields(props: {
+export async function updateFields(props: {
     contentId: string;
-    updates?: ContentField[];
-    deletions?: ContentField[];
+    updates?: Field[];
+    deletions?: Field[];
     userId: string;
 }) {
     const { contentId, userId, updates, deletions } = props;
@@ -301,12 +351,12 @@ export async function updateContentFields(props: {
         });
 
         // should only have new fields remaining in map
-        updateMap.forEach((field: Required<Partial<ContentField>, "name" | "category">) => {
+        updateMap.forEach((field: Required<Partial<Field>, "name" | "category">) => {
             const newField = {
                 ...fieldBaseValues({ userId, date: new Date().toISOString() }),
                 ...field,
             };
-            updatedFields.push(newField as ContentField);
+            updatedFields.push(newField as Field);
             contentUpdates.push({
                 type: "property",
                 fieldId: ulid(),
@@ -379,11 +429,11 @@ export async function updateContentFields(props: {
     content.forEach(({ fields }) => {
         const clonedMap = new Map(templateFieldMap);
 
-        let contentFieldsNotOnTemplate: CleanedCamel<ContentField>[] = [];
+        let FieldsNotOnTemplate: CleanedCamel<Field>[] = [];
         let templateFieldsNotOnContent: CleanedCamel<Property>[] = [];
         let updatedFields: {
-            field: CleanedCamel<ContentField>;
-            difference: Partial<CleanedCamel<ContentField>>;
+            field: CleanedCamel<Field>;
+            difference: Partial<CleanedCamel<Field>>;
         }[] = [];
 
         fields.forEach((field) => {
@@ -391,11 +441,11 @@ export async function updateContentFields(props: {
             const templateField = templateFieldMap.get(field.templateFieldId);
             if (!templateField) {
                 // field exists on content, not on template
-                contentFieldsNotOnTemplate.push(field);
+                FieldsNotOnTemplate.push(field);
                 return;
             }
 
-            const difference = diff(field, templateField) as CleanedCamel<ContentField>;
+            const difference = diff(field, templateField) as CleanedCamel<Field>;
 
             // remove fields where difference not important
             const {
@@ -433,7 +483,7 @@ export async function handleContentTemplateChange({
     if (propertyUpdate && propertyUpdate.fieldType === "TemplateProperty") {
         const contentPromises = content.map((contentEntry) => {
             // initialise updates
-            let updates: ContentField[] = [];
+            let updates: Field[] = [];
 
             // if property deleted on template change property category to additional
             if (propertyUpdate.action === "deleted") {
@@ -476,7 +526,7 @@ export async function handleContentTemplateChange({
             if (propertyUpdate.action === "updated") {
             }
 
-            return updateContentFields({
+            return updateFields({
                 contentId: contentEntry.id,
                 updates,
                 userId: historyEntry.userId,
@@ -497,8 +547,8 @@ export async function UpdateContentFromTemplate({
     const { content, contentTemplate } = await getContentById(contentId);
     errorIfUndefined({ content, contentTemplate, userId });
 
-    // create hash map of contentFields indexed by field id
-    const contentMap = content.fields.reduce<{ [fieldId: string]: ContentField }>((acc, curr) => {
+    // create hash map of Fields indexed by field id
+    const contentMap = content.fields.reduce<{ [fieldId: string]: Field }>((acc, curr) => {
         if (curr.templateFieldId) {
             return { ...acc, [curr.templateFieldId]: curr };
         } else {

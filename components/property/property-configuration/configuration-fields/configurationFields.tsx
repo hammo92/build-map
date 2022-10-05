@@ -1,6 +1,6 @@
 import { FIELD_TYPES } from "@components/property/property-type/type-select/options";
 import { SmartForm } from "@components/smartForm";
-import { FieldTypes } from "@lib/field/data/field.model";
+import { FieldType } from "@lib/field/data/field.model";
 import React from "react";
 import { FieldsCheckbox } from "./fields-checkbox";
 import { FieldsMultiSelect } from "./fields-multiSelect";
@@ -9,10 +9,10 @@ import { FieldsRelation } from "./fields-relation";
 import { FieldsSelect } from "./fields-select";
 
 interface ConfigurationFieldsProps {
-    type: FieldTypes;
+    type: FieldType;
 }
 
-const configurationTypeFields = (type: FieldTypes) => {
+const configurationTypeFields = (type: FieldType) => {
     switch (type) {
         case "checkbox":
             return <FieldsCheckbox />;

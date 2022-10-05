@@ -1,10 +1,11 @@
 import { UserId } from "@lib/user/data/user.model";
+import { events } from "@serverless/cloud";
 import { buildIndex, Exact, indexBy, Model, SecondaryExact } from "serverless-cloud-data-utils";
 import { ulid } from "ulid";
 
-// To get all a BaseModel by it's ID *//
-//namespace baseModel:${baseModelId} */
-export const BaseModelId = (type: string) => buildIndex({ namespace: `baseModel` });
+// To get a BaseModel by it's type and ID *//
+//namespace object_${object}:${baseModelId} */
+export const ObjectType = (type: string) => buildIndex({ namespace: `object_${type}` });
 
 export abstract class BaseModel<T extends Model<T>> extends Model<T> {
     id: string;
@@ -34,7 +35,7 @@ export abstract class BaseModel<T extends Model<T>> extends Model<T> {
     abstract modelKeys(): SecondaryExact[];
 
     keys() {
-        const keyArray = [indexBy(buildIndex()).exact(this.id), ...this.modelKeys()];
+        const keyArray = [indexBy(ObjectType(this.object)).exact(this.id), ...this.modelKeys()];
         if (this.modelKeys.length > 5) throw new Error("Maximum of 4 keys allowed");
         return keyArray;
     }

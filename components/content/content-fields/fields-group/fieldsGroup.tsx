@@ -11,7 +11,8 @@ import { faChevronCircleDown } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Content, Content as ContentProps } from "@lib/content/data/content.model";
 import { ContentField } from "@lib/content/data/types";
-import { PropertyGroup } from "@lib/contentTemplate/data/contentTemplate.model";
+
+import { Field, PropertyGroup } from "@lib/field/data/field.model";
 import {
     ActionIcon,
     Box,
@@ -33,22 +34,28 @@ import { AdditionalNote } from "../fields-additional/additional-note";
 import { useStyles } from "./styles";
 
 export interface FieldGroup extends Omit<PropertyGroup, "children"> {
-    children: (ContentField | FieldGroup)[];
+    children: (CleanedCamel<Field> | FieldGroup)[];
 }
 
-export const groupFields = ({ content }: { content: CleanedCamel<Content> }): FieldGroup => {
+export const groupFields = ({
+    content,
+    contentFields,
+}: {
+    content: CleanedCamel<Content>;
+    contentFields: CleanedCamel<Field>[];
+}): FieldGroup => {
     const groupMap = objArrayToHashmap(content.fieldGroups, "id");
-    const fieldMap = objArrayToHashmap(content.fields, "id");
+    const fieldMap = objArrayToHashmap(contentFields, "id");
     const combined = { ...groupMap, ...fieldMap };
 
     // root group always exists with id "1"
     const root = groupMap["1"]!;
 
     const getChildren = (
-        item: ContentField | PropertyGroup,
+        item: CleanedCamel<Field> | PropertyGroup,
         level = 0,
         path: string[] = []
-    ): FieldGroup | ContentField => {
+    ): FieldGroup | CleanedCamel<Field> => {
         if (item?.type === "propertyGroup") {
             const children = item.children.map((id) => {
                 const childItem = combined[id];
@@ -71,11 +78,13 @@ export const FieldsGroup = ({
     fieldGroup,
     depth = 0,
     content,
+    contentFields,
     removable,
 }: {
     fieldGroup: FieldGroup;
     depth?: number;
     content: CleanedCamel<ContentProps>;
+    contentFields: CleanedCamel<Field>[];
     removable?: boolean;
 }) => {
     const [opened, setOpened] = useState(true);
@@ -94,6 +103,7 @@ export const FieldsGroup = ({
                             fieldGroup={child}
                             depth={depth + 1}
                             content={content}
+                            contentFields={contentFields}
                             removable={fieldGroup.repeatable && fieldGroup.children.length > 1}
                         />
                     );
@@ -110,9 +120,9 @@ export const FieldsGroup = ({
                         })}
                     >
                         {getFieldElement(child)}
-                        <AdditionalNote field={child} />
+                        {/* <AdditionalNote field={child} />
                         <AdditionalAssets field={child} />
-                        <AdditionalMenu field={child} />
+                        <AdditionalMenu field={child} /> */}
                     </Stack>
                 );
             })}

@@ -12,21 +12,15 @@ export const TaskCollectionFields = (taskCollectionId: string) =>
         label: "label1",
     });
 
-export const fieldTypesToValidate: FieldTypes[] = ["select", "multiSelect"];
+export const fieldTypesToValidate: FieldType[] = ["select", "multiSelect"];
 
-export type FieldTypes =
-    | "select"
-    | "multiSelect"
-    | "number"
-    | "string"
-    | "assignment"
-    | "dueDate";
+export type FieldType = "select" | "multiSelect" | "number" | "string" | "assignment" | "dueDate";
 
 // TaskField Model */
 export class TaskField extends Model<TaskField> {
     id: string;
     title: string;
-    type: FieldTypes;
+    type: FieldType;
     active: boolean;
     validateOnChange: boolean;
     description: string;
@@ -38,6 +32,6 @@ export class TaskField extends Model<TaskField> {
         return [
             indexBy(TaskFieldId).exact(this.id),
             indexBy(TaskCollectionFields(this.collectionId)).exact(this.id),
-        ]; 
+        ];
     }
 }

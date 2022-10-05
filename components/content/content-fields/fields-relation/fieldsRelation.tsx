@@ -3,13 +3,16 @@ import { SmartForm } from "@components/smartForm";
 import { useGetProjectContentOfType } from "@data/content/hooks";
 import { ContentFieldRelation } from "@lib/content/data/types";
 import { PropertyRelation } from "@lib/contentTemplate/data/types";
+import { Field } from "@lib/field/data/field.model";
 import { useRouter } from "next/router";
+import { CleanedCamel } from "type-helpers";
 
-export const FieldsRelation = ({ field }: { field: ContentFieldRelation | PropertyRelation }) => {
+/** Links to another content instance, value is content instance id */
+export const FieldsRelation = ({ field }: { field: CleanedCamel<Field<"relation">> }) => {
     const { query } = useRouter();
     const { projectId } = query;
     const { data, isLoading } = useGetProjectContentOfType({
-        contentTemplateId: field.relatedTo,
+        contentTemplateId: field.relatedTo!,
         projectId: projectId as string,
     });
     return (

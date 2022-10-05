@@ -1,5 +1,5 @@
 import { IconTitle } from "@components/ui/iconTitle/iconTitle";
-import { FieldTypes } from "@lib/field/data/field.model";
+import { FieldType } from "@lib/field/data/field.model";
 import { Button, Text } from "@mantine/core";
 import { closeAllModals, useModals } from "@mantine/modals";
 import { createProperty } from "@state/propertyManager";
@@ -28,7 +28,7 @@ interface PropertyCreateNonModal extends PropertyCreatePropsBase {
 
 type PropertyCreateProps = PropertyCreateModalProps | PropertyCreateNonModal;
 
-const typeState = proxy<{ type: FieldTypes | undefined }>({ type: undefined });
+const typeState = proxy<{ type: FieldType | undefined }>({ type: undefined });
 
 const PropertyCreateSteps = ({ onCreate }: { onCreate: (values: any) => void }) => {
     const { type } = useSnapshot(typeState);

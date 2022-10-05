@@ -1,6 +1,6 @@
 import { ItemId, TreeData, TreeDestinationPosition, TreeSourcePosition } from "@atlaskit/tree";
 import { transformToTree } from "@components/property/property-list/utils/dataTransform";
-import { FieldTypes, Property, PropertyGroup } from "@lib/field/data/field.model";
+import { FieldType, Property, PropertyGroup } from "@lib/field/data/field.model";
 import { showNotification } from "@mantine/notifications";
 import structuredClone from "@ungap/structured-clone";
 import equal from "fast-deep-equal";
@@ -13,8 +13,8 @@ import { proxyWithComputed } from "valtio/utils";
 
 export type PartialProperty = Required<Partial<Property>, "type" | "name">;
 interface PropertyManagerProps {
-    propertyMap: Record<string, PartialProperty>;
-    propertyMapInitial: Record<string, PartialProperty>;
+    propertyMap: Record<string, PartialProperty | Property>;
+    propertyMapInitial: Record<string, PartialProperty | Property>;
 
     propertyGroupMap: Record<string, PropertyGroup>;
     propertyGroupMapInitial: Record<string, PropertyGroup>;
@@ -192,7 +192,7 @@ const updateProperty = ({
     propertyMap[propertyId] = updatedProperty;
 };
 
-export const createProperty = <T extends FieldTypes>({
+export const createProperty = <T extends FieldType>({
     type,
     name,
     parentId = "1",

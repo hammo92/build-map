@@ -29,6 +29,7 @@ const ValueLimiter = (props: ValueLimiterProps) => {
 };
 
 export const FieldsNumber = () => {
+    console.log("hi");
     const { watch } = useFormContext();
     const variant = watch("variant");
     const precision = () => {
@@ -41,8 +42,10 @@ export const FieldsNumber = () => {
                 return 10;
         }
     };
-    const min = watch("min");
-    const max = watch("max");
+    const min = watch("minimumValue");
+    const max = watch("maximumValue");
+
+    console.log("max, min :>> ", max, min);
 
     // remove insignificant trailing zeroes from float
     //! Currently strips all trailing zeroes, need solution

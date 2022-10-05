@@ -7,7 +7,7 @@ import {
     getContentOfTemplate,
     handleContentTemplateChange,
     repeatGroup,
-    updateContentFields,
+    //updateContentFields,
     UpdateContentFromTemplate,
     updateContentStatus,
     updateContentValues,
@@ -41,10 +41,11 @@ export const content = () => {
         const { contentId } = req.params;
 
         try {
-            const { content, contentTemplate } = await getContentById(contentId);
+            const { content, contentTemplate, contentFields } = await getContentById(contentId);
             return res.status(200).send({
                 content: content && content.clean(),
                 contentTemplate: contentTemplate && contentTemplate.clean(),
+                contentFields: contentFields.length && contentFields.map((field) => field.clean()),
             });
         } catch (error: any) {
             console.log(error);
@@ -108,7 +109,7 @@ export const content = () => {
     });
 
     //* Update content fields*/
-    api.patch(`/content/:contentId/fields`, async function (req: any, res: any) {
+    /*api.patch(`/content/:contentId/fields`, async function (req: any, res: any) {
         const { contentId } = req.params;
         const { updates, deletions } = req.body;
         const { user } = req;
@@ -128,7 +129,7 @@ export const content = () => {
                 message: error.message,
             });
         }
-    });
+    });*/
 
     //* Add repeatable group entry*/
     api.post(`/content/:contentId/groups/:groupId`, async function (req: any, res: any) {

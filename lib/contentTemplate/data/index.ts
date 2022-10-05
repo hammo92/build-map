@@ -5,7 +5,7 @@ import { Oso } from "oso-cloud";
 import { indexBy } from "serverless-cloud-data-utils";
 import { ulid } from "ulid";
 import { Icon } from "../../../components/ui/iconPicker/types";
-import { FieldTypes, Property, PropertyGroup } from "../../../lib/field/data/field.model";
+import { FieldType, Property, PropertyGroup } from "../../../lib/field/data/field.model";
 import { HistoryEntry, Note, Notes } from "../../../lib/historyEntry/data/historyEntry.model";
 import { splitCamel } from "../../../utils/stringTransform";
 import { errorIfUndefined } from "../../utils";
@@ -167,7 +167,7 @@ export async function updateContentTemplate({
     return contentTemplate;
 }
 
-export const createProperty = async <T extends FieldTypes>({
+export const createProperty = async <T extends FieldType>({
     type,
     name,
     userId,
@@ -205,15 +205,15 @@ export const createProperty = async <T extends FieldTypes>({
     return property as Property<T>;
 };
 
-const updateProperty = async <T extends FieldTypes>({
+const updateProperty = async <T extends FieldType>({
     property,
     type,
     userId,
 }: {
-    property: Property;
+    property: Property<T>;
     type: T;
     userId: string;
-}) => {
+}): Promise<Property<T>> => {
     const updatedProperty = {
         ...property,
         lastEditedBy: userId,

@@ -1,8 +1,8 @@
 import { SmartForm } from "@components/smartForm";
-import { ContentFieldNumber } from "@lib/content/data/types";
-import { PropertyNumber } from "@lib/contentTemplate/data/types";
+import { Field } from "@lib/field/data/field.model";
+import { CleanedCamel } from "type-helpers";
 
-export const FieldsNumber = ({ field }: { field: ContentFieldNumber | PropertyNumber }) => {
+export const FieldsNumber = ({ field }: { field: CleanedCamel<Field<"number">> }) => {
     return (
         <SmartForm.NumberInput
             precision={field.variant === "decimal" ? 2 : field.variant === "float" ? 5 : 0}

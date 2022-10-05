@@ -1,12 +1,12 @@
 import { IconTitle } from "@components/ui/iconTitle/iconTitle";
-import { FieldTypes } from "@lib/field/data/field.model";
+import { FieldType } from "@lib/field/data/field.model";
 import { Card, SimpleGrid } from "@mantine/core";
 import React from "react";
 import { FIELD_OPTIONS } from "./options";
 import { useStyles } from "./styles";
 
 interface typeSelectProps {
-    onSelect: (type: FieldTypes) => void;
+    onSelect: (type: FieldType) => void;
 }
 
 export const TypeSelect = ({ onSelect }: typeSelectProps) => {

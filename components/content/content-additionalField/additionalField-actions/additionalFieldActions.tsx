@@ -5,6 +5,7 @@ import { faEdit, faEllipsisVertical, faTrash } from "@fortawesome/pro-regular-sv
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Content } from "@lib/content/data/content.model";
 import { ContentField } from "@lib/content/data/types";
+import { Field } from "@lib/field/data/field.model";
 
 import { ActionIcon, Button, Menu, Modal, Stack, UnstyledButton } from "@mantine/core";
 import { FC, useState } from "react";
@@ -12,7 +13,7 @@ import { CleanedCamel } from "type-helpers";
 import { splitCamel } from "utils/stringTransform";
 
 interface FieldEditProps {
-    field: ContentField;
+    field: Field;
     contentId: string;
     editable?: boolean;
     removable?: boolean;

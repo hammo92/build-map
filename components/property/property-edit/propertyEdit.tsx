@@ -1,5 +1,5 @@
 import { IconTitle } from "@components/ui/iconTitle/iconTitle";
-import { FieldTypes, Property } from "@lib/field/data/field.model";
+import { FieldType, Property } from "@lib/field/data/field.model";
 import { Button, Text } from "@mantine/core";
 import { closeAllModals, useModals } from "@mantine/modals";
 import { updatePropertyDetails } from "@state/propertyManager";
@@ -27,7 +27,7 @@ interface PropertyEditNonModal extends PropertyEditPropsBase {
 
 type PropertyEditProps = PropertyEditModalProps | PropertyEditNonModal;
 
-const typeState = proxy<{ type: FieldTypes | undefined }>({ type: undefined });
+const typeState = proxy<{ type: FieldType | undefined }>({ type: undefined });
 
 const Title = () => {
     const { type } = useSnapshot(typeState);

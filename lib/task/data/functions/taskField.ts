@@ -4,7 +4,7 @@ import { ulid } from "ulid";
 import { getAllTaskCollectionTasks, getTaskCollection } from "..";
 import { ModelPick, ModelRequired } from "../../../../type-helpers";
 import {
-    FieldTypes,
+    FieldType,
     TaskCollectionFields,
     TaskField,
     TaskFieldId,

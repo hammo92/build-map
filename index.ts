@@ -6,6 +6,7 @@ import { contentTemplates } from "./lib/contentTemplate/endpoints";
 import { content } from "./lib/content/endpoints";
 import { schedule, api } from "@serverless/cloud";
 import { asset } from "./lib/asset/endpoints";
+import { field } from "./lib/field/endpoints";
 import cors from "cors";
 
 schedule.every("60 minutes", async () => {
@@ -21,3 +22,4 @@ projects();
 contentTemplates();
 content();
 asset();
+field();

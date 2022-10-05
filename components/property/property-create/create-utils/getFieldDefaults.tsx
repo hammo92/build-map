@@ -1,4 +1,4 @@
-import { FieldTypes, Property } from "@lib/field/data/field.model";
+import { FieldType, Property } from "@lib/field/data/field.model";
 
 const sharedDefaults = {
     name: "",
@@ -8,7 +8,7 @@ const sharedDefaults = {
     },
 };
 
-export const getFieldDefaults = (type: FieldTypes): Partial<Property> => {
+export const getFieldDefaults = (type: FieldType): Partial<Property> => {
     switch (type) {
         case "text":
             return { ...sharedDefaults, type: "text", variant: "shortText" };

@@ -1,15 +1,10 @@
-import { indexBy } from "serverless-cloud-data-utils";
-import { CleanedCamel } from "type-helpers";
-import { Required } from "utility-types";
-import { splitCamel } from "../../../../utils/stringTransform";
-import { ContentTemplate, ContentTemplateId } from "../contentTemplate.model";
-import { PropertyRelation } from "../types";
-import { createProperty, updateProperties } from "..";
 import { Property } from "@lib/field/data/field.model";
-import pluralize from "pluralize";
-import { ulid } from "ulid";
-import { content } from "@lib/content/endpoints";
 import structuredClone from "@ungap/structured-clone";
+import pluralize from "pluralize";
+import { indexBy } from "serverless-cloud-data-utils";
+import { ulid } from "ulid";
+import { createProperty, updateProperties } from "..";
+import { ContentTemplate, ContentTemplateId } from "../contentTemplate.model";
 
 export const createRelatedProperty = async ({
     property,
@@ -84,7 +79,9 @@ export const updateRelatedProperty = async ({
 
     // remove link if changed to non recoprocal remove related property
     if (!property.isReciprocal) {
-        const relatedProperty = relatedTemplate.properties[relatedPropertyIndex];
+        const relatedProperty = relatedTemplate.properties[
+            relatedPropertyIndex
+        ] as Property<"relation">;
         await updateProperties({
             contentTemplateId: relatedTemplate.id,
             deletedProperties: { [relatedProperty.id]: relatedProperty },
@@ -93,9 +90,7 @@ export const updateRelatedProperty = async ({
         return;
     }
 
-    const clone = structuredClone(
-        relatedTemplate.properties[relatedPropertyIndex] as Property<"relation">
-    );
+    const clone = structuredClone(relatedTemplate.properties[relatedPropertyIndex]);
 
     if (property.name !== clone.reciprocalPropertyName) {
         clone.reciprocalPropertyName = property.name;

@@ -1,6 +1,6 @@
 /* Field.model.ts */
 
-import { BaseModel } from "../../../lib/models";
+import { BaseModel } from "../../models";
 import { buildIndex, indexBy } from "serverless-cloud-data-utils";
 import { DistributiveClean, StripModel } from "type-helpers";
 
@@ -22,165 +22,123 @@ export interface PropertyGroup {
 //* Field model and indexes //
 
 // To get Field by it's ID *//
-//namespace field:${FieldId} */
+//namespace field:${fieldId} */
 export const FieldId = buildIndex({ namespace: `field`, label: "label1" });
 
-// To get all Fields by collection *//
-//namespace fieldCollection_${collectionId}:field:${FieldId} */
-export const FieldCollection = (collectionId: string) =>
-    buildIndex({ namespace: `fieldCollection_${collectionId}:field:`, label: "label2" });
+// To get all Field by parent *//
+//namespace fieldCollection_${parentId}:fields:${fieldId} */
+export const FieldCollection = (parentId?: string) =>
+    buildIndex({ namespace: `content_${parentId}:fields`, label: "label2" });
 
-abstract class BaseField extends BaseModel<BaseField> {
+// To get all Fields by template property *//
+//namespace fieldTemplate_${parentId}:fields:${fieldId} */
+export const FieldTemplate = (propertyId?: string) =>
+    buildIndex({ namespace: `fieldTemplate_${propertyId}:fields`, label: "label3" });
+
+export class Field<T extends FieldType = FieldType> extends BaseModel<Field<T>> {
     readonly object = "Field";
-    abstract readonly type: string;
+    readonly type: T extends FieldType ? T : FieldType;
     templateId?: string;
     templatePropertyId?: string;
-    archived = false;
     required?: boolean;
     active?: boolean;
     description?: string;
     note?: string;
     assets?: string[];
+    value?: Value<T>;
+    defaultValue?: Value<T>;
+    variant?: Variant<T>;
+
+    /** number field options */
+    maximumValue?: T extends "number" ? number : T extends FieldType ? never : any;
+    minimumValue?: T extends "number" ? number : T extends FieldType ? never : any;
+
+    /** select field options */
+    data?: T extends "select" | "multiSelect" ? string[] : T extends FieldType ? never : any;
+
+    /** relation field options */
+    relatedTo?: T extends "relation" ? string : T extends FieldType ? never : any;
+    isReciprocal?: T extends "relation" ? boolean : T extends FieldType ? never : any;
+    reciprocalPropertyId?: T extends "relation" ? string : T extends FieldType ? never : any;
+    reciprocalPropertyName?: T extends "relation" ? string : T extends FieldType ? never : any;
+
     modelKeys() {
         return [
             indexBy(FieldId).exact(this.id),
             ...(this.parent ? [indexBy(FieldCollection(this.parent)).exact(this.id)] : []),
+            ...(this.templatePropertyId
+                ? [indexBy(FieldTemplate(this.templatePropertyId)).exact(this.id)]
+                : []),
         ];
     }
 }
 
-export class CheckboxField extends BaseField {
-    readonly type: "checkbox";
-    value?: boolean;
-    defaultValue?: boolean;
-    constructor(obj?: any) {
-        super(obj);
-        this.type = "checkbox";
-    }
-}
+/*type Options<T extends FieldType> = T extends "number"
+    ? {
+          maximumValue?: "number";
+          minimumValue?: "number";
+      }
+    : T extends "select" | "multiSelect"
+    ? {
+          data: string[];
+      }
+    : T extends "relation"
+    ? {
+          relatedTo: string;
+          isReciprocal?: T extends "relation" ? boolean : T extends FieldType ? never : any;
+          reciprocalPropertyId?: T extends "relation" ? string : T extends FieldType ? never : any;
+          reciprocalPropertyName?: T extends "relation"
+              ? string
+              : T extends FieldType
+              ? never
+              : any;
+      }
+    : null;
+*/
 
-export class DateField extends BaseField {
-    readonly type: "date";
-    value?: string;
-    defaultValue?: string;
-    variant: "dateTime" | "date" | "time";
-    constructor(obj?: any) {
-        super(obj);
-        this.type = "date";
-    }
-}
+export type FieldType =
+    | "checkbox"
+    | "date"
+    | "email"
+    | "image"
+    | "multiSelect"
+    | "number"
+    | "richText"
+    | "select"
+    | "text"
+    | "relation";
 
-export class EmailField extends BaseField {
-    readonly type: "email";
-    value?: string;
-    defaultValue?: string;
-    constructor(obj?: any) {
-        super(obj);
-        this.type = "email";
-    }
-}
+type BooleanValue = "checkbox";
+type StringValue = "date" | "email" | "richText" | "text";
+type StringArrayValue = "image" | "multiSelect" | "select" | "relation";
+type NumberValue = "number";
 
-export class ImageField extends BaseField {
-    readonly type: "image";
-    variant: "single" | "multiple";
-    value?: string[];
-    defaultValue?: string[];
-    constructor(obj?: any) {
-        super(obj);
-        this.type = "image";
-    }
-}
+type Value<T extends FieldType | undefined> = T extends BooleanValue
+    ? boolean
+    : T extends NumberValue
+    ? number
+    : T extends StringArrayValue
+    ? string[]
+    : T extends StringValue
+    ? string
+    : any;
 
-export class MultiSelectField extends BaseField {
-    readonly type: "multiSelect";
-    value?: string[];
-    defaultValue?: string[];
-    constructor(obj?: any) {
-        super(obj);
-        this.type = "multiSelect";
-    }
-}
+type Variant<T extends FieldType | undefined> = T extends "date"
+    ? "dateTime" | "date" | "time"
+    : T extends "image"
+    ? "single" | "multiple"
+    : T extends "number"
+    ? "integer" | "decimal" | "float"
+    : T extends "text"
+    ? "shortText" | "longText"
+    : T extends FieldType
+    ? never
+    : any;
 
-export class NumberField extends BaseField {
-    readonly type: "number";
-    value?: number;
-    defaultValue?: number;
-    minimumValue?: number;
-    maximumValue?: number;
-    variant: "integer" | "decimal" | "float";
-    constructor(obj?: any) {
-        super(obj);
-        this.type = "number";
-    }
-}
+type FieldOmitted = "value" | "note" | "assets" | "templatePropertyId";
 
-export class RichTextField extends BaseField {
-    readonly type: "richText";
-    value?: number;
-    defaultValue?: number;
-    constructor(obj?: any) {
-        super(obj);
-        this.type = "richText";
-    }
-}
+//export type Property<T extends FieldType | undefined = undefined> = T extends FieldType
+//   ? StripModel<FieldDiscriminator<T>, FieldOmitted>
+//   : DistributiveClean<Field, FieldOmitted>;
 
-export class SelectField extends BaseField {
-    readonly type: "select";
-    value?: string[];
-    defaultValue?: string[];
-    data: string;
-    constructor(obj?: any) {
-        super(obj);
-        this.type = "select";
-    }
-}
-
-export class TextField extends BaseField {
-    readonly type: "text";
-    value?: string;
-    defaultValue?: string;
-    variant: "shortText" | "longText";
-    constructor(obj?: any) {
-        super(obj);
-        this.type = "text";
-    }
-}
-
-export class RelationField extends BaseField {
-    readonly type: "relation";
-    value?: string;
-    defaultValue?: never;
-    relatedTo?: string;
-    isReciprocal?: boolean;
-    reciprocalPropertyId?: string;
-    reciprocalPropertyName?: string;
-    constructor(obj?: any) {
-        super(obj);
-        this.type = "relation";
-    }
-}
-
-export type Field =
-    | CheckboxField
-    | DateField
-    | EmailField
-    | ImageField
-    | MultiSelectField
-    | NumberField
-    | RichTextField
-    | SelectField
-    | TextField
-    | RelationField;
-
-export type FieldTypes = Field["type"];
-
-export type FieldDiscriminator<T extends FieldTypes = "checkbox"> = Extract<Field, { type: T }>;
-
-export type Property<T extends FieldTypes | undefined = undefined> = T extends FieldTypes
-    ? StripModel<FieldDiscriminator<T>, "value" | "note" | "assets">
-    : DistributiveClean<Field, "value" | "note" | "assets">;
-
-type DiscriminatedProperty<T extends FieldTypes> = StripModel<
-    FieldDiscriminator<T>,
-    "value" | "note" | "assets"
->;
+export type Property<T extends FieldType = FieldType> = StripModel<Field<T>, FieldOmitted>;

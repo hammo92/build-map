@@ -3,7 +3,7 @@
 import { BaseModelId, ModelWithHistory } from "../../../lib/models";
 import { buildIndex, indexBy } from "serverless-cloud-data-utils";
 import { ContentField } from "./types";
-import { PropertyGroup } from "../../../lib/field/data/field.model";
+import { PropertyGroup } from "@lib/field/data/field.model";
 
 export type FieldGroup = PropertyGroup;
 

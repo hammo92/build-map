@@ -3,6 +3,7 @@ import { useGetContent, useUpdateContentValues } from "@data/content/hooks";
 import { Content as ContentProps } from "@lib/content/data/content.model";
 import { ContentField } from "@lib/content/data/types";
 import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { Field } from "@lib/field/data/field.model";
 import {
     Box,
     Card,
@@ -35,7 +36,7 @@ export const FIELD_SUFFIXES = {
     ASSETS: "-assets",
 };
 
-function convertContentDataForSmartForm(fields: Required<Partial<ContentField>, "id">[]) {
+function convertContentDataForSmartForm(fields: Required<Partial<Field>, "id">[]) {
     console.log("fields :>> ", fields);
     return fields.reduce((acc, field) => {
         return {
@@ -87,30 +88,32 @@ export const Content = ({
     const { data, isLoading } = useGetContent(content.id, { content });
     const { mutateAsync, isLoading: mutateLoading } = useUpdateContentValues();
     const uuid = useId();
+    console.log("data", data);
 
     if (isLoading) return <p>loading</p>;
 
-    if (data?.content?.fields && data.content) {
-        const defaultValues = convertContentDataForSmartForm(data?.content?.fields);
+    if (data?.contentFields && data.content) {
+        const defaultValues = convertContentDataForSmartForm(data.contentFields);
 
         // split into categories
-        const { active, hidden, additional } = data?.content.fields.reduce<{
-            active: ContentField[];
-            hidden: ContentField[];
-            additional: ContentField[];
+        const { active, hidden, additional } = data.contentFields.reduce<{
+            active: CleanedCamel<Field>[];
+            hidden: CleanedCamel<Field>[];
+            additional: CleanedCamel<Field>[];
         }>(
             (acc, curr) => {
-                if (curr.active && curr.category === "template") {
+                if (curr.active && curr.templatePropertyId) {
                     acc.active.push(curr);
-                } else if (!curr.active && curr.category === "template") {
+                } else if (!curr.active && !curr.templatePropertyId) {
                     acc.hidden.push(curr);
-                } else if (curr.category === "additional") {
+                } else if (!curr.templatePropertyId) {
                     acc.additional.push(curr);
                 }
                 return acc;
             },
             { active: [], hidden: [], additional: [] }
         );
+        console.log("active", active);
         const onSubmit = async (values: any) => {
             console.log("convertFormData(values), :>> ", convertFormData(values));
             await mutateAsync({
@@ -174,8 +177,12 @@ export const Content = ({
 
                                                 {active && (
                                                     <FieldsGroup
-                                                        fieldGroup={groupFields({ content })}
-                                                        content={content}
+                                                        fieldGroup={groupFields({
+                                                            content: data.content,
+                                                            contentFields: data.contentFields,
+                                                        })}
+                                                        content={data.content}
+                                                        contentFields={data.contentFields}
                                                     />
                                                 )}
                                             </>

@@ -27,7 +27,7 @@ export async function getContent(contentId: string) {
     const { data } = await apiClient.get<{
         content: CleanedSnake<Content>;
         contentTemplate: CleanedSnake<ContentTemplate>;
-        contentFields?: CleanedCamel<Field>[];
+        contentFields: CleanedCamel<Field>[];
     }>(`/content/${contentId}`);
     return camelcaseKeys(data, { deep: true });
 }
