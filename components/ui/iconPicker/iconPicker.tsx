@@ -9,6 +9,8 @@ import {
     extractSystemStyles,
     Group,
     Input,
+    InputProps,
+    InputWrapperProps,
     MantineSize,
     Pagination,
     SimpleGrid,
@@ -39,7 +41,7 @@ const colors = [
     "teal",
 ];
 
-type IconPickerProps = BaseIconPickerProps &
+export type IconPickerProps = BaseIconPickerProps &
     DefaultProps<BaseIconPickerStylesNames> & {
         /** Icons to show per page */
         perPage?: number;
@@ -58,6 +60,8 @@ type IconPickerProps = BaseIconPickerProps &
 
         /** Input size */
         size?: MantineSize;
+
+        wrapperProps?: InputWrapperProps;
     };
 
 const defaultProps: Partial<IconPickerProps> = {
@@ -98,7 +102,7 @@ export const IconPicker = forwardRef<HTMLInputElement, IconPickerProps>(
             placeholder,
             form,
             ...others
-        } = useInputProps("IconPicker", defaultProps, props);
+        } = { ...props, ...defaultProps };
 
         const { classes, cx, theme } = useStyles();
         const { systemStyles, rest } = extractSystemStyles(others);
@@ -143,8 +147,6 @@ export const IconPicker = forwardRef<HTMLInputElement, IconPickerProps>(
 
         const activePage = searchString ? searchPage : page;
 
-        //* //
-
         const swatches = colors.map((color) => (
             <ColorSwatch
                 className={`${classes.clickable} ${
@@ -155,28 +157,9 @@ export const IconPicker = forwardRef<HTMLInputElement, IconPickerProps>(
                 onClick={() => handleChange({ icon: _value?.icon ?? far[0], color })}
             />
         ));
-        //* */
 
         return (
-            <Input.Wrapper
-                required={required}
-                id={uuid}
-                label={label}
-                error={error}
-                description={description}
-                size={size}
-                className={className}
-                style={style}
-                classNames={classNames}
-                styles={styles}
-                __staticSelector="Select"
-                sx={sx}
-                errorProps={errorProps}
-                descriptionProps={descriptionProps}
-                labelProps={labelProps}
-                {...systemStyles}
-                {...wrapperProps}
-            >
+            <Input.Wrapper {...systemStyles} {...wrapperProps}>
                 <Card p="sm">
                     <Stack>
                         <Group grow>{swatches}</Group>

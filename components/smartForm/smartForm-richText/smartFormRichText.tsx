@@ -1,16 +1,16 @@
-import { Input, InputWrapperProps } from "@mantine/core";
-import { Editor, RichTextEditorProps } from "@mantine/rte";
-import React, { forwardRef, useRef } from "react";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
-import RichTextEditor from "@components/ui/richText";
+import { Input, InputWrapperProps } from '@mantine/core'
+import { Editor, RichTextEditorProps } from '@mantine/rte'
+import React, { forwardRef, useRef } from 'react'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
+import RichTextEditor from '@components/ui/richText'
 
 type SmartFormRichTextProps = SmartFormInputBaseProps &
     Partial<RichTextEditorProps> &
-    Omit<InputWrapperProps, "children">;
+    Omit<InputWrapperProps, 'children'>
 
 const WrappedRichText = forwardRef(
-    (props: RichTextEditorProps & Omit<InputWrapperProps, "children">, ref) => {
+    (props: RichTextEditorProps & Omit<InputWrapperProps, 'children'>, ref) => {
         const {
             label,
             error,
@@ -22,8 +22,8 @@ const WrappedRichText = forwardRef(
             labelElement,
             labelProps,
             ...rest
-        } = props;
-        const editorRef = useRef<Editor>();
+        } = props
+        const editorRef = useRef<Editor>()
         return (
             <Input.Wrapper
                 label={label}
@@ -36,36 +36,39 @@ const WrappedRichText = forwardRef(
                 labelElement={labelElement}
                 labelProps={labelProps}
                 size={props.size}
-                sx={{ display: "flex", flexDirection: "column" }}
+                sx={{ display: 'flex', flexDirection: 'column' }}
             >
                 <RichTextEditor
-                    {...rest}
                     controls={[
-                        ["bold", "italic", "underline", "strike", "clean"],
-                        ["h1", "h2", "h3", "h4"],
-                        ["unorderedList", "orderedList"],
-                        ["link", "video", "blockquote", "code"],
-                        ["alignLeft", "alignCenter", "alignRight"],
-                        ["sup", "sub"],
+                        ['bold', 'italic', 'underline', 'strike', 'clean'],
+                        ['h1', 'h2', 'h3', 'h4'],
+                        ['unorderedList', 'orderedList'],
+                        ['link', 'video', 'blockquote', 'code'],
+                        ['alignLeft', 'alignCenter', 'alignRight'],
+                        ['sup', 'sub'],
                     ]}
                     onImageUpload={(file: File) =>
                         new Promise((resolve, reject) => {
-                            console.log(file);
-                            resolve("not allowed");
+                            console.log(file)
+                            resolve('not allowed')
                         })
                     }
+                    {...rest}
                 />
             </Input.Wrapper>
-        );
+        )
     }
-);
+)
 
-WrappedRichText.displayName = "WrappedRichText";
+WrappedRichText.displayName = 'WrappedRichText'
 
 export const SmartFormRichText = (props: SmartFormRichTextProps) => {
     return (
-        <SmartFormDefaultController {...props}>
-            <WrappedRichText value={props.value ?? ""} onChange={() => props.onChange} />
-        </SmartFormDefaultController>
-    );
-};
+        <SmartFormController {...props}>
+            <WrappedRichText
+                value={props.value ?? ''}
+                onChange={() => props.onChange}
+            />
+        </SmartFormController>
+    )
+}

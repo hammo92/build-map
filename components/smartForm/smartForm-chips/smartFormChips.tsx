@@ -1,9 +1,11 @@
-import { Chip, ChipProps, Input, InputWrapperProps } from "@mantine/core";
-import { forwardRef } from "react";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+import { Chip, ChipProps, Input, InputWrapperProps } from '@mantine/core'
+import { forwardRef } from 'react'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
-type SmartFormChipsProps = SmartFormInputBaseProps & ChipProps & InputWrapperProps;
+type SmartFormChipsProps = SmartFormInputBaseProps &
+    ChipProps &
+    InputWrapperProps
 
 const WrappedChips = forwardRef((props: ChipProps & InputWrapperProps, ref) => {
     const {
@@ -17,7 +19,7 @@ const WrappedChips = forwardRef((props: ChipProps & InputWrapperProps, ref) => {
         labelElement,
         labelProps,
         ...rest
-    } = props;
+    } = props
     return (
         <Input.Wrapper
             label={label}
@@ -30,19 +32,21 @@ const WrappedChips = forwardRef((props: ChipProps & InputWrapperProps, ref) => {
             labelElement={labelElement}
             labelProps={labelProps}
             size={props.size}
-            sx={{ display: "flex", flexDirection: "column" }}
+            sx={{ display: 'flex', flexDirection: 'column' }}
         >
             <Chip {...rest} />
         </Input.Wrapper>
-    );
-});
+    )
+})
 
-WrappedChips.displayName = "WrappedChips";
+WrappedChips.displayName = 'WrappedChips'
 
-export const SmartFormChips = <T extends boolean>(props: SmartFormChipsProps) => {
+export const SmartFormChips = <T extends boolean>(
+    props: SmartFormChipsProps
+) => {
     return (
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props}>
             <WrappedChips>{props.children}</WrappedChips>
-        </SmartFormDefaultController>
-    );
-};
+        </SmartFormController>
+    )
+}

@@ -1,13 +1,13 @@
-import { IconPicker, IconPickerProps } from "@components/ui/iconPicker";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+import { IconPicker, IconPickerProps } from '@components/ui/iconPicker'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
-type SmartFormIconPickerProps = SmartFormInputBaseProps & IconPickerProps;
+type SmartFormIconPickerProps = SmartFormInputBaseProps & IconPickerProps
 
 export const SmartFormIconPicker = (props: SmartFormIconPickerProps) => {
     return (
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props}>
             <IconPicker onChange={props.onChange} />
-        </SmartFormDefaultController>
-    );
-};
+        </SmartFormController>
+    )
+}

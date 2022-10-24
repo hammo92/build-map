@@ -1,14 +1,17 @@
-import { EditableList, EditableListProps } from "@components/ui/editableList";
-import React from "react";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+import { EditableList, EditableListProps } from '@components/ui/editableList'
+import React from 'react'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
-type SmartFormEditableListProps<T> = SmartFormInputBaseProps & EditableListProps<T>;
+type SmartFormEditableListProps<T> = SmartFormInputBaseProps &
+    EditableListProps<T>
 
-export const SmartFormEditableList = <T extends unknown>(props: SmartFormEditableListProps<T>) => (
+export const SmartFormEditableList = <T extends unknown>(
+    props: SmartFormEditableListProps<T>
+) => (
     <>
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props}>
             <EditableList />
-        </SmartFormDefaultController>
+        </SmartFormController>
     </>
-);
+)

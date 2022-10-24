@@ -1,16 +1,16 @@
-import { NumberInput, NumberInputProps } from "@mantine/core";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+import { NumberInput, NumberInputProps } from '@mantine/core'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
 type SmartFormNumberInputProps = SmartFormInputBaseProps &
     NumberInputProps & {
-        numberType?: "float" | "decimal" | "integer";
-    };
+        numberType?: 'float' | 'decimal' | 'integer'
+    }
 
 export const SmartFormNumberInput = (props: SmartFormNumberInputProps) => {
     return (
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props}>
             <NumberInput />
-        </SmartFormDefaultController>
-    );
-};
+        </SmartFormController>
+    )
+}

@@ -8,4 +8,5 @@ export interface SmartFormInputBaseProps extends InputBaseProps {
     label?: React.ReactNode;
     description?: React.ReactNode;
     readOnly?: boolean;
+    rightContent?: React.ReactElement;
 }

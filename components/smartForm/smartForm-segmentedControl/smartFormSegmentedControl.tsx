@@ -4,19 +4,19 @@ import {
     InputWrapperProps,
     SegmentedControl,
     SegmentedControlProps,
-} from "@mantine/core";
-import { forwardRef } from "react";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+} from '@mantine/core'
+import { forwardRef } from 'react'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
 type SmartFormSegmentedControlProps = SmartFormInputBaseProps &
     SegmentedControlProps &
-    Omit<InputWrapperProps, "children"> & {
-        backgroundVariant?: "light" | "default";
-    };
+    Omit<InputWrapperProps, 'children'> & {
+        backgroundVariant?: 'light' | 'default'
+    }
 
 const WrappedSegmentedControl = forwardRef(
-    (props: Omit<SmartFormSegmentedControlProps, "name">, ref) => {
+    (props: Omit<SmartFormSegmentedControlProps, 'name'>, ref) => {
         const {
             label,
             error,
@@ -29,7 +29,7 @@ const WrappedSegmentedControl = forwardRef(
             labelProps,
             backgroundVariant,
             ...rest
-        } = props;
+        } = props
         return (
             <Input.Wrapper
                 label={props.label}
@@ -49,26 +49,28 @@ const WrappedSegmentedControl = forwardRef(
                         data={props.data}
                         sx={(theme) => ({
                             background:
-                                backgroundVariant === "light"
+                                backgroundVariant === 'light'
                                     ? theme.colors.dark[7]
                                     : theme.colors.dark[8],
                         })}
                     />
                 </Group>
             </Input.Wrapper>
-        );
+        )
     }
-);
+)
 
-WrappedSegmentedControl.displayName = "WrappedSegmentedControl";
+WrappedSegmentedControl.displayName = 'WrappedSegmentedControl'
 
-export const SmartFormSegmentedControl = (props: SmartFormSegmentedControlProps) => {
+export const SmartFormSegmentedControl = (
+    props: SmartFormSegmentedControlProps
+) => {
     return (
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props}>
             <WrappedSegmentedControl
                 data={props.data}
                 backgroundVariant={props.backgroundVariant}
             />
-        </SmartFormDefaultController>
-    );
-};
+        </SmartFormController>
+    )
+}

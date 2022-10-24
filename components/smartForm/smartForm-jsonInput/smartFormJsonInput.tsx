@@ -1,13 +1,13 @@
-import { JsonInput, JsonInputProps } from "@mantine/core";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+import { JsonInput, JsonInputProps } from '@mantine/core'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
-type SmartFormJsonInputProps = SmartFormInputBaseProps & JsonInputProps;
+type SmartFormJsonInputProps = SmartFormInputBaseProps & JsonInputProps
 
 export const SmartFormJsonInput = (props: SmartFormJsonInputProps) => {
     return (
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props}>
             <JsonInput />
-        </SmartFormDefaultController>
-    );
-};
+        </SmartFormController>
+    )
+}

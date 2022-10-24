@@ -1,19 +1,19 @@
-import { Checkbox, CheckboxProps } from "@mantine/core";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+import { Checkbox, CheckboxProps } from '@mantine/core'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
-type SmartFormCheckboxProps = SmartFormInputBaseProps & CheckboxProps;
+type SmartFormCheckboxProps = SmartFormInputBaseProps & CheckboxProps
 
 // Checkbox needs checked rather than value prop
 const Check = (props: CheckboxProps & { value?: string | boolean }) => {
-    let value = ["true", "yes", true].includes(props.value ?? "");
-    return <Checkbox {...props} checked={value} />;
-};
+    let value = ['true', 'yes', true].includes(props.value ?? '')
+    return <Checkbox {...props} checked={value} />
+}
 
 export const SmartFormCheckbox = (props: SmartFormCheckboxProps) => {
     return (
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props} view="checkbox">
             <Check />
-        </SmartFormDefaultController>
-    );
-};
+        </SmartFormController>
+    )
+}

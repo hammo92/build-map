@@ -1,18 +1,20 @@
-import { Input, InputWrapperProps, Slider, SliderProps } from "@mantine/core";
-import { forwardRef } from "react";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+import { Input, InputWrapperProps, Slider, SliderProps } from '@mantine/core'
+import { forwardRef } from 'react'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
 type SmartFormSliderProps = SmartFormInputBaseProps &
     SliderProps & {
-        sliderLabel?: React.ReactNode | ((value: number) => React.ReactNode);
-    };
+        sliderLabel?: React.ReactNode | ((value: number) => React.ReactNode)
+    }
 
 const WrappedSlider = forwardRef(
     (
         props: SliderProps &
-            Omit<InputWrapperProps, "children"> & {
-                sliderLabel?: React.ReactNode | ((value: number) => React.ReactNode);
+            Omit<InputWrapperProps, 'children'> & {
+                sliderLabel?:
+                    | React.ReactNode
+                    | ((value: number) => React.ReactNode)
             },
         ref
     ) => {
@@ -28,7 +30,7 @@ const WrappedSlider = forwardRef(
             labelProps,
             sliderLabel,
             ...rest
-        } = props;
+        } = props
         return (
             <Input.Wrapper
                 label={label}
@@ -41,20 +43,20 @@ const WrappedSlider = forwardRef(
                 labelElement={labelElement}
                 labelProps={labelProps}
                 size={props.size}
-                sx={{ display: "flex", flexDirection: "column" }}
+                sx={{ display: 'flex', flexDirection: 'column' }}
             >
                 <Slider {...rest} label={sliderLabel} />
             </Input.Wrapper>
-        );
+        )
     }
-);
+)
 
-WrappedSlider.displayName = "WrappedSlider";
+WrappedSlider.displayName = 'WrappedSlider'
 
 export const SmartFormSlider = (props: SmartFormSliderProps) => {
     return (
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props}>
             <WrappedSlider />
-        </SmartFormDefaultController>
-    );
-};
+        </SmartFormController>
+    )
+}

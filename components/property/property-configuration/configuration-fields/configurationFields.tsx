@@ -1,38 +1,41 @@
-import { FIELD_TYPES } from "@components/property/property-type/type-select/options";
-import { SmartForm } from "@components/smartForm";
-import { FieldType } from "@lib/field/data/field.model";
-import React from "react";
-import { FieldsCheckbox } from "./fields-checkbox";
-import { FieldsMultiSelect } from "./fields-multiSelect";
-import { FieldsNumber } from "./fields-number";
-import { FieldsRelation } from "./fields-relation";
-import { FieldsSelect } from "./fields-select";
+import { FIELD_TYPES } from '@components/property/property-type/type-select/options'
+import { SmartForm } from '@components/smartForm'
+import { FieldType } from '@lib/field/data/field.model'
+import { Stack } from '@mantine/core'
+import React from 'react'
+import { FieldsCheckbox } from './fields-checkbox'
+import { FieldsNumber } from './fields-number'
+import { FieldsRelation } from './fields-relation'
+import { FieldsSelect } from './fields-select'
+import { FieldsTitle } from '@components/property/property-configuration/configuration-fields/fields-title/fieldsTitle'
 
 interface ConfigurationFieldsProps {
-    type: FieldType;
+    type: FieldType
 }
 
 const configurationTypeFields = (type: FieldType) => {
     switch (type) {
-        case "checkbox":
-            return <FieldsCheckbox />;
-        case "multiSelect":
-            return <FieldsMultiSelect />;
-        case "number":
-            return <FieldsNumber />;
-        case "relation":
-            return <FieldsRelation />;
-        case "select":
-            return <FieldsSelect />;
+        case 'checkbox':
+            return <FieldsCheckbox />
+        case 'multiSelect':
+            return <FieldsSelect type="multiSelect" />
+        case 'number':
+            return <FieldsNumber />
+        case 'relation':
+            return <FieldsRelation />
+        case 'select':
+            return <FieldsSelect type="select" />
+        case 'title':
+            return <FieldsTitle />
         default:
-            return null;
+            return null
     }
-};
+}
 
 export const ConfigurationFields = ({ type }: ConfigurationFieldsProps) => {
-    const variants = FIELD_TYPES[type]?.variants;
+    const variants = FIELD_TYPES[type]?.variants
     return (
-        <>
+        <Stack spacing="sm">
             <SmartForm.FieldGroup cols={variants?.length ? 2 : 1}>
                 <SmartForm.TextInput
                     name="name"
@@ -54,6 +57,6 @@ export const ConfigurationFields = ({ type }: ConfigurationFieldsProps) => {
                 ) : null}
             </SmartForm.FieldGroup>
             {configurationTypeFields(type)}
-        </>
-    );
-};
+        </Stack>
+    )
+}

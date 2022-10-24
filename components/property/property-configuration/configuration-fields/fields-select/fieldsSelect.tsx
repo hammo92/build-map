@@ -1,29 +1,49 @@
-import { SmartForm } from "@components/smartForm";
-import React from "react";
-import { useFormContext } from "react-hook-form";
-import { commaListToArray } from "utils/arrayModify";
+import { SmartForm } from '@components/smartForm'
+import { OptionListRenderItem } from '@components/ui/optionList/optionList-renderItem'
+import { OptionListSelectItem } from '@components/ui/optionList/optionList-selectItem'
+import { Option } from '@lib/responseSet/data/responseSet.model'
+import { useFormContext } from 'react-hook-form'
 
-export const FieldsSelect = () => {
-    const { watch } = useFormContext();
-    const data = watch("data");
-    const options = commaListToArray(data);
-    const disabled = !options || options.length < 1;
+export const FieldsSelect = ({ type }: { type: 'select' | 'multiSelect' }) => {
+    const { watch, setValue } = useFormContext()
+    const data = watch('data') ?? []
+    const defaultValue: string[] = watch('defaultValue') ?? []
+
+    // remove value from default values when deleted
+    const handleDelete = (option: Option) => {
+        if (!Array.isArray(defaultValue)) return
+        setValue(
+            'defaultValue',
+            defaultValue.filter((value) => value !== option.value)
+        )
+    }
+    const disabled = !data || data.length < 1
+    const selectProps = type === 'select' ? { maxSelectedValues: 1 } : {}
     return (
         <>
-            <SmartForm.Textarea
+            <SmartForm.OptionList
                 name="data"
-                label="Options"
                 required
-                description="Enter a list of options seperated by commas"
-                placeholder="eg: first, second, third"
+                description="You can add multiple by separating with a comma"
+                label="Options"
+                onRemove={handleDelete}
+                placeholder={'option 1, option 2, option 3'}
             />
-            <SmartForm.Select
-                label="Default value"
-                name="defaultValue"
-                data={options ?? []}
-                disabled={disabled}
-                description={disabled && "No options have been added yet, add options first."}
-            />
+            {!!data.length && (
+                <SmartForm.MultiSelect
+                    label="Default values"
+                    name="defaultValue"
+                    data={data ?? []}
+                    disabled={disabled}
+                    description={
+                        disabled &&
+                        'No options have been added yet, add options first.'
+                    }
+                    itemComponent={OptionListSelectItem}
+                    valueComponent={OptionListRenderItem}
+                    {...selectProps}
+                />
+            )}
         </>
-    );
-};
+    )
+}

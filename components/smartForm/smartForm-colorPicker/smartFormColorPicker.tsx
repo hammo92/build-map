@@ -1,14 +1,19 @@
-import { ColorPicker, ColorPickerProps, Input, InputWrapperProps } from "@mantine/core";
-import { forwardRef } from "react";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+import {
+    ColorPicker,
+    ColorPickerProps,
+    Input,
+    InputWrapperProps,
+} from '@mantine/core'
+import { forwardRef } from 'react'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
 type SmartFormColorPickerProps = SmartFormInputBaseProps &
     ColorPickerProps &
-    Omit<InputWrapperProps, "children">;
+    Omit<InputWrapperProps, 'children'>
 
 const WrappedColorPicker = forwardRef(
-    (props: ColorPickerProps & Omit<InputWrapperProps, "children">, ref) => {
+    (props: ColorPickerProps & Omit<InputWrapperProps, 'children'>, ref) => {
         const {
             label,
             error,
@@ -20,7 +25,7 @@ const WrappedColorPicker = forwardRef(
             labelElement,
             labelProps,
             ...rest
-        } = props;
+        } = props
         return (
             <Input.Wrapper
                 label={label}
@@ -33,20 +38,20 @@ const WrappedColorPicker = forwardRef(
                 labelElement={labelElement}
                 labelProps={labelProps}
                 size={props.size}
-                sx={{ display: "flex", flexDirection: "column" }}
+                sx={{ display: 'flex', flexDirection: 'column' }}
             >
                 <ColorPicker {...rest} />
             </Input.Wrapper>
-        );
+        )
     }
-);
+)
 
-WrappedColorPicker.displayName = "WrappedColorPicker";
+WrappedColorPicker.displayName = 'WrappedColorPicker'
 
 export const SmartFormColorPicker = (props: SmartFormColorPickerProps) => {
     return (
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props}>
             <WrappedColorPicker />
-        </SmartFormDefaultController>
-    );
-};
+        </SmartFormController>
+    )
+}

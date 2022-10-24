@@ -1,45 +1,70 @@
-import { theme } from "@definitions/mantine";
-import { Global, MantineProvider } from "@mantine/core";
-import { ModalsProvider } from "@mantine/modals";
-import { NotificationsProvider } from "@mantine/notifications";
-import { QueryClient, QueryClientProvider } from "react-query";
-import "../styles/globals.css";
-import type { ReactElement, ReactNode } from "react";
-import type { NextPage } from "next";
-import type { AppProps } from "next/app";
-import { styles } from "@definitions/mantine/styles";
+import { MantineProvider } from '@mantine/core'
+import { ModalsProvider } from '@mantine/modals'
+import { NotificationsProvider } from '@mantine/notifications'
+import { QueryClient, QueryClientProvider } from 'react-query'
+import '../styles/globals.css'
+import type { ReactElement, ReactNode } from 'react'
+import type { NextPage } from 'next'
+import type { AppProps } from 'next/app'
 
 type NextPageWithLayout = NextPage & {
-    getLayout?: (page: ReactElement) => ReactNode;
-};
+    getLayout?: (page: ReactElement) => ReactNode
+}
 
 type AppPropsWithLayout = AppProps & {
-    Component: NextPageWithLayout;
-};
+    Component: NextPageWithLayout
+}
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     // Use the layout defined at the page level, if available
-    const getLayout = Component.getLayout || ((page) => page);
+    const getLayout = Component.getLayout || ((page) => page)
     // Create a client
-    const queryClient = new QueryClient();
+    const queryClient = new QueryClient()
     return (
         <QueryClientProvider client={queryClient}>
             <MantineProvider
                 withGlobalStyles
                 withNormalizeCSS
                 theme={{
-                    /** Put your mantine theme override here */
-                    ...theme,
-                    colorScheme: "dark",
+                    colors: {
+                        dark: [
+                            '#B7B8C3',
+                            '#8C8EA2',
+                            '#6A6D88',
+                            '#53556E',
+                            '#40435A',
+                            '#32344A',
+                            '#26283D',
+                            '#1E1F2C',
+                            '#171821',
+                            '#121218',
+                        ],
+                    },
+                    spacing: {
+                        xs: 5,
+                        sm: 8,
+                    },
+                    fontFamilyMonospace:
+                        'relative-mono-11-pitch-pro, Menlo, monospace',
+                    headings: {
+                        fontFamily:
+                            'relative-medium-pro, Roboto, system-ui, -apple-system, BlinkMacSystemFont',
+                    },
+                    defaultRadius: 'sm',
+                    //primaryShade: 8,
+                    fontFamily:
+                        'relative-book-pro, Roboto, system-ui, -apple-system, BlinkMacSystemFont',
+                    colorScheme: 'dark',
                 }}
-                styles={styles}
             >
                 <NotificationsProvider>
-                    <ModalsProvider>{getLayout(<Component {...pageProps} />)}</ModalsProvider>
+                    <ModalsProvider>
+                        {getLayout(<Component {...pageProps} />)}
+                    </ModalsProvider>
                 </NotificationsProvider>
             </MantineProvider>
         </QueryClientProvider>
-    );
+    )
 }
 
-export default MyApp;
+export default MyApp

@@ -1,22 +1,25 @@
-import { AssetListProps } from "@components/asset/asset-list";
-import { AssetManager, AssetManagerProps } from "@components/asset/asset-manager";
-import { Input, InputWrapperProps } from "@mantine/core";
-import { forwardRef } from "react";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+import { AssetListProps } from '@components/asset/asset-list'
+import {
+    AssetManager,
+    AssetManagerProps,
+} from '@components/asset/asset-manager'
+import { Input, InputWrapperProps } from '@mantine/core'
+import { forwardRef } from 'react'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
 type SmartFormAssetsProps = SmartFormInputBaseProps &
-    Omit<AssetManagerProps, "assetIds"> &
-    Omit<InputWrapperProps, "children">;
+    Omit<AssetManagerProps, 'assetIds'> &
+    Omit<InputWrapperProps, 'children'>
 
 const WrappedAssetManager = forwardRef(
     (
-        props: Omit<AssetListProps, "assetIds"> &
-            Omit<InputWrapperProps, "children" | "onChange"> & {
-                onChange?: (ids: string[]) => void;
-                defaultValue?: string[];
-                value?: string[];
-                readOnly?: boolean;
+        props: Omit<AssetListProps, 'assetIds'> &
+            Omit<InputWrapperProps, 'children' | 'onChange'> & {
+                onChange?: (ids: string[]) => void
+                defaultValue?: string[]
+                value?: string[]
+                readOnly?: boolean
             },
         ref
     ) => {
@@ -36,7 +39,7 @@ const WrappedAssetManager = forwardRef(
             readOnly,
             hidden,
             ...rest
-        } = props;
+        } = props
         return (
             <Input.Wrapper
                 label={label}
@@ -50,7 +53,7 @@ const WrappedAssetManager = forwardRef(
                 labelProps={labelProps}
                 size={props.size}
                 hidden={props.hidden}
-                sx={{ display: "flex", flexDirection: "column" }}
+                sx={{ display: 'flex', flexDirection: 'column' }}
             >
                 <AssetManager
                     onChange={onChange}
@@ -60,16 +63,16 @@ const WrappedAssetManager = forwardRef(
                     {...rest}
                 />
             </Input.Wrapper>
-        );
+        )
     }
-);
+)
 
-WrappedAssetManager.displayName = "WrappedAssetManager";
+WrappedAssetManager.displayName = 'WrappedAssetManager'
 
 export const SmartFormAssets = (props: SmartFormAssetsProps) => {
     return (
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props}>
             <WrappedAssetManager />
-        </SmartFormDefaultController>
-    );
-};
+        </SmartFormController>
+    )
+}

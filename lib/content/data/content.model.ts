@@ -1,9 +1,8 @@
 //* content model and indexes //
 
-import { BaseModelId, ModelWithHistory } from "../../../lib/models";
-import { buildIndex, indexBy } from "serverless-cloud-data-utils";
-import { ContentField } from "./types";
 import { PropertyGroup } from "@lib/field/data/field.model";
+import { buildIndex, indexBy } from "serverless-cloud-data-utils";
+import { ModelWithHistory } from "../../../lib/models";
 
 export type FieldGroup = PropertyGroup;
 

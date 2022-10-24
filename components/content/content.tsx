@@ -1,63 +1,62 @@
-import { SmartForm } from "@components/smartForm";
-import { useGetContent, useUpdateContentValues } from "@data/content/hooks";
-import { Content as ContentProps } from "@lib/content/data/content.model";
-import { ContentField } from "@lib/content/data/types";
-import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Field } from "@lib/field/data/field.model";
+import { SmartForm } from '@components/smartForm'
+import { useGetContent, useUpdateContentValues } from '@data/content/hooks'
+import { Content as ContentProps } from '@lib/content/data/content.model'
+import { ContentTemplate } from '@lib/contentTemplate/data/contentTemplate.model'
+import { Field } from '@lib/field/data/field.model'
 import {
     Box,
-    Card,
     createStyles,
     Divider,
     Grid,
     Group,
-    SimpleGrid,
     Stack,
     Tabs,
     Text,
-    Title,
-} from "@mantine/core";
-import { useId } from "@mantine/hooks";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { CleanedCamel } from "type-helpers";
-import { Required } from "utility-types";
-import { AdditionalFieldCreate } from "./content-additionalField/additionalField-create";
-import { ContentFieldManager } from "./content-fieldManager";
-import { ContentFields } from "./content-fields";
-import { FieldsGroup, groupFields } from "./content-fields/fields-group";
-import { ContentHeader } from "./content-header";
-import { ContentHistory } from "./content-history";
-import { ContentStatusBadge } from "./content-status/status-badge";
-dayjs.extend(relativeTime);
+} from '@mantine/core'
+import { useId } from '@mantine/hooks'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import { CleanedCamel } from 'type-helpers'
+import { Required } from 'utility-types'
+import { ContentFieldManager } from './content-fieldManager'
+import { ContentHeader } from './content-header'
+import { groupFields } from '@components/field'
+import { ListGrouped } from '@components/field/field-list/list-grouped'
+import { FieldList } from '@components/field/field-list'
+import { FieldCreate } from '@components/field/field-create'
+dayjs.extend(relativeTime)
 
 export const FIELD_SUFFIXES = {
-    NOTE: "-note",
-    ASSETS: "-assets",
-};
+    NOTE: '-note',
+    ASSETS: '-assets',
+}
 
-function convertContentDataForSmartForm(fields: Required<Partial<Field>, "id">[]) {
-    console.log("fields :>> ", fields);
+function convertContentDataForSmartForm(
+    fields: Required<Partial<Field>, 'id'>[]
+) {
     return fields.reduce((acc, field) => {
         return {
             ...acc,
             [field.id]: field.value ?? null,
             [`${field.id}${FIELD_SUFFIXES.NOTE}`]: field.note ?? null,
             [`${field.id}${FIELD_SUFFIXES.ASSETS}`]: field.assets ?? null,
-        };
-    }, {});
+        }
+    }, {})
 }
 
 const convertFormData = (values: Record<string, any>) => {
-    return Object.entries(values).reduce<Record<string, any>>((acc, [key, value]) => {
-        const [id, property = "value"] = key.split("-");
-        if (!acc[id]) {
-            acc[id] = {};
-        }
-        acc[id][property] = value;
-        return acc;
-    }, {});
-};
+    return Object.entries(values).reduce<Record<string, any>>(
+        (acc, [key, value]) => {
+            const [id, property = 'value'] = key.split('-')
+            if (!acc[id]) {
+                acc[id] = {}
+            }
+            acc[id][property] = value
+            return acc
+        },
+        {}
+    )
+}
 
 const useStyles = createStyles((theme, _params, getRef) => ({
     group: {
@@ -65,69 +64,69 @@ const useStyles = createStyles((theme, _params, getRef) => ({
         //paddingBottom: `${theme.spacing.sm}px`,
     },
     child: {
-        ref: getRef("child"),
-        display: "flex",
+        ref: getRef('child'),
+        display: 'flex',
         //padding: `0 ${theme.spacing.sm}px`,
     },
     indent: {
         backgroundColor: theme.colors.dark[5],
 
-        width: "2px",
+        width: '2px',
         margin: `0 ${theme.spacing.sm}px`,
-        alignSelf: "stretch",
+        alignSelf: 'stretch',
     },
-}));
+}))
 
 export const Content = ({
     content,
     contentTemplate,
 }: {
-    content: CleanedCamel<ContentProps>;
-    contentTemplate: CleanedCamel<ContentTemplate>;
+    content: CleanedCamel<ContentProps>
+    contentTemplate: CleanedCamel<ContentTemplate>
 }) => {
-    const { data, isLoading } = useGetContent(content.id, { content });
-    const { mutateAsync, isLoading: mutateLoading } = useUpdateContentValues();
-    const uuid = useId();
-    console.log("data", data);
+    const { data, isLoading } = useGetContent(content.id, { content })
+    const { mutateAsync, isLoading: mutateLoading } = useUpdateContentValues()
 
-    if (isLoading) return <p>loading</p>;
+    if (isLoading) return <p>loading</p>
 
     if (data?.contentFields && data.content) {
-        const defaultValues = convertContentDataForSmartForm(data.contentFields);
+        const defaultValues = convertContentDataForSmartForm(data.contentFields)
 
         // split into categories
         const { active, hidden, additional } = data.contentFields.reduce<{
-            active: CleanedCamel<Field>[];
-            hidden: CleanedCamel<Field>[];
-            additional: CleanedCamel<Field>[];
+            active: CleanedCamel<Field>[]
+            hidden: CleanedCamel<Field>[]
+            additional: CleanedCamel<Field>[]
         }>(
             (acc, curr) => {
                 if (curr.active && curr.templatePropertyId) {
-                    acc.active.push(curr);
-                } else if (!curr.active && !curr.templatePropertyId) {
-                    acc.hidden.push(curr);
+                    acc.active.push(curr)
+                } else if (curr.active === false && curr.templatePropertyId) {
+                    acc.hidden.push(curr)
                 } else if (!curr.templatePropertyId) {
-                    acc.additional.push(curr);
+                    acc.additional.push(curr)
                 }
-                return acc;
+                return acc
             },
             { active: [], hidden: [], additional: [] }
-        );
-        console.log("active", active);
+        )
         const onSubmit = async (values: any) => {
-            console.log("convertFormData(values), :>> ", convertFormData(values));
+            console.log(
+                'convertFormData(values), :>> ',
+                convertFormData(values)
+            )
             await mutateAsync({
                 contentId: content.id,
                 values: convertFormData(values),
-            });
-        };
+            })
+        }
         return (
             <SmartForm
                 defaultValues={defaultValues}
                 formName={content.id}
                 onSubmit={onSubmit}
                 key={content.id}
-                readOnly={data.content.status === "archived"}
+                readOnly={data.content.status === 'archived'}
                 submitType="dirty"
             >
                 <Stack align="stretch">
@@ -141,15 +140,22 @@ export const Content = ({
                             <Box
                                 sx={(theme) => ({
                                     background: theme.colors.dark[7],
-                                    borderRadius: theme.radius[theme.defaultRadius as "sm"],
+                                    borderRadius:
+                                        theme.radius[
+                                            theme.defaultRadius as 'sm'
+                                        ],
                                 })}
                             >
                                 <Tabs defaultValue="templateFields">
                                     <Tabs.List>
                                         <Tabs.Tab value="templateFields" p="md">
-                                            {contentTemplate.name} Template Fields
+                                            {contentTemplate.name} Template
+                                            Fields
                                         </Tabs.Tab>
-                                        <Tabs.Tab value="additionalContent" p="md">
+                                        <Tabs.Tab
+                                            value="additionalContent"
+                                            p="md"
+                                        >
                                             Additional Fields
                                         </Tabs.Tab>
                                     </Tabs.List>
@@ -160,15 +166,21 @@ export const Content = ({
                                                 {hidden && hidden?.length > 0 && (
                                                     <>
                                                         <Group position="apart">
-                                                            <Text size="sm" color="dimmed">
-                                                                {hidden?.length}{" "}
-                                                                {hidden?.length === 1
-                                                                    ? "tempate field is"
-                                                                    : "tempate fields are"}{" "}
+                                                            <Text
+                                                                size="sm"
+                                                                color="dimmed"
+                                                            >
+                                                                {hidden?.length}{' '}
+                                                                {hidden?.length ===
+                                                                1
+                                                                    ? 'tempate field is'
+                                                                    : 'tempate fields are'}{' '}
                                                                 hidden
                                                             </Text>
                                                             <ContentFieldManager
-                                                                content={content}
+                                                                content={
+                                                                    content
+                                                                }
                                                             />
                                                         </Group>
                                                         <Divider />
@@ -176,34 +188,36 @@ export const Content = ({
                                                 )}
 
                                                 {active && (
-                                                    <FieldsGroup
-                                                        fieldGroup={groupFields({
-                                                            content: data.content,
-                                                            contentFields: data.contentFields,
-                                                        })}
+                                                    <ListGrouped
+                                                        fieldGroup={groupFields(
+                                                            {
+                                                                propertyGroups:
+                                                                    data.content
+                                                                        .fieldGroups,
+                                                                fields: data.contentFields,
+                                                            }
+                                                        )}
                                                         content={data.content}
-                                                        contentFields={data.contentFields}
+                                                        contentFields={
+                                                            data.contentFields
+                                                        }
                                                     />
                                                 )}
                                             </>
                                         </Stack>
                                     </Tabs.Panel>
-                                    {/* <Tabs.Panel value="additionalContent">
-                                        <Stack p="md" pt={0} spacing="sm">
+                                    <Tabs.Panel value="additionalContent">
+                                        <Stack p="xs" spacing="sm">
                                             {additional && (
-                                                <ContentFields
+                                                <FieldList
                                                     fields={additional}
-                                                    contentId={content.id}
-                                                    removable
-                                                    editable
                                                 />
                                             )}
-                                            <AdditionalFieldCreate
-                                                content={content}
-                                                variant="button"
+                                            <FieldCreate
+                                                parentId={content.id}
                                             />
                                         </Stack>
-                                    </Tabs.Panel> */}
+                                    </Tabs.Panel>
                                 </Tabs>
                             </Box>
                         </Grid.Col>
@@ -252,14 +266,14 @@ export const Content = ({
                                                 contentTemplate={contentTemplate}
                                             />
                                         </Card.Section>
-                                    )} 
+                                    )}
                                 </Card>
                             </Stack>
                         </Grid.Col> */}
                     </Grid>
                 </Stack>
             </SmartForm>
-        );
+        )
     }
-    return null;
-};
+    return null
+}

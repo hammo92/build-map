@@ -1,25 +1,26 @@
-import { indexBy } from "serverless-cloud-data-utils";
-import { ulid } from "ulid";
-import { getAssetById } from "../../../lib/asset/data";
-import { getContentTemplateById } from "../../contentTemplate/data";
-import { errorIfUndefined } from "../../utils";
-import { Content, ContentId, ContentStatus, ContentTemplate } from "./content.model";
+import { indexBy } from 'serverless-cloud-data-utils'
+import { ulid } from 'ulid'
+import { getContentTemplateById } from '../../contentTemplate/data'
+import { errorIfUndefined } from '../../utils'
+import {
+    Content,
+    ContentId,
+    ContentStatus,
+    ContentTemplate,
+} from './content.model'
 /*import {
     ContentTemplateHistory,
     ContentTemplate as ContentTemplateModel,
 } from "../../../lib/contentTemplate/data/contentTemplate.model";*/
-
-import { HistoryEntry } from "@lib/historyEntry/data/historyEntry.model";
-import { Required } from "utility-types";
-import { deleteAllContentRelations } from "../../../lib/relation/data";
-import { objArrToKeyIndexedMap } from "../../../utils/arrayModify";
-import { getObjectChanges } from "../../../utils/objects";
-import { fieldBaseValues, fieldFromTemplateProperty } from "./functions/field";
-import { duplicateGroup, generateFieldGroups } from "./functions/group";
-import { updateRelationValue } from "./functions/relation";
-import { Field, FieldCollection } from "../../../lib/field/data/field.model";
-import { accessTokenFactory } from "@auth0/nextjs-auth0/dist/session";
-import { events, PublishResult } from "@serverless/cloud";
+import { HistoryEntry } from '@lib/historyEntry/data/historyEntry.model'
+import { events, PublishResult } from '@serverless/cloud'
+import { Required } from 'utility-types'
+import { Field, FieldCollection } from '../../../lib/field/data/field.model'
+import { deleteAllContentRelations } from '../../../lib/relation/data'
+import { objArrToKeyIndexedMap } from '../../../utils/arrayModify'
+import { getObjectChanges } from '../../../utils/objects'
+import { fieldBaseValues, fieldFromTemplateProperty } from './functions/field'
+import { duplicateGroup, generateFieldGroups } from './functions/group'
 
 //* Create content */
 export async function createContent({
@@ -28,41 +29,42 @@ export async function createContent({
     userId,
     fields,
 }: {
-    contentTemplateId: string;
-    projectId: string;
-    userId: string;
-    fields?: Field[];
+    contentTemplateId: string
+    projectId: string
+    userId: string
+    fields?: Field[]
 }) {
-    errorIfUndefined({ contentTemplateId, projectId, userId });
-    const contentTemplate = await getContentTemplateById(contentTemplateId);
+    errorIfUndefined({ contentTemplateId, projectId, userId })
+    const contentTemplate = await getContentTemplateById(contentTemplateId)
     if (!contentTemplate) {
-        throw new Error("Content template not found");
+        throw new Error('Content template not found')
     }
-    const date = new Date().toISOString();
+    const date = new Date().toISOString()
 
     // create contentTemplate //
-    const newContent = new Content({ userId });
-    newContent.contentTemplateId = contentTemplateId;
-    newContent.projectId = projectId;
-    newContent.status = "draft";
-    console.log("contentTemplate.properties", contentTemplate.properties);
+    const newContent = new Content({ userId })
+    newContent.contentTemplateId = contentTemplateId
+    newContent.projectId = projectId
+    newContent.status = 'draft'
+
     const Fields = contentTemplate.properties
         .filter((property) => property.active !== false && !property.archived)
         .map((property) => {
-            const field = fieldFromTemplateProperty({
+            return fieldFromTemplateProperty({
                 property,
                 type: property.type,
                 userId,
                 date,
                 parent: newContent.id,
-            });
-            return field;
-        });
-    newContent.fields = Fields.map(({ id }) => id);
+            })
+        })
+
+    newContent.fields = Fields.map(({ id }) => id)
     newContent.fieldGroups = generateFieldGroups({
         fields: Fields,
         propertyGroups: contentTemplate.propertyGroups,
-    });
+    })
+
     /*newContent.fields = 
         /*contentUpdates.push({
             type: "property",
@@ -85,43 +87,36 @@ export async function createContent({
 
         
     });*/
-    await Promise.all(Fields.map((field) => field.save()));
+    await Promise.all(Fields.map((field) => field.save()))
     await newContent.saveWithHistory({
         editedBy: userId,
         title: `${contentTemplate.name} Created`,
-    });
+    })
 
-    return { newContent, contentTemplate };
-}
-
-async function fetchLinkedContentPromises(field: Field) {
-    if (field.type === "image" && field?.value?.length) {
-        const assets = await Promise.all(field.value.map((assetId) => getAssetById(assetId)));
-        return { ...field, assets };
-    }
-    return field;
+    return { newContent, contentTemplate }
 }
 
 export async function getContentFields(contentId: string) {
-    errorIfUndefined({ contentId });
-    const fields = await indexBy(FieldCollection(contentId)).get(Field);
-    return fields;
+    errorIfUndefined({ contentId })
+    return await indexBy(FieldCollection(contentId)).get(Field)
 }
 
 //* Get content by id */
 export async function getContentById(contentId: string) {
-    errorIfUndefined({ contentId });
-    const [content] = await indexBy(ContentId).exact(contentId).get(Content);
+    errorIfUndefined({ contentId })
+    const [content] = await indexBy(ContentId).exact(contentId).get(Content)
     if (!content) {
-        throw new Error(`Content not found from ${contentId}`);
+        throw new Error(`Content not found from ${contentId}`)
     }
     /*const fieldsWithContent = await Promise.all(
         content.fields.map(async (field) => await fetchLinkedContentPromises(field))
     );
     content.fields = fieldsWithContent;*/
-    const contentTemplate = await getContentTemplateById(content.contentTemplateId);
-    const contentFields = await getContentFields(content.id);
-    return { content, contentTemplate, contentFields };
+    const contentTemplate = await getContentTemplateById(
+        content.contentTemplateId
+    )
+    const contentFields = await getContentFields(content.id)
+    return { content, contentTemplate, contentFields }
 }
 
 //* Update contentStatus */
@@ -130,38 +125,41 @@ export async function updateContentStatus({
     status,
     userId,
 }: {
-    contentId: string;
-    status?: ContentStatus;
-    userId: string;
+    contentId: string
+    status?: ContentStatus
+    userId: string
 }) {
-    errorIfUndefined({ contentId, userId });
-    const [content] = await indexBy(ContentId).exact(contentId).get(Content);
-    if (!content) throw new Error("No content found");
+    errorIfUndefined({ contentId, userId })
+    const [content] = await indexBy(ContentId).exact(contentId).get(Content)
+    if (!content) throw new Error('No content found')
 
     if (status) {
-        content.status = status;
-        if (status === "archived" || status === "published") {
-            content.saveWithHistory({ editedBy: userId, title: "Status Updated" });
+        content.status = status
+        if (status === 'archived' || status === 'published') {
+            await content.saveWithHistory({
+                editedBy: userId,
+                title: 'Status Updated',
+            })
         }
     }
 
-    return content;
+    return content
 }
 
 //* Delete content by id */
 export async function deleteContentById(contentId: string) {
-    errorIfUndefined({ contentId });
-    const [content] = await indexBy(ContentId).exact(contentId).get(Content);
+    errorIfUndefined({ contentId })
+    const [content] = await indexBy(ContentId).exact(contentId).get(Content)
     if (!content) {
-        throw new Error("Cannot delete - Content not found");
+        throw new Error('Cannot delete - Content not found')
     }
 
     // remove any relations to content
-    await deleteAllContentRelations(contentId);
+    await deleteAllContentRelations(contentId)
 
-    await content.delete();
+    await content.delete()
 
-    return content;
+    return content
 }
 
 //* Get all content for contentTemplate for project */
@@ -169,79 +167,98 @@ export async function getContentOfTemplate({
     contentTemplateId,
     projectId,
 }: {
-    contentTemplateId: string;
-    projectId?: string;
+    contentTemplateId: string
+    projectId?: string
 }) {
-    errorIfUndefined({ contentTemplateId });
-    const contentTemplate = await getContentTemplateById(contentTemplateId);
+    errorIfUndefined({ contentTemplateId })
+    const contentTemplate = await getContentTemplateById(contentTemplateId)
     if (!contentTemplate) {
-        throw new Error("Content template not found");
+        throw new Error('Content template not found')
     }
-    const contentOfType = await indexBy(ContentTemplate({ templateId: contentTemplate.id }))
-        .exact(projectId ?? "*")
-        .get(Content);
-    return { content: contentOfType, contentTemplate };
+    const contentOfType = await indexBy(
+        ContentTemplate({ templateId: contentTemplate.id })
+    )
+        .exact(projectId ?? '*')
+        .get(Content)
+    return { content: contentOfType, contentTemplate }
 }
 
 //* Update content field values */
 export async function updateContentValues(props: {
-    contentId: string;
+    contentId: string
     values: {
         [fieldId: string]: {
-            value?: Field["value"];
-            note?: Field["note"];
-            assets?: Field["assets"];
-        };
-    };
-    userId: string;
+            value?: Field['value']
+            note?: Field['note']
+            assets?: Field['assets']
+        }
+    }
+    userId: string
 }) {
-    const { contentId, values, userId } = props;
-    errorIfUndefined({ contentId, userId, values });
+    const { contentId, values, userId } = props
+    errorIfUndefined({ contentId, userId, values })
 
-    const contentUpdates: HistoryEntry[] = [];
+    const contentUpdates: HistoryEntry[] = []
 
-    const { content, contentFields } = await getContentById(contentId);
+    const { content, contentFields } = await getContentById(contentId)
 
-    if (!content) throw new Error("No content found");
-    if (!contentFields) throw new Error("No fields to update");
-
+    if (!content) throw new Error('No content found')
+    if (!contentFields) throw new Error('No fields to update')
+    console.log('👉 values >>', values)
     await Promise.all(
-        contentFields.reduce<(Promise<void> | Promise<PublishResult>)[]>((acc, field) => {
-            if (values[field.id]) {
-                // create event for relation so related fields can be lazily updated
-                console.log("values[field.id]", values[field.id]);
-                if (field.type === "relation") {
-                    acc.push(
-                        events.publish("relationField.updated", {
-                            field,
-                            content,
-                            userId,
-                            value: values[field.id]["value"],
-                        })
-                    );
-                }
+        contentFields.reduce<(Promise<void> | Promise<PublishResult>)[]>(
+            (acc, field) => {
+                if (values[field.id]) {
+                    // create event for relation so related fields can be lazily updated
+                    if (field.type === 'relation') {
+                        acc.push(
+                            events.publish('relationField.updated', {
+                                field,
+                                content,
+                                userId,
+                                value: values[field.id]['value'],
+                            })
+                        )
+                    }
 
-                field.lastEditedBy = userId;
-                field.lastEditedTime = new Date().toISOString();
-                if (values[field.id]["value"]) {
-                    field.value = values[field.id]["value"];
-                }
-                if (values[field.id]["note"]) {
-                    field.note = values[field.id]["note"];
-                }
-                if (values[field.id]["assets"]) {
-                    field.assets = values[field.id]["assets"];
-                }
+                    field.lastEditedBy = userId
+                    field.lastEditedTime = new Date().toISOString()
+                    if (values[field.id]['value']) {
+                        field.value = values[field.id]['value']
+                    }
 
-                acc.push(field.save());
+                    // update additional
+                    if (values[field.id]['note']) {
+                        field.note = values[field.id]['note']
+                    }
+                    if (values[field.id]['assets']) {
+                        field.assets = values[field.id]['assets']
+                    }
 
-                return acc;
-            }
-            return acc;
-        }, [])
-    );
+                    if (
+                        values[field.id]['note'] === null ||
+                        values[field.id]['note'] === ''
+                    ) {
+                        field.note = undefined
+                    }
+                    if (
+                        values[field.id]['assets'] === null ||
+                        values[field.id]['assets']?.length === 0
+                    ) {
+                        field.assets = undefined
+                    }
 
-    /*onst updatedFields = (await Promise.all(
+                    acc.push(field.save())
+
+                    return acc
+                }
+                return acc
+            },
+            []
+        )
+    )
+
+    /*const updatedFields = (await Promise.all(
         contentFields.map(async (field) => {
             const { id } = field;
             if (values[id]) {
@@ -280,112 +297,122 @@ export async function updateContentValues(props: {
         })
     )) as unknown as Field[];*/
     //await content.saveWithHistory({ editedBy: userId, title: "Values Updated" });
-    return content;
+    return content
 }
 
 //* Repeat Group */
-export async function repeatGroup(props: { contentId: string; groupId: string; userId: string }) {
-    const { contentId, groupId, userId } = props;
-    errorIfUndefined({ contentId, groupId, userId });
+export async function repeatGroup(props: {
+    contentId: string
+    groupId: string
+    userId: string
+}) {
+    const { contentId, groupId, userId } = props
+    errorIfUndefined({ contentId, groupId, userId })
 
-    const { content } = await getContentById(contentId);
-    if (!content) throw new Error("Content entry not found");
+    const { content, contentFields } = await getContentById(contentId)
+    if (!content) throw new Error('Content entry not found')
 
     /** Group id is for parent of repeated group instances */
-    const { nestedFields, newGroup, nestedGroups } = duplicateGroup({
+    const { nestedFields, newGroup, nestedGroups } = await duplicateGroup({
         content,
+        fields: contentFields,
         groupId,
         userId,
-    });
+    })
 
-    console.log("newFields", nestedFields);
-    console.log("newGroup", newGroup);
-    console.log("newGroups", nestedGroups);
+    content.fieldGroups
+        .find(({ id }) => id === groupId)
+        ?.children.push(newGroup.id)
+    content.fieldGroups.push(...nestedGroups, newGroup)
+    content.fields.push(...nestedFields)
 
-    content.fieldGroups.find(({ id }) => id === groupId)?.children.push(newGroup.id);
-    content.fieldGroups.push(...nestedGroups, newGroup);
-    content.fields.push(...nestedFields);
-
-    await content.save();
+    await content.save()
     /*createRepeatableGroupInstance({
         content,
         groupId,
         userId,
     });*/
-    return content;
+    return content
 }
 
 //* Update content fields */
 export async function updateFields(props: {
-    contentId: string;
-    updates?: Field[];
-    deletions?: Field[];
-    userId: string;
+    contentId: string
+    updates?: Field[]
+    deletions?: Field[]
+    userId: string
 }) {
-    const { contentId, userId, updates, deletions } = props;
+    const { contentId, userId, updates, deletions } = props
 
-    errorIfUndefined({ contentId, userId });
-    const { content } = await getContentById(contentId);
+    errorIfUndefined({ contentId, userId })
+    const { content } = await getContentById(contentId)
 
-    const contentUpdates: HistoryEntry[] = [];
+    const contentUpdates: HistoryEntry[] = []
 
     if (updates?.length) {
-        const updateMap = objArrToKeyIndexedMap(updates, "id");
+        const updateMap = objArrToKeyIndexedMap(updates, 'id')
         const updatedFields = content.fields.map((field) => {
-            const updatedField = updateMap.get(field.id);
+            const updatedField = updateMap.get(field.id)
             if (updatedField) {
                 contentUpdates.push({
-                    type: "property",
+                    type: 'property',
                     fieldId: field.id,
-                    action: "updated",
+                    action: 'updated',
                     fieldType: field.category,
                     fieldName: field.name,
                     changes: getObjectChanges(field, updatedField),
-                });
+                })
                 // delete from map after processed
-                updateMap.delete(field.id);
-                return updatedField;
+                updateMap.delete(field.id)
+                return updatedField
             } else {
-                return field;
+                return field
             }
-        });
+        })
 
         // should only have new fields remaining in map
-        updateMap.forEach((field: Required<Partial<Field>, "name" | "category">) => {
-            const newField = {
-                ...fieldBaseValues({ userId, date: new Date().toISOString() }),
-                ...field,
-            };
-            updatedFields.push(newField as Field);
-            contentUpdates.push({
-                type: "property",
-                fieldId: ulid(),
-                action: "created",
-                fieldType: field.category,
-                fieldName: field.name,
-                changes: getObjectChanges({}, field),
-            });
-        });
+        updateMap.forEach(
+            (field: Required<Partial<Field>, 'name' | 'category'>) => {
+                const newField = {
+                    ...fieldBaseValues({
+                        userId,
+                        date: new Date().toISOString(),
+                    }),
+                    ...field,
+                }
+                updatedFields.push(newField as Field)
+                contentUpdates.push({
+                    type: 'property',
+                    fieldId: ulid(),
+                    action: 'created',
+                    fieldType: field.category,
+                    fieldName: field.name,
+                    changes: getObjectChanges({}, field),
+                })
+            }
+        )
 
-        content.fields = updatedFields;
+        content.fields = updatedFields
     }
 
     if (deletions?.length) {
-        const deletionsMap = objArrToKeyIndexedMap(deletions, "id");
+        const deletionsMap = objArrToKeyIndexedMap(deletions, 'id')
         deletions.forEach((deletion) => {
             contentUpdates.push({
-                type: "property",
+                type: 'property',
                 fieldId: deletion.id,
-                action: "deleted",
+                action: 'deleted',
                 fieldType: deletion.category,
                 fieldName: deletion.name,
-            });
-        });
-        content.fields = content.fields.filter(({ id }) => !deletionsMap.get(id));
+            })
+        })
+        content.fields = content.fields.filter(
+            ({ id }) => !deletionsMap.get(id)
+        )
     }
 
-    await content.saveWithHistory({ editedBy: userId, title: "Fields Updated" });
-    return content;
+    await content.saveWithHistory({ editedBy: userId, title: 'Fields Updated' })
+    return content
 }
 
 // To run when contentTemplate update event is fired
@@ -472,67 +499,68 @@ export async function handleContentTemplateChange({
     historyEntry,
     templateId,
 }: {
-    historyEntry: HistoryEntry;
-    templateId: string;
+    historyEntry: HistoryEntry
+    templateId: string
 }) {
     const { content, contentTemplate } = await getContentOfTemplate({
         contentTemplateId: templateId,
-    });
-    const { propertyUpdate } = historyEntry;
+    })
+    const { propertyUpdate } = historyEntry
     // if a property has been updated need to make changes to content entries
-    if (propertyUpdate && propertyUpdate.fieldType === "TemplateProperty") {
+    if (propertyUpdate && propertyUpdate.fieldType === 'TemplateProperty') {
         const contentPromises = content.map((contentEntry) => {
             // initialise updates
-            let updates: Field[] = [];
+            let updates: Field[] = []
 
             // if property deleted on template change property category to additional
-            if (propertyUpdate.action === "deleted") {
+            if (propertyUpdate.action === 'deleted') {
                 const field = contentEntry.fields.find(
-                    ({ templateFieldId }) => templateFieldId === propertyUpdate.fieldId
-                );
+                    ({ templateFieldId }) =>
+                        templateFieldId === propertyUpdate.fieldId
+                )
                 if (field) {
                     updates.push({
                         ...field,
                         // convert relation field to one way
-                        ...(field.type === "relation" && {
+                        ...(field.type === 'relation' && {
                             isReciprocal: false,
-                            reciprocalPropertyId: "",
-                            reciprocalPropertyName: "",
+                            reciprocalPropertyId: '',
+                            reciprocalPropertyName: '',
                         }),
-                        templateFieldId: "",
-                        category: "additional",
+                        templateFieldId: '',
+                        category: 'additional',
                         required: false,
                         active: true,
-                    });
+                    })
                 }
             }
 
-            // if proprty added, add property to content but set as inactive
-            if (propertyUpdate.action === "created") {
+            // if property added, add property to content but set as inactive
+            if (propertyUpdate.action === 'created') {
                 const property = contentTemplate.properties.find(
                     ({ id }) => id === propertyUpdate.fieldId
-                );
+                )
                 if (property) {
                     const newProperty = fieldFromTemplateProperty({
                         property,
                         userId: historyEntry.userId,
                         date: new Date().toISOString(),
                         overrides: { active: false },
-                    });
-                    updates.push(newProperty);
+                    })
+                    updates.push(newProperty)
                 }
             }
 
-            if (propertyUpdate.action === "updated") {
+            if (propertyUpdate.action === 'updated') {
             }
 
             return updateFields({
                 contentId: contentEntry.id,
                 updates,
                 userId: historyEntry.userId,
-            });
-        });
-        await Promise.all(contentPromises);
+            })
+        })
+        await Promise.all(contentPromises)
     }
 }
 
@@ -541,41 +569,44 @@ export async function UpdateContentFromTemplate({
     contentId,
     userId,
 }: {
-    contentId: string;
-    userId: string;
+    contentId: string
+    userId: string
 }) {
-    const { content, contentTemplate } = await getContentById(contentId);
-    errorIfUndefined({ content, contentTemplate, userId });
+    const { content, contentTemplate } = await getContentById(contentId)
+    errorIfUndefined({ content, contentTemplate, userId })
 
     // create hash map of Fields indexed by field id
-    const contentMap = content.fields.reduce<{ [fieldId: string]: Field }>((acc, curr) => {
-        if (curr.templateFieldId) {
-            return { ...acc, [curr.templateFieldId]: curr };
-        } else {
-            return acc;
-        }
-    }, {});
+    const contentMap = content.fields.reduce<{ [fieldId: string]: Field }>(
+        (acc, curr) => {
+            if (curr.templateFieldId) {
+                return { ...acc, [curr.templateFieldId]: curr }
+            } else {
+                return acc
+            }
+        },
+        {}
+    )
 
-    const contentUpdates: ContentHistory["contentUpdates"] = [];
+    const contentUpdates: ContentHistory['contentUpdates'] = []
 
-    const date = new Date().toISOString();
+    const date = new Date().toISOString()
     // update field if exists on content, else create or remove
     content.fields = contentTemplate?.fields
         ? contentTemplate.properties.map((field) => {
-              const fieldId = contentMap[field?.id]?.id ?? ulid();
+              const fieldId = contentMap[field?.id]?.id ?? ulid()
 
               // if value doesn't exist for field and default value does
               // then field will be updated, so needs to be pushed to history
               if (!contentMap[field?.id]?.value && field.defaultValue) {
                   contentUpdates.push({
-                      type: "value",
+                      type: 'value',
                       fieldId,
                       change: {
                           to: field.defaultValue,
                       },
-                      note: "Set from default value",
+                      note: 'Set from default value',
                       fieldName: field.name,
-                  });
+                  })
               }
               return {
                   ...field,
@@ -588,10 +619,13 @@ export async function UpdateContentFromTemplate({
                   ...(contentMap[field?.id]?.value
                       ? { value: contentMap[field.id].value }
                       : field.defaultValue && { value: field.defaultValue }),
-              };
+              }
           })
-        : [];
+        : []
 
-    content.saveWithHistory({ editedBy: userId, title: "Updated from template" });
-    return content;
+    content.saveWithHistory({
+        editedBy: userId,
+        title: 'Updated from template',
+    })
+    return content
 }

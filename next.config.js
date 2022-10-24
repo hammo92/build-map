@@ -1,6 +1,11 @@
-import withCloud from "@serverless/cloud/nextjs";
+import withCloud from '@serverless/cloud/nextjs'
 
 export default withCloud({
-    output: "standalone",
-    reactStrictMode: true,
-});
+    //reactStrictMode: true,
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
+    output: 'standalone',
+})

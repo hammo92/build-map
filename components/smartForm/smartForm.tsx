@@ -24,6 +24,7 @@ import { SmartFormSlider } from "./smartForm-slider";
 import { SmartFormTextarea } from "./smartForm-textarea";
 import { SmartFormTextInput } from "./smartForm-textInput";
 import { SmartFormTimeInput } from "./smartForm-timeInput";
+import { SmartFormOptionList } from "./smartForm-optionList";
 
 interface SmartFormProps<FormValues extends FieldValues> extends UseFormProps {
     formName: string;
@@ -102,6 +103,7 @@ SmartForm.Assets = SmartFormAssets;
 SmartForm.JsonInput = SmartFormJsonInput;
 SmartForm.MultiSelect = SmartFormMultiSelect;
 SmartForm.NumberInput = SmartFormNumberInput;
+SmartForm.OptionList = SmartFormOptionList;
 SmartForm.PasswordInput = SmartFormPasswordInput;
 SmartForm.RadioGroup = SmartFormRadioGroup;
 SmartForm.RichText = SmartFormRichText;

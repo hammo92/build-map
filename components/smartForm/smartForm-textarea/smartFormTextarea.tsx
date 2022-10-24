@@ -1,13 +1,13 @@
-import { Textarea, TextareaProps } from "@mantine/core";
-import { SmartFormDefaultController } from "../smartForm-defaultController";
-import { SmartFormInputBaseProps } from "../types";
+import { Textarea, TextareaProps } from '@mantine/core'
+import { SmartFormController } from '../smartForm-controller'
+import { SmartFormInputBaseProps } from '../types'
 
-type SmartFormTextareaProps = SmartFormInputBaseProps & TextareaProps;
+type SmartFormTextareaProps = SmartFormInputBaseProps & TextareaProps
 
 export const SmartFormTextarea = (props: SmartFormTextareaProps) => {
     return (
-        <SmartFormDefaultController {...props}>
+        <SmartFormController {...props}>
             <Textarea />
-        </SmartFormDefaultController>
-    );
-};
+        </SmartFormController>
+    )
+}

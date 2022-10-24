@@ -1,5 +1,10 @@
 import { IconDefinition } from "@fortawesome/pro-regular-svg-icons";
-import { InputBaseProps, InputWrapperBaseProps } from "@mantine/core";
+import {
+    InputBaseProps,
+    InputStylesNames,
+    InputWrapperBaseProps,
+    InputWrapperStylesNames,
+} from "@mantine/core";
 import { ComponentPropsWithoutRef } from "react";
 
 type ColorOptions =
