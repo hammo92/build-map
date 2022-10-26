@@ -1,6 +1,5 @@
 import { CleanedCamel } from '../../../type-helpers'
-import { Content } from '@lib/content/data/content.model'
-import { Field, Property, PropertyGroup } from '@lib/field/data/field.model'
+import { Field, PropertyGroup } from '@lib/field/data/field.model'
 import { objArrayToHashmap } from '../../../utils/arrayModify'
 import { FieldGroup } from '../field-list/list-grouped'
 
@@ -14,7 +13,6 @@ export const groupFields = ({
     const groupMap = objArrayToHashmap(propertyGroups, 'id')
     const fieldMap = objArrayToHashmap(fields, 'id')
     const combined = { ...groupMap, ...fieldMap }
-
     // root group always exists with id "1"
     const root = groupMap['1']!
 
@@ -40,6 +38,5 @@ export const groupFields = ({
     }
 
     // root group is always present so return will always be a FieldProps Group
-    const fieldGroup = getChildren(root) as FieldGroup
-    return fieldGroup
+    return getChildren(root) as FieldGroup
 }

@@ -200,24 +200,4 @@ export const contentTemplates = () => {
             }
         }
     )
-
-    data.on('updated:object_ContentTemplate:*', async (event) => {
-        const { title, propertyGroups, properties } = event.item
-            .value as ContentTemplate
-        if (title.type === 'contentProperty') {
-            const groupMap = objectify(propertyGroups, (f) => f.id)
-
-            // restrict possible title properties
-            const validProperties = properties.filter(
-                (property) =>
-                    ['date', 'email', 'number', 'text'].includes(
-                        property.type
-                    ) &&
-                    !parentIsRepeatable({
-                        parentGroupId: property.parent,
-                        groupMap,
-                    })
-            )
-        }
-    })
 }

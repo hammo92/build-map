@@ -12,16 +12,23 @@ import {
     ContentTemplateHistory,
     ContentTemplate as ContentTemplateModel,
 } from "../../../lib/contentTemplate/data/contentTemplate.model";*/
-import { HistoryEntry } from '@lib/historyEntry/data/historyEntry.model'
+import { HistoryEntry } from '../../../lib/historyEntry/data/historyEntry.model'
 import { events, PublishResult } from '@serverless/cloud'
 import { Required } from 'utility-types'
-import { Field, FieldCollection } from '../../../lib/field/data/field.model'
-import { deleteAllContentRelations } from '../../../lib/relation/data'
 import { objArrToKeyIndexedMap } from '../../../utils/arrayModify'
 import { getObjectChanges } from '../../../utils/objects'
-import { fieldBaseValues, fieldFromTemplateProperty } from './functions/field'
+import {
+    fieldBaseValues,
+    fieldFromTemplateProperty,
+    generateFields,
+    getContentTitle,
+} from './functions/field'
 import { duplicateGroup, generateFieldGroups } from './functions/group'
-
+import { Field, FieldCollection } from '../../../lib/field/data/field.model'
+import { deleteAllContentRelations } from '../../../lib/relation/data'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+import dayjs from 'dayjs'
+dayjs.extend(customParseFormat)
 //* Create content */
 export async function createContent({
     contentTemplateId,
@@ -35,37 +42,37 @@ export async function createContent({
     fields?: Field[]
 }) {
     errorIfUndefined({ contentTemplateId, projectId, userId })
+
     const contentTemplate = await getContentTemplateById(contentTemplateId)
     if (!contentTemplate) {
         throw new Error('Content template not found')
     }
-    const date = new Date().toISOString()
 
-    // create contentTemplate //
+    contentTemplate.draftCounter = contentTemplate.draftCounter + 1 ?? 1
+
+    //! warning don't place in end promise block
+    //TODO Check why saving at end breaks template
+    await contentTemplate.save()
+
+    // create content //
     const newContent = new Content({ userId })
     newContent.contentTemplateId = contentTemplateId
     newContent.projectId = projectId
     newContent.status = 'draft'
+    newContent.entryNumber = contentTemplate.draftCounter
 
-    const Fields = contentTemplate.properties
-        .filter((property) => property.active !== false && !property.archived)
-        .map((property) => {
-            return fieldFromTemplateProperty({
-                property,
-                type: property.type,
-                userId,
-                date,
-                parent: newContent.id,
-            })
-        })
-
-    newContent.fields = Fields.map(({ id }) => id)
-    newContent.fieldGroups = generateFieldGroups({
-        fields: Fields,
-        propertyGroups: contentTemplate.propertyGroups,
+    const newFields = generateFields({
+        content: newContent,
+        contentTemplate,
+        userId,
     })
 
-    /*newContent.fields = 
+    newContent.fieldGroups = generateFieldGroups({
+        fields: newFields,
+        propertyGroups: contentTemplate.propertyGroups,
+    })
+    newContent.fields = newFields.map(({ id }) => id)
+    /*newContent.fields =
         /*contentUpdates.push({
             type: "property",
             action: "created",
@@ -85,13 +92,15 @@ export async function createContent({
             });
         }
 
-        
+
     });*/
-    await Promise.all(Fields.map((field) => field.save()))
-    await newContent.saveWithHistory({
-        editedBy: userId,
-        title: `${contentTemplate.name} Created`,
-    })
+    await Promise.all([
+        ...newFields.map((field) => field.save()),
+        newContent.saveWithHistory({
+            editedBy: userId,
+            title: `${contentTemplate.name} Created`,
+        }),
+    ])
 
     return { newContent, contentTemplate }
 }
@@ -116,6 +125,7 @@ export async function getContentById(contentId: string) {
         content.contentTemplateId
     )
     const contentFields = await getContentFields(content.id)
+    content.title = getContentTitle({ content, contentFields, contentTemplate })
     return { content, contentTemplate, contentFields }
 }
 
@@ -129,19 +139,30 @@ export async function updateContentStatus({
     status?: ContentStatus
     userId: string
 }) {
-    errorIfUndefined({ contentId, userId })
+    errorIfUndefined({ contentId, userId, status })
     const [content] = await indexBy(ContentId).exact(contentId).get(Content)
     if (!content) throw new Error('No content found')
 
-    if (status) {
-        content.status = status
-        if (status === 'archived' || status === 'published') {
-            await content.saveWithHistory({
-                editedBy: userId,
-                title: 'Status Updated',
-            })
-        }
-    }
+    if (content.status === status) return content
+
+    const promises = []
+
+    /*if (content.status === 'draft' && status === 'published') {
+        const template = await getContentTemplateById(content.contentTemplateId)
+        template.publishedCounter = template.publishedCounter++
+        content.entryNumber = template.publishedCounter
+        promises.push(template.save())
+    }*/
+    content.status = status!
+
+    promises.push(
+        content.saveWithHistory({
+            editedBy: userId,
+            title: 'Status Updated',
+        })
+    )
+
+    await Promise.all(promises)
 
     return content
 }
@@ -175,11 +196,13 @@ export async function getContentOfTemplate({
     if (!contentTemplate) {
         throw new Error('Content template not found')
     }
+
     const contentOfType = await indexBy(
-        ContentTemplate({ templateId: contentTemplate.id })
-    )
-        .exact(projectId ?? '*')
-        .get(Content)
+        ContentTemplate({
+            templateId: contentTemplate.id,
+            projectId: projectId!,
+        })
+    ).get(Content)
     return { content: contentOfType, contentTemplate }
 }
 
@@ -495,137 +518,137 @@ export async function updateFields(props: {
     });
 }*/
 
-export async function handleContentTemplateChange({
-    historyEntry,
-    templateId,
-}: {
-    historyEntry: HistoryEntry
-    templateId: string
-}) {
-    const { content, contentTemplate } = await getContentOfTemplate({
-        contentTemplateId: templateId,
-    })
-    const { propertyUpdate } = historyEntry
-    // if a property has been updated need to make changes to content entries
-    if (propertyUpdate && propertyUpdate.fieldType === 'TemplateProperty') {
-        const contentPromises = content.map((contentEntry) => {
-            // initialise updates
-            let updates: Field[] = []
-
-            // if property deleted on template change property category to additional
-            if (propertyUpdate.action === 'deleted') {
-                const field = contentEntry.fields.find(
-                    ({ templateFieldId }) =>
-                        templateFieldId === propertyUpdate.fieldId
-                )
-                if (field) {
-                    updates.push({
-                        ...field,
-                        // convert relation field to one way
-                        ...(field.type === 'relation' && {
-                            isReciprocal: false,
-                            reciprocalPropertyId: '',
-                            reciprocalPropertyName: '',
-                        }),
-                        templateFieldId: '',
-                        category: 'additional',
-                        required: false,
-                        active: true,
-                    })
-                }
-            }
-
-            // if property added, add property to content but set as inactive
-            if (propertyUpdate.action === 'created') {
-                const property = contentTemplate.properties.find(
-                    ({ id }) => id === propertyUpdate.fieldId
-                )
-                if (property) {
-                    const newProperty = fieldFromTemplateProperty({
-                        property,
-                        userId: historyEntry.userId,
-                        date: new Date().toISOString(),
-                        overrides: { active: false },
-                    })
-                    updates.push(newProperty)
-                }
-            }
-
-            if (propertyUpdate.action === 'updated') {
-            }
-
-            return updateFields({
-                contentId: contentEntry.id,
-                updates,
-                userId: historyEntry.userId,
-            })
-        })
-        await Promise.all(contentPromises)
-    }
-}
-
-//* Update content from latest Template state //
-export async function UpdateContentFromTemplate({
-    contentId,
-    userId,
-}: {
-    contentId: string
-    userId: string
-}) {
-    const { content, contentTemplate } = await getContentById(contentId)
-    errorIfUndefined({ content, contentTemplate, userId })
-
-    // create hash map of Fields indexed by field id
-    const contentMap = content.fields.reduce<{ [fieldId: string]: Field }>(
-        (acc, curr) => {
-            if (curr.templateFieldId) {
-                return { ...acc, [curr.templateFieldId]: curr }
-            } else {
-                return acc
-            }
-        },
-        {}
-    )
-
-    const contentUpdates: ContentHistory['contentUpdates'] = []
-
-    const date = new Date().toISOString()
-    // update field if exists on content, else create or remove
-    content.fields = contentTemplate?.fields
-        ? contentTemplate.properties.map((field) => {
-              const fieldId = contentMap[field?.id]?.id ?? ulid()
-
-              // if value doesn't exist for field and default value does
-              // then field will be updated, so needs to be pushed to history
-              if (!contentMap[field?.id]?.value && field.defaultValue) {
-                  contentUpdates.push({
-                      type: 'value',
-                      fieldId,
-                      change: {
-                          to: field.defaultValue,
-                      },
-                      note: 'Set from default value',
-                      fieldName: field.name,
-                  })
-              }
-              return {
-                  ...field,
-                  id: fieldId,
-                  templateFieldId: field?.id,
-                  lastEditedTime: date,
-                  lastEditedBy: userId,
-                  createdBy: contentMap[field?.id]?.createdBy ?? userId,
-                  createdTime: contentMap[field?.id]?.createdTime ?? date,
-                  ...(contentMap[field?.id]?.value
-                      ? { value: contentMap[field.id].value }
-                      : field.defaultValue && { value: field.defaultValue }),
-              }
-          })
-        : []
-
-    content.saveWithHistory({
-        editedBy: userId,
-        title: 'Updated from template',
-    })
-    return content
-}
+// export async function handleContentTemplateChange({
+//     historyEntry,
+//     templateId,
+// }: {
+//     historyEntry: HistoryEntry
+//     templateId: string
+// }) {
+//     const { content, contentTemplate } = await getContentOfTemplate({
+//         contentTemplateId: templateId,
+//     })
+//     const { propertyUpdate } = historyEntry
+//     // if a property has been updated need to make changes to content entries
+//     if (propertyUpdate && propertyUpdate.fieldType === 'TemplateProperty') {
+//         const contentPromises = content.map((contentEntry) => {
+//             // initialise updates
+//             let updates: Field[] = []
+//
+//             // if property deleted on template change property category to additional
+//             if (propertyUpdate.action === 'deleted') {
+//                 const field = contentEntry.fields.find(
+//                     ({ templateFieldId }) =>
+//                         templateFieldId === propertyUpdate.fieldId
+//                 )
+//                 if (field) {
+//                     updates.push({
+//                         ...field,
+//                         // convert relation field to one way
+//                         ...(field.type === 'relation' && {
+//                             isReciprocal: false,
+//                             reciprocalPropertyId: '',
+//                             reciprocalPropertyName: '',
+//                         }),
+//                         templateFieldId: '',
+//                         category: 'additional',
+//                         required: false,
+//                         active: true,
+//                     })
+//                 }
+//             }
+//
+//             // if property added, add property to content but set as inactive
+//             if (propertyUpdate.action === 'created') {
+//                 const property = contentTemplate.properties.find(
+//                     ({ id }) => id === propertyUpdate.fieldId
+//                 )
+//                 if (property) {
+//                     const newProperty = fieldFromTemplateProperty({
+//                         property,
+//                         userId: historyEntry.userId,
+//                         date: new Date().toISOString(),
+//                         overrides: { active: false },
+//                     })
+//                     updates.push(newProperty)
+//                 }
+//             }
+//
+//             if (propertyUpdate.action === 'updated') {
+//             }
+//
+//             return updateFields({
+//                 contentId: contentEntry.id,
+//                 updates,
+//                 userId: historyEntry.userId,
+//             })
+//         })
+//         await Promise.all(contentPromises)
+//     }
+// }
+//
+// //* Update content from latest Template state //
+// export async function UpdateContentFromTemplate({
+//     contentId,
+//     userId,
+// }: {
+//     contentId: string
+//     userId: string
+// }) {
+//     const { content, contentTemplate } = await getContentById(contentId)
+//     errorIfUndefined({ content, contentTemplate, userId })
+//
+//     // create hash map of Fields indexed by field id
+//     const contentMap = content.fields.reduce<{ [fieldId: string]: Field }>(
+//         (acc, curr) => {
+//             if (curr.templateFieldId) {
+//                 return { ...acc, [curr.templateFieldId]: curr }
+//             } else {
+//                 return acc
+//             }
+//         },
+//         {}
+//     )
+//
+//     const contentUpdates: ContentHistory['contentUpdates'] = []
+//
+//     const date = new Date().toISOString()
+//     // update field if exists on content, else create or remove
+//     content.fields = contentTemplate?.fields
+//         ? contentTemplate.properties.map((field) => {
+//               const fieldId = contentMap[field?.id]?.id ?? ulid()
+//
+//               // if value doesn't exist for field and default value does
+//               // then field will be updated, so needs to be pushed to history
+//               if (!contentMap[field?.id]?.value && field.defaultValue) {
+//                   contentUpdates.push({
+//                       type: 'value',
+//                       fieldId,
+//                       change: {
+//                           to: field.defaultValue,
+//                       },
+//                       note: 'Set from default value',
+//                       fieldName: field.name,
+//                   })
+//               }
+//               return {
+//                   ...field,
+//                   id: fieldId,
+//                   templateFieldId: field?.id,
+//                   lastEditedTime: date,
+//                   lastEditedBy: userId,
+//                   createdBy: contentMap[field?.id]?.createdBy ?? userId,
+//                   createdTime: contentMap[field?.id]?.createdTime ?? date,
+//                   ...(contentMap[field?.id]?.value
+//                       ? { value: contentMap[field.id].value }
+//                       : field.defaultValue && { value: field.defaultValue }),
+//               }
+//           })
+//         : []
+//
+//     content.saveWithHistory({
+//         editedBy: userId,
+//         title: 'Updated from template',
+//     })
+//     return content
+// }

@@ -77,7 +77,10 @@ export interface GetFieldProps {
     fieldId: string
 }
 
-export async function getField({ fieldId, userId }: WithUser<GetFieldProps>) {
+export async function getField({
+    fieldId,
+    userId,
+}: Partial<WithUser<GetFieldProps>>) {
     errorIfUndefined({ fieldId })
     const [field] = await indexBy(FieldId).exact(fieldId).get(Field)
     return field

@@ -7,7 +7,13 @@ type SmartFormCheckboxProps = SmartFormInputBaseProps & CheckboxProps
 // Checkbox needs checked rather than value prop
 const Check = (props: CheckboxProps & { value?: string | boolean }) => {
     let value = ['true', 'yes', true].includes(props.value ?? '')
-    return <Checkbox {...props} checked={value} />
+    return (
+        <Checkbox
+            {...props}
+            checked={value}
+            styles={{ input: { cursor: 'pointer' } }}
+        />
+    )
 }
 
 export const SmartFormCheckbox = (props: SmartFormCheckboxProps) => {

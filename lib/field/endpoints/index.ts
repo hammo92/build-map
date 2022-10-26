@@ -115,7 +115,10 @@ export const field = () => {
 
     /** Remove all fields when content is deleted */
     data.on('deleted:object_Content:*', async (event) => {
-        await deleteFieldCollection(event.item.value.id)
+        await deleteFieldCollection({
+            collectionId: event.item.value.id,
+            userId: event.item.value.lastEditedBy,
+        })
     })
 
     /** Remove all fields when content is deleted */

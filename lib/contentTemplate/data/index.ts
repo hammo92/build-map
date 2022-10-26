@@ -1,4 +1,4 @@
-import { data, params } from '@serverless/cloud'
+import { params } from '@serverless/cloud'
 import { PartialProperty } from '@state/propertyManager'
 
 import { Oso } from 'oso-cloud'
@@ -13,7 +13,6 @@ import {
 import {
     HistoryEntry,
     Note,
-    Notes,
 } from '../../../lib/historyEntry/data/historyEntry.model'
 import { splitCamel } from '../../../utils/stringTransform'
 import { errorIfUndefined } from '../../utils'
@@ -70,6 +69,8 @@ export async function createContentTemplate({
         type: 'contentInfo',
         value: 'id',
     }
+    newContentTemplate.draftCounter = 0
+    newContentTemplate.publishedCounter = 0
 
     await newContentTemplate.saveWithHistory({
         editedBy: userId,
@@ -91,10 +92,9 @@ export async function getContentTemplateById(contentTemplateId: string) {
 //* Get Organisation's contentTemplates */
 export async function getOrganisationContentTemplates(organisationId: string) {
     errorIfUndefined({ organisationId })
-    const contentTemplates = await indexBy(
-        ContentTemplateOrganisation(organisationId)
-    ).get(ContentTemplate)
-    return contentTemplates
+    return await indexBy(ContentTemplateOrganisation(organisationId)).get(
+        ContentTemplate
+    )
 }
 
 //* Delete contentTemplate by id */

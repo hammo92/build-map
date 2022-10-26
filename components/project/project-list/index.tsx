@@ -1,12 +1,16 @@
-import { useGetMyProjects } from "@data/projects/hooks";
-import { Stack, Text } from "@mantine/core";
-import { FC } from "react";
-import { ProjectListItem } from "./project-list-item";
-import { useStyles } from "./styles";
+import { useGetMyProjects, useGetOrgProjects } from '@data/projects/hooks'
+import { Stack, Text } from '@mantine/core'
+import { FC } from 'react'
+import { ProjectListItem } from './project-list-item'
+import { useStyles } from './styles'
 
-export const ProjectList: FC = () => {
-    const { data, isLoading } = useGetMyProjects();
-    const { classes } = useStyles();
+interface ProjectListProps {
+    organisationId: string
+}
+
+export const ProjectList = ({ organisationId }: ProjectListProps) => {
+    const { data, isLoading } = useGetOrgProjects({ organisationId })
+    const { classes } = useStyles()
     if (data?.projects.length) {
         return (
             <>
@@ -16,7 +20,7 @@ export const ProjectList: FC = () => {
                     ))}
                 </Stack>
             </>
-        );
+        )
     }
-    return <Text>No Projects Found</Text>;
-};
+    return <Text>No Projects Found</Text>
+}

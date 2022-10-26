@@ -1,55 +1,83 @@
 //* content model and indexes //
 
-import { PropertyGroup } from "@lib/field/data/field.model";
-import { buildIndex, indexBy } from "serverless-cloud-data-utils";
-import { ModelWithHistory } from "../../../lib/models";
+import { PropertyGroup } from '@lib/field/data/field.model'
+import {
+    buildIndex,
+    indexBy,
+    Model,
+    timekey,
+} from 'serverless-cloud-data-utils'
+import { ModelWithHistory } from '../../../lib/models'
 
-export type FieldGroup = PropertyGroup;
+export type FieldGroup = PropertyGroup
 
-export type ContentStatus = "draft" | "published" | "archived";
+export type ContentStatus = 'draft' | 'published' | 'archived'
 
 // To get content by it's ID *//
 //namespace content:${contentId} */
-export const ContentId = buildIndex({ namespace: `content`, label: "label1" });
+export const ContentId = buildIndex({ namespace: `content`, label: 'label1' })
 
 // To get a content by templateId, filter by project  *//
-//namespace content:template_${templateId}:${projectId} */
-export const ContentTemplate = ({ templateId }: { templateId: string }) =>
-    buildIndex({
-        namespace: `content:template_${templateId}`,
-        label: "label2",
-    });
-
-// To get a content by outdated status  *//
-//namespace content:outdated_${outdated}:template_${templateId}:${contentId} */
-export const ContentOutdated = ({
-    outdated,
+//namespace content:template_${templateId}:project_${projectId}:lastEditedTime */
+export const ContentTemplate = ({
     templateId,
+    projectId,
 }: {
-    outdated: boolean;
-    templateId: string;
+    templateId: string
+    projectId: string
 }) =>
     buildIndex({
-        namespace: `content:outdated_${outdated}:templateId_${templateId}`,
-        label: "label2",
-    });
+        namespace: `content:template_${templateId}:project_${projectId}`,
+        label: 'label2',
+        converter: timekey,
+    })
+
+// To get a content by templateId, filter by project and status  *//
+//namespace content:template_${templateId}:project_${projectId}:status_${string}:(createdAt || publishedAt) */
+export const ContentStatus = ({
+    templateId,
+    projectId,
+    status,
+}: {
+    templateId: string
+    projectId: string
+    status: ContentStatus
+}) =>
+    buildIndex({
+        namespace: `content:template_${templateId}:project_${projectId}:status_${status}`,
+        label: 'label3',
+        converter: timekey,
+    })
 
 //model: Content */
 export class Content extends ModelWithHistory<Content> {
-    object = "Content";
-    contentTemplateId: string;
-    projectId: string;
-    publishTime: string;
-    status: "draft" | "published" | "archived";
-    fields: string[];
-    fieldGroups: FieldGroup[];
-    contentTemplateVersion: string;
-    title: string;
+    object = 'Content'
+    contentTemplateId: string
+    projectId: string
+    publishTime: string
+    status: ContentStatus
+    fields: string[]
+    fieldGroups: FieldGroup[]
+    contentTemplateVersion: string
+    title: string
+    entryNumber: number
 
     modelKeys() {
         return [
             indexBy(ContentId).exact(this.id),
-            indexBy(ContentTemplate({ templateId: this.contentTemplateId })).exact(this.projectId),
-        ];
+            indexBy(
+                ContentTemplate({
+                    templateId: this.contentTemplateId,
+                    projectId: this.projectId,
+                })
+            ).exact(this.lastEditedTime),
+            indexBy(
+                ContentStatus({
+                    templateId: this.contentTemplateId,
+                    projectId: this.projectId,
+                    status: this.status,
+                })
+            ).exact(this.createdTime),
+        ]
     }
 }

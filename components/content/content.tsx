@@ -92,6 +92,14 @@ export const Content = ({
     if (data?.contentFields && data.content) {
         const defaultValues = convertContentDataForSmartForm(data.contentFields)
 
+        console.log(
+            'fieldGroups',
+            groupFields({
+                propertyGroups: data.content.fieldGroups,
+                fields: data.contentFields,
+            })
+        )
+
         // split into categories
         const { active, hidden, additional } = data.contentFields.reduce<{
             active: CleanedCamel<Field>[]
@@ -111,10 +119,6 @@ export const Content = ({
             { active: [], hidden: [], additional: [] }
         )
         const onSubmit = async (values: any) => {
-            console.log(
-                'convertFormData(values), :>> ',
-                convertFormData(values)
-            )
             await mutateAsync({
                 contentId: content.id,
                 values: convertFormData(values),
@@ -173,8 +177,8 @@ export const Content = ({
                                                                 {hidden?.length}{' '}
                                                                 {hidden?.length ===
                                                                 1
-                                                                    ? 'tempate field is'
-                                                                    : 'tempate fields are'}{' '}
+                                                                    ? 'template field is'
+                                                                    : 'template fields are'}{' '}
                                                                 hidden
                                                             </Text>
                                                             <ContentFieldManager
@@ -197,10 +201,7 @@ export const Content = ({
                                                                 fields: data.contentFields,
                                                             }
                                                         )}
-                                                        content={data.content}
-                                                        contentFields={
-                                                            data.contentFields
-                                                        }
+                                                        contentId={content.id}
                                                     />
                                                 )}
                                             </>

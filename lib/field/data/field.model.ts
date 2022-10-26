@@ -4,6 +4,7 @@ import { BaseModel } from '../../models'
 import { buildIndex, indexBy } from 'serverless-cloud-data-utils'
 import { DistributiveClean, StripModel } from 'type-helpers'
 import { Option } from '../../../lib/responseSet/data/responseSet.model'
+import { TitleElementProps } from '@components/ui/title/title-builder/titleBuilder-element'
 
 export interface FieldTitle {
     setType: 'manual' | 'auto'
@@ -99,6 +100,18 @@ export class Field<T extends FieldType = FieldType> extends BaseModel<
         ? never
         : any
 
+    /* title field options */
+    stringTemplate?: T extends 'title'
+        ? TitleElementProps[]
+        : T extends FieldType
+        ? never
+        : any
+    useTemplate?: T extends 'title'
+        ? boolean
+        : T extends FieldType
+        ? never
+        : any
+
     modelKeys() {
         return [
             indexBy(FieldId).exact(this.id),
@@ -158,7 +171,7 @@ export type FieldType =
     | 'assignee'
 
 type BooleanValue = 'checkbox'
-type StringValue = 'date' | 'email' | 'richText' | 'text' | 'deadline'
+type StringValue = 'date' | 'email' | 'richText' | 'text' | 'deadline' | 'title'
 type StringArrayValue = 'image' | 'relation'
 type OptionValue = 'multiSelect' | 'select'
 type NumberValue = 'number'

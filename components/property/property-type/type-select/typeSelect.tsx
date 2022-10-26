@@ -75,9 +75,13 @@ export const TypeSelect = ({ onSelect }: typeSelectProps) => {
     return (
         <Stack spacing={'sm'}>
             <Title order={5}>Unique Properties</Title>
-            <SimpleGrid cols={2}>{single}</SimpleGrid>
+            <SimpleGrid cols={2} spacing={'sm'}>
+                {single}
+            </SimpleGrid>
             <Title order={5}>Repeatable Properties</Title>
-            <SimpleGrid cols={2}>{multiple}</SimpleGrid>
+            <SimpleGrid cols={2} spacing={'sm'}>
+                {multiple}
+            </SimpleGrid>
         </Stack>
     )
 }

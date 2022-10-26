@@ -2,7 +2,12 @@
 
 import { FieldType, Property, PropertyGroup } from '@lib/field/data/field.model'
 import { HistoryEntry } from '@lib/historyEntry/data/historyEntry.model'
-import { buildIndex, indexBy, timekey } from 'serverless-cloud-data-utils'
+import {
+    buildIndex,
+    indexBy,
+    Model,
+    timekey,
+} from 'serverless-cloud-data-utils'
 import { Icon } from '../../../components/ui/iconPicker/types'
 import { BaseModel, ModelWithHistory } from '../../models'
 
@@ -50,6 +55,10 @@ export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
     properties: Property<FieldType>[]
     propertyGroups: PropertyGroup[]
     title: ContentTemplateTitle
+
+    //* counters for content instances created *//
+    draftCounter: number
+    publishedCounter: number
 
     modelKeys() {
         return [
