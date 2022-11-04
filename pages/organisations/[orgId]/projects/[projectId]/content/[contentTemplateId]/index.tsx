@@ -12,7 +12,7 @@ import camelcaseKeys from "camelcase-keys";
 import { getCookie } from "cookies-next";
 import { NestedProjectLayout } from "layouts/layouts-nested/nested-projectLayout";
 import { GetServerSidePropsContext } from "next";
-import Image from "next/image";
+import Image from "next/legacy/image";
 import pluralize from "pluralize";
 import { ReactElement, useEffect, useMemo, useState } from "react";
 import { CleanedCamel, CleanedSnake } from "type-helpers";

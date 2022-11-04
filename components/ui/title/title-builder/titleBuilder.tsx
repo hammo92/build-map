@@ -37,6 +37,7 @@ export const TitleBuilder = ({
         ],
         onChange,
     })
+    console.log('👉 _value >>', _value)
 
     const addItem = (props: TitleElementProps) => {
         // add item with a text input field

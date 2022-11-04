@@ -8,6 +8,7 @@ import {
     updateContentStatus,
     updateContentValues,
 } from '../data'
+import { deleteGroup } from '../../../lib/content/data/functions/group'
 
 export const content = () => {
     //* Create content */
@@ -149,10 +150,35 @@ export const content = () => {
         `/content/:contentId/groups/:groupId`,
         async function (req: any, res: any) {
             const { contentId, groupId } = req.params
-            const { updates, deletions } = req.body
             const { user } = req
             try {
-                const content = await repeatGroup({
+                const { content, newFields } = await repeatGroup({
+                    contentId,
+                    groupId,
+                    userId: user.id,
+                })
+                return res.status(200).send({
+                    content: content && content.clean(),
+                    newFields:
+                        newFields && newFields.map((field) => field.clean()),
+                })
+            } catch (error: any) {
+                console.log(error)
+                return res.status(403).send({
+                    message: error.message,
+                })
+            }
+        }
+    )
+
+    //* Delete repeatable group entry*/
+    api.delete(
+        `/content/:contentId/groups/:groupId`,
+        async function (req: any, res: any) {
+            const { contentId, groupId } = req.params
+            const { user } = req
+            try {
+                const content = await deleteGroup({
                     contentId,
                     groupId,
                     userId: user.id,

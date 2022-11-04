@@ -1,4 +1,4 @@
-import { WithUser } from '@lib/types/types'
+import { WithUser } from '../../../lib/types/types'
 import camelcaseKeys from 'camelcase-keys'
 import { zip } from 'radash'
 import { indexBy } from 'serverless-cloud-data-utils'
@@ -12,6 +12,7 @@ import {
     FieldType,
     Property,
 } from './field.model'
+import { UNIQUE_FIELDS } from '../../../components/property/property-type/type-select/options'
 
 export function fieldFromTemplateProperty<T extends FieldType>({
     property,
@@ -64,6 +65,7 @@ export async function createField({
     userId,
 }: WithUser<CreateFieldProps>) {
     const newField = new Field({
+        unique: UNIQUE_FIELDS.includes(config.type),
         ...config,
         userId,
     })

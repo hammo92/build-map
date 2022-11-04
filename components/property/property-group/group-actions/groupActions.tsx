@@ -1,21 +1,23 @@
-import { TreeItem } from "@atlaskit/tree";
-import { PropertyCreate } from "@components/property/property-create";
+import { TreeItem } from '@atlaskit/tree'
+import { PropertyCreate } from '@components/property/property-create'
 import {
     faCube,
     faEllipsisV,
     faFolderHeart,
     faFolderPlus,
     faFolderXmark,
-} from "@fortawesome/pro-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { PropertyGroup } from "@lib/field/data/field.model";
-import { ActionIcon, Menu } from "@mantine/core";
-import { GroupCreate } from "../group-create";
-import { GroupDelete } from "../group-delete";
-import { GroupRename } from "../group-rename";
+} from '@fortawesome/pro-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { PropertyGroup } from '@lib/field/data/field.model'
+import { ActionIcon, Menu } from '@mantine/core'
+import { GroupCreate } from '../group-create'
+import { GroupDelete } from '../group-delete'
+import { GroupRename } from '../group-rename'
+import { ConvertGroup } from '@components/property/property-convert/convert-group/convertGroup'
+import { faTableRows } from '@fortawesome/pro-solid-svg-icons'
 
 interface GroupDeleteProps {
-    group: TreeItem;
+    group: TreeItem
 }
 
 export const GroupActions = ({ group }: GroupDeleteProps) => {
@@ -32,7 +34,9 @@ export const GroupActions = ({ group }: GroupDeleteProps) => {
                 <GroupRename
                     groupId={`${group.id}`}
                     component={
-                        <Menu.Item icon={<FontAwesomeIcon icon={faCube} />}>Rename</Menu.Item>
+                        <Menu.Item icon={<FontAwesomeIcon icon={faCube} />}>
+                            Rename
+                        </Menu.Item>
                     }
                 />
                 <Menu.Divider />
@@ -41,24 +45,44 @@ export const GroupActions = ({ group }: GroupDeleteProps) => {
                     parentId={`${group.id}`}
                     isModal
                     buttonElement={
-                        <Menu.Item icon={<FontAwesomeIcon icon={faCube} />}>Property</Menu.Item>
+                        <Menu.Item icon={<FontAwesomeIcon icon={faCube} />}>
+                            Property
+                        </Menu.Item>
                     }
                 />
                 <GroupCreate
                     parentId={`${group.id}`}
                     component={
-                        <Menu.Item icon={<FontAwesomeIcon icon={faFolderPlus} />}>Group</Menu.Item>
+                        <Menu.Item
+                            icon={<FontAwesomeIcon icon={faFolderPlus} />}
+                        >
+                            Group
+                        </Menu.Item>
                     }
                 />
-
+                <Menu.Divider />
+                <Menu.Label>Convert</Menu.Label>
+                <ConvertGroup
+                    group={group}
+                    buttonElement={
+                        <Menu.Item
+                            icon={<FontAwesomeIcon icon={faTableRows} />}
+                        >
+                            Convert to Component
+                        </Menu.Item>
+                    }
+                />
                 <Menu.Divider />
 
-                {`${group.children[0]}`.includes("placeholder") ? (
+                {`${group.children[0]}`.includes('placeholder') ? (
                     <GroupDelete
                         groupId={`${group.id}`}
                         deleteContents={true}
                         component={
-                            <Menu.Item color="red" icon={<FontAwesomeIcon icon={faFolderXmark} />}>
+                            <Menu.Item
+                                color="red"
+                                icon={<FontAwesomeIcon icon={faFolderXmark} />}
+                            >
                                 Delete Group
                             </Menu.Item>
                         }
@@ -70,7 +94,11 @@ export const GroupActions = ({ group }: GroupDeleteProps) => {
                             groupId={`${group.id}`}
                             deleteContents={false}
                             component={
-                                <Menu.Item icon={<FontAwesomeIcon icon={faFolderHeart} />}>
+                                <Menu.Item
+                                    icon={
+                                        <FontAwesomeIcon icon={faFolderHeart} />
+                                    }
+                                >
                                     Keep Contents
                                 </Menu.Item>
                             }
@@ -81,7 +109,9 @@ export const GroupActions = ({ group }: GroupDeleteProps) => {
                             component={
                                 <Menu.Item
                                     color="red"
-                                    icon={<FontAwesomeIcon icon={faFolderXmark} />}
+                                    icon={
+                                        <FontAwesomeIcon icon={faFolderXmark} />
+                                    }
                                 >
                                     Delete Contents
                                 </Menu.Item>
@@ -91,5 +121,5 @@ export const GroupActions = ({ group }: GroupDeleteProps) => {
                 )}
             </Menu.Dropdown>
         </Menu>
-    );
-};
+    )
+}

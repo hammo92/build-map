@@ -34,19 +34,8 @@ export const ContentTemplateOrganisation = (organisationId: string) =>
         converter: timekey,
     })
 
-interface ContentTemplateProps {
-    name: string
-    icon: Icon
-    organisationId: string
-    status: 'draft' | 'archived' | 'published'
-    templateType: 'collection' | 'component'
-    properties: Property[]
-    propertyGroups: PropertyGroup[]
-    title: ContentTemplateTitle
-}
-
 //model: ContentTemplate */
-export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
+export class ContentTemplate extends BaseModel<ContentTemplate> {
     object = 'ContentTemplate'
     icon: Icon
     organisationId: string
@@ -54,7 +43,6 @@ export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
     templateType: 'collection' | 'component' | 'task'
     properties: Property<FieldType>[]
     propertyGroups: PropertyGroup[]
-    title: ContentTemplateTitle
 
     //* counters for content instances created *//
     draftCounter: number
@@ -68,23 +56,9 @@ export class ContentTemplate extends ModelWithHistory<ContentTemplate> {
             ),
         ]
     }
-
-    async saveWithHistory(
-        props: Omit<HistoryEntry, 'id' | 'createdTime'>
-    ): Promise<void> {
-        const propertyHistoryEntry = new PropertyHistory()
-        propertyHistoryEntry.contentTemplateId = this.id
-        propertyHistoryEntry.properties = this.properties
-        propertyHistoryEntry.propertyGroups = this.propertyGroups
-        await propertyHistoryEntry.save()
-        super.saveWithHistory({
-            ...props,
-            linked: { id: propertyHistoryEntry.id, type: 'PropertyHistory' },
-        })
-    }
 }
 
-// To get  propertyHistory by it's ID *//
+// To get  propertyHistory by its ID *//
 //namespace propertyHistory:${propertyHistoryId} */
 export const PropertyHistoryId = buildIndex({
     namespace: `propertyHistory`,

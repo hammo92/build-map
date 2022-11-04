@@ -9,6 +9,7 @@ import { fork, listify, mapValues } from 'radash'
 
 interface typeSelectProps {
     onSelect: (type: FieldType) => void
+    hiddenTypes?: FieldType[]
 }
 
 const TypeCard = ({
@@ -33,7 +34,7 @@ const TypeCard = ({
     )
 }
 
-export const TypeSelect = ({ onSelect }: typeSelectProps) => {
+export const TypeSelect = ({ onSelect, hiddenTypes }: typeSelectProps) => {
     const { propertyMap } = propertyManager
     const usedTypes = [
         ...new Set(listify(propertyMap, (key, value) => value.type)),
@@ -44,7 +45,8 @@ export const TypeSelect = ({ onSelect }: typeSelectProps) => {
         multiple: JSX.Element[]
     }>(
         (acc, option) => {
-            if (option.single) {
+            if (hiddenTypes && hiddenTypes.includes(option.type)) return acc
+            if (option.unique) {
                 acc.single.push(
                     TypeCard({
                         fieldOption: {
@@ -74,14 +76,24 @@ export const TypeSelect = ({ onSelect }: typeSelectProps) => {
 
     return (
         <Stack spacing={'sm'}>
-            <Title order={5}>Unique Properties</Title>
-            <SimpleGrid cols={2} spacing={'sm'}>
-                {single}
-            </SimpleGrid>
-            <Title order={5}>Repeatable Properties</Title>
-            <SimpleGrid cols={2} spacing={'sm'}>
-                {multiple}
-            </SimpleGrid>
+            {!!single.length && (
+                <>
+                    <Title order={5}>Unique Properties</Title>
+                    <SimpleGrid cols={2} spacing={'sm'}>
+                        {single}
+                    </SimpleGrid>
+                </>
+            )}
+            {!!multiple.length && (
+                <>
+                    {!!single.length && (
+                        <Title order={5}>Repeatable Properties</Title>
+                    )}
+                    <SimpleGrid cols={2} spacing={'sm'}>
+                        {multiple}
+                    </SimpleGrid>
+                </>
+            )}
         </Stack>
     )
 }

@@ -5,6 +5,7 @@ import { buildIndex, indexBy } from 'serverless-cloud-data-utils'
 import { DistributiveClean, StripModel } from 'type-helpers'
 import { Option } from '../../../lib/responseSet/data/responseSet.model'
 import { TitleElementProps } from '@components/ui/title/title-builder/titleBuilder-element'
+import { UNIQUE_FIELDS } from '@components/property/property-type/type-select/options'
 
 export interface FieldTitle {
     setType: 'manual' | 'auto'
@@ -58,6 +59,7 @@ export class Field<T extends FieldType = FieldType> extends BaseModel<
     value?: Value<T>
     defaultValue?: Value<T>
     variant?: Variant<T>
+    unique?: boolean
 
     /** number field options */
     maximumValue?: T extends 'number'
@@ -107,6 +109,18 @@ export class Field<T extends FieldType = FieldType> extends BaseModel<
         ? never
         : any
     useTemplate?: T extends 'title'
+        ? boolean
+        : T extends FieldType
+        ? never
+        : any
+
+    /* component field options */
+    componentId?: T extends 'component'
+        ? string
+        : T extends FieldType
+        ? never
+        : any
+    repeatable?: T extends 'component'
         ? boolean
         : T extends FieldType
         ? never
@@ -171,7 +185,7 @@ export type FieldType =
     | 'assignee'
 
 type BooleanValue = 'checkbox'
-type StringValue = 'date' | 'email' | 'richText' | 'text' | 'deadline' | 'title'
+type StringValue = 'date' | 'email' | 'richText' | 'text' | 'deadline'
 type StringArrayValue = 'image' | 'relation'
 type OptionValue = 'multiSelect' | 'select'
 type NumberValue = 'number'
@@ -186,6 +200,8 @@ type Value<T extends FieldType | undefined> = T extends BooleanValue
     ? string
     : T extends OptionValue
     ? Option[]
+    : T extends 'title'
+    ? TitleElementProps[] | string
     : any
 
 type Variant<T extends FieldType | undefined> = T extends 'date'

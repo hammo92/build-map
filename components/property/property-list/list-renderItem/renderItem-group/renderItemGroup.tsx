@@ -1,11 +1,24 @@
-import { ItemId, RenderItemParams, TreeItem } from "@atlaskit/tree";
-import { GroupActions } from "@components/property/property-group/group-actions";
-import { faChevronDown, faChevronRight, faGripVertical } from "@fortawesome/pro-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ActionIcon, Box, Card, Checkbox, Group, Text, TextInput } from "@mantine/core";
-import { propertyManager, updateGroupDetails } from "@state/propertyManager";
-import { useSnapshot } from "valtio";
-import { useStyles } from "./styles";
+import { ItemId, RenderItemParams, TreeItem } from '@atlaskit/tree'
+import { GroupActions } from '@components/property/property-group/group-actions'
+import {
+    faChevronDown,
+    faChevronRight,
+    faGripVertical,
+} from '@fortawesome/pro-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+    ActionIcon,
+    Box,
+    Card,
+    Checkbox,
+    Group,
+    Text,
+    TextInput,
+} from '@mantine/core'
+import { propertyManager, updateGroupDetails } from '@state/propertyManager'
+import { useSnapshot } from 'valtio'
+import { useStyles } from './styles'
+import { PropertyListRenderItemProps } from '@components/property/property-list/list-renderItem'
 
 const getIcon = (
     item: TreeItem,
@@ -13,15 +26,23 @@ const getIcon = (
     onCollapse: (itemId: ItemId) => void
 ) => {
     return item.isExpanded ? (
-        <ActionIcon onClick={() => onCollapse(item.id)} variant="filled" color="dark">
+        <ActionIcon
+            onClick={() => onCollapse(item.id)}
+            variant="filled"
+            color="dark"
+        >
             <FontAwesomeIcon icon={faChevronDown} />
         </ActionIcon>
     ) : (
-        <ActionIcon onClick={() => onExpand(item.id)} variant="filled" color="grape">
+        <ActionIcon
+            onClick={() => onExpand(item.id)}
+            variant="filled"
+            color="grape"
+        >
             <FontAwesomeIcon icon={faChevronRight} />
         </ActionIcon>
-    );
-};
+    )
+}
 
 export const RenderItemGroup = ({
     item,
@@ -29,14 +50,15 @@ export const RenderItemGroup = ({
     onCollapse,
     provided,
     snapshot,
-}: RenderItemParams) => {
-    const { classes } = useStyles();
-    const { editing } = useSnapshot(propertyManager);
+    isEditable,
+    isDraggable,
+}: PropertyListRenderItemProps) => {
+    const { classes } = useStyles()
     return (
         <Box pb="xs">
             <Card
                 p="md"
-                shadow={snapshot.isDragging ? "lg" : "sm"}
+                shadow={snapshot.isDragging ? 'lg' : 'sm'}
                 style={{ flex: 1 }}
                 radius={0}
                 className={classes.groupCard}
@@ -44,19 +66,21 @@ export const RenderItemGroup = ({
                 <Group position="apart">
                     <Group>
                         <Group>
-                            <div {...provided.dragHandleProps}>
-                                <FontAwesomeIcon icon={faGripVertical} />
-                            </div>
+                            {isDraggable && (
+                                <div {...provided.dragHandleProps}>
+                                    <FontAwesomeIcon icon={faGripVertical} />
+                                </div>
+                            )}
                             {getIcon(item, onExpand, onCollapse)}
                         </Group>
-                        <Text>{item.data ? item.data.name : ""}</Text>
+                        <Text>{item.data ? item.data.name : ''}</Text>
                     </Group>
-                    {editing && (
+                    {isEditable && (
                         <Group>
                             <Checkbox
-                                style={{ cursor: "pointer" }}
+                                styles={{ input: { cursor: 'pointer' } }}
                                 label="repeatable"
-                                defaultChecked={item.data.repeatable}
+                                checked={item.data.repeatable}
                                 onChange={(event) =>
                                     updateGroupDetails({
                                         groupId: `${item.id}`,
@@ -70,5 +94,5 @@ export const RenderItemGroup = ({
                 </Group>
             </Card>
         </Box>
-    );
-};
+    )
+}

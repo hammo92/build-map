@@ -1,10 +1,10 @@
-import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
+import { ContentTemplate } from '@lib/contentTemplate/data/contentTemplate.model'
 
-import { showNotification } from "@mantine/notifications";
-import { AxiosError } from "axios";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { CleanedCamel } from "type-helpers";
-import { Keys } from "../constants";
+import { showNotification } from '@mantine/notifications'
+import { AxiosError } from 'axios'
+import { useMutation, useQuery, useQueryClient } from 'react-query'
+import { CleanedCamel } from 'type-helpers'
+import { Keys } from '../constants'
 import {
     ContentTemplateResponse,
     createContentTemplate,
@@ -14,30 +14,32 @@ import {
     getProjectContentTemplates,
     updateContentTemplate,
     updateContentTemplateProperties,
-} from "../queries";
+} from '../queries'
 
 export function useCreateContentTemplate() {
-    const queryClient = useQueryClient();
+    const queryClient = useQueryClient()
 
     return useMutation(createContentTemplate, {
         mutationKey: Keys.CREATE_CONTENT_TEMPLATE,
         onSuccess: ({ newContentTemplate }) => {
-            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TEMPLATES);
+            queryClient.invalidateQueries(
+                Keys.GET_ORGANISATION_CONTENT_TEMPLATES
+            )
             showNotification({
                 title: `${newContentTemplate.name} created`,
                 message: `Created new content template successfully`,
-                color: "green",
-            });
+                color: 'green',
+            })
         },
         onError: (error: AxiosError<{ message: string }>) => {
-            console.log(`error`, error?.response?.data);
+            console.log(`error`, error?.response?.data)
             showNotification({
-                title: "Error",
+                title: 'Error',
                 message: error?.response?.data.message,
-                color: "red",
-            });
+                color: 'red',
+            })
         },
-    });
+    })
 }
 
 export function useGetContentTemplate(
@@ -50,105 +52,115 @@ export function useGetContentTemplate(
         {
             initialData,
         }
-    );
+    )
 }
 
 export function useUpdateContentTemplate() {
-    const queryClient = useQueryClient();
+    const queryClient = useQueryClient()
 
     return useMutation(updateContentTemplate, {
         mutationKey: Keys.UPDATE_CONTENT_TEMPLATE,
         onMutate: async ({ contentTemplateId, name, status, icon, title }) => {
-            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId];
+            const queryId = [Keys.GET_CONTENT_TEMPLATE, contentTemplateId]
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-            await queryClient.cancelQueries(queryId);
+            await queryClient.cancelQueries(queryId)
 
             // Snapshot the previous value
-            const currentData = queryClient.getQueryData<ContentTemplateResponse>(queryId);
+            const currentData =
+                queryClient.getQueryData<ContentTemplateResponse>(queryId)
 
             // optimistically update value locally
             if (currentData?.contentTemplate) {
-                const { contentTemplate } = currentData;
+                const { contentTemplate } = currentData
                 if (name) {
-                    contentTemplate.name = name;
+                    contentTemplate.name = name
                 }
                 if (status) {
-                    contentTemplate.status = status;
+                    contentTemplate.status = status
                 }
                 if (icon) {
-                    contentTemplate.icon = icon;
-                }
-                if (title) {
-                    contentTemplate.title = title;
+                    contentTemplate.icon = icon
                 }
 
                 // Optimistically update to the new value
                 queryClient.setQueryData(queryId, () => {
                     return {
                         contentTemplate,
-                    };
-                });
+                    }
+                })
             }
         },
         onError: (error: AxiosError<{ message: string }>) => {
-            console.log(`error`, error?.response?.data);
+            console.log(`error`, error?.response?.data)
             showNotification({
-                title: "Error",
+                title: 'Error',
                 message: error?.response?.data.message,
-                color: "red",
-            });
+                color: 'red',
+            })
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
+            queryClient.invalidateQueries([
+                Keys.GET_CONTENT_TEMPLATE,
+                data?.contentTemplate.id,
+            ])
             // also force refresh of organisation content templates as this will need to update
-            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TEMPLATES);
+            queryClient.invalidateQueries(
+                Keys.GET_ORGANISATION_CONTENT_TEMPLATES
+            )
         },
-    });
+    })
 }
 
 export function useUpdateContentTemplateProperties() {
-    const queryClient = useQueryClient();
+    const queryClient = useQueryClient()
 
     return useMutation(updateContentTemplateProperties, {
         mutationKey: Keys.UPDATE_CONTENT_TEMPLATE_PROPERTIES,
         onError: (error: AxiosError<{ message: string }>) => {
-            console.log(`error`, error?.response?.data);
+            console.log(`error`, error?.response?.data)
             showNotification({
-                title: "Error",
+                title: 'Error',
                 message: error?.response?.data.message,
-                color: "red",
-            });
+                color: 'red',
+            })
         },
         onSettled: (data) => {
-            queryClient.invalidateQueries([Keys.GET_CONTENT_TEMPLATE, data?.contentTemplate.id]);
+            queryClient.invalidateQueries([
+                Keys.GET_CONTENT_TEMPLATE,
+                data?.contentTemplate.id,
+            ])
             // also force refresh of organisation content templates as this will need to update
-            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TEMPLATES);
+            queryClient.invalidateQueries(
+                Keys.GET_ORGANISATION_CONTENT_TEMPLATES
+            )
         },
-    });
+    })
 }
 
 export function useDeleteContentTemplate() {
-    const queryClient = useQueryClient();
+    const queryClient = useQueryClient()
 
     return useMutation(deleteContentTemplate, {
         mutationKey: Keys.DELETE_CONTENT_TEMPLATE,
         onSuccess: (data) => {
-            queryClient.invalidateQueries(Keys.GET_ORGANISATION_CONTENT_TEMPLATES);
+            queryClient.invalidateQueries(
+                Keys.GET_ORGANISATION_CONTENT_TEMPLATES
+            )
             showNotification({
                 title: `${data.contentTemplate.name} deleted`,
                 message: `Content Template deleted successfully`,
-                color: "green",
-            });
+                color: 'green',
+            })
         },
         onError: (error: AxiosError<{ message: string }>) => {
-            console.log(`error`, error?.response?.data);
+            console.log(`error`, error?.response?.data)
             showNotification({
-                title: "Error",
+                title: 'Error',
                 message: error?.response?.data.message,
-                color: "red",
-            });
+                color: 'red',
+            })
         },
-    });
+    })
 }
 
 export function useGetOrganisationContentTemplates(
@@ -161,7 +173,7 @@ export function useGetOrganisationContentTemplates(
         {
             initialData,
         }
-    );
+    )
 }
 
 export function useGetProjectContentTemplates(
@@ -174,5 +186,5 @@ export function useGetProjectContentTemplates(
         {
             initialData,
         }
-    );
+    )
 }

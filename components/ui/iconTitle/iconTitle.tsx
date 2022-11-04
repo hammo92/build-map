@@ -1,4 +1,7 @@
-import { FontAwesomeIcon, FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
+import {
+    FontAwesomeIcon,
+    FontAwesomeIconProps,
+} from '@fortawesome/react-fontawesome'
 import {
     Group,
     Stack,
@@ -8,16 +11,16 @@ import {
     ThemeIconProps,
     Title,
     TitleProps,
-} from "@mantine/core";
-import React, { FC } from "react";
+} from '@mantine/core'
+import React, { FC } from 'react'
 
 interface IconTitleProps {
-    icon: FontAwesomeIconProps["icon"];
-    title: string;
-    subtitle?: string;
-    titleProps?: TitleProps;
-    iconProps?: ThemeIconProps;
-    textProps?: TextProps;
+    icon: FontAwesomeIconProps['icon']
+    title: string
+    subtitle?: string
+    titleProps?: TitleProps
+    iconProps?: Omit<ThemeIconProps, 'children'>
+    textProps?: TextProps
 }
 
 export const IconTitle: FC<IconTitleProps> = ({
@@ -30,11 +33,11 @@ export const IconTitle: FC<IconTitleProps> = ({
 }) => {
     return (
         <Group align="center" noWrap>
-            <ThemeIcon size={subtitle ? "xl" : "md"} {...iconProps}>
+            <ThemeIcon size={subtitle ? 'xl' : 'md'} {...iconProps}>
                 <FontAwesomeIcon icon={icon} />
             </ThemeIcon>
             <Stack
-                sx={{ textTransform: "capitalize" }}
+                sx={{ textTransform: 'capitalize' }}
                 spacing={0}
                 justify="flex-start"
                 align="flex-start"
@@ -49,5 +52,5 @@ export const IconTitle: FC<IconTitleProps> = ({
                 )}
             </Stack>
         </Group>
-    );
-};
+    )
+}

@@ -10,24 +10,28 @@ import {
     Property,
     PropertyGroup,
 } from '../../../lib/field/data/field.model'
-import {
-    HistoryEntry,
-    Note,
-} from '../../../lib/historyEntry/data/historyEntry.model'
-import { splitCamel } from '../../../utils/stringTransform'
 import { errorIfUndefined } from '../../utils'
 import {
     ContentTemplate,
     ContentTemplateId,
     ContentTemplateOrganisation,
-    ContentTemplateTitle,
 } from './contentTemplate.model'
 import {
-    createRelatedProperty,
+    deleteRelatedProperty,
     updateRelatedProperty,
 } from './functions/relation'
+import { UNIQUE_FIELDS } from '../../../components/property/property-type/type-select/options'
+import invariant from 'tiny-invariant'
 
 const oso = new Oso('https://cloud.osohq.com', params.OSO_API_KEY)
+
+export const ROOT_GROUP_TEMPLATE = {
+    id: '1',
+    children: [],
+    name: 'root',
+    repeatable: false,
+    type: 'propertyGroup',
+}
 
 //* Create contentTemplate */
 export async function createContentTemplate({
@@ -36,12 +40,18 @@ export async function createContentTemplate({
     organisationId,
     userId,
     templateType,
+    properties,
+    propertyGroups,
+    status,
 }: {
     name: string
     icon: Icon
     organisationId: string
     userId: string
     templateType: ContentTemplate['templateType']
+    properties?: Property[]
+    propertyGroups?: PropertyGroup[]
+    status?: ContentTemplate['status']
 }) {
     errorIfUndefined({ name, userId, organisationId, icon, templateType })
 
@@ -51,11 +61,11 @@ export async function createContentTemplate({
     // set Content Template details
     newContentTemplate.name = name
     newContentTemplate.icon = icon
-    newContentTemplate.status = 'draft'
+    newContentTemplate.status = status || 'draft'
     newContentTemplate.templateType = templateType
     newContentTemplate.organisationId = organisationId
-    newContentTemplate.properties = []
-    newContentTemplate.propertyGroups = [
+    newContentTemplate.properties = properties || []
+    newContentTemplate.propertyGroups = propertyGroups || [
         {
             id: '1',
             children: [],
@@ -64,18 +74,10 @@ export async function createContentTemplate({
             type: 'propertyGroup',
         },
     ]
-    newContentTemplate.title = {
-        setType: 'auto',
-        type: 'contentInfo',
-        value: 'id',
-    }
     newContentTemplate.draftCounter = 0
     newContentTemplate.publishedCounter = 0
 
-    await newContentTemplate.saveWithHistory({
-        editedBy: userId,
-        title: `${name} content template created`,
-    })
+    await newContentTemplate.save()
     return newContentTemplate
 }
 
@@ -86,6 +88,7 @@ export async function getContentTemplateById(contentTemplateId: string) {
         .exact(contentTemplateId)
         .get(ContentTemplate)
 
+    invariant(contentTemplate, "Content Template doesn't exist")
     return contentTemplate
 }
 
@@ -118,14 +121,14 @@ export async function updateContentTemplate({
     name,
     status,
     icon,
-    title,
+
     userId,
 }: {
     contentTemplateId: string
     name?: string
     status?: 'archived' | 'published'
     icon?: Icon
-    title?: ContentTemplateTitle
+
     userId: string
 }) {
     errorIfUndefined({ contentTemplateId, userId })
@@ -133,57 +136,14 @@ export async function updateContentTemplate({
         .exact(contentTemplateId)
         .get(ContentTemplate)
     if (!contentTemplate) throw new Error('No content template found')
-    let updateNotes: string[] = ['Template details updated']
 
-    // only one field updated on a single request
+    if (status) contentTemplate.status = status
 
-    const historyEntry = new HistoryEntry({
-        title: '',
-        editedBy: userId,
-    })
+    if (name) contentTemplate.name = name
 
-    if (status) {
-        historyEntry.title = `${contentTemplate.name} ${status}`
-        historyEntry.subtitle = `${contentTemplate.status} to ${status}`
-        contentTemplate.status = status
-    }
+    if (icon) contentTemplate.icon = icon
 
-    if (name) {
-        historyEntry.title = `Name Updated`
-        historyEntry.subtitle = `${contentTemplate.name} to ${name}`
-        contentTemplate.name = name
-    }
-
-    if (icon) {
-        historyEntry.title = `Icon Changed`
-        historyEntry.changes = [
-            {
-                path: ['Icon'],
-                from: contentTemplate.icon,
-                to: icon,
-                type: 'icon',
-            },
-        ]
-        contentTemplate.icon = icon
-    }
-
-    if (title) {
-        historyEntry.title = `Title Property Updated`
-        const getName = (title: ContentTemplate['title']) => {
-            if (title.type === 'contentInfo') return splitCamel(title.value)
-            return contentTemplate.properties.find(
-                ({ id }) => id === title.value
-            )?.name
-        }
-        historyEntry.subtitle = `${getName(contentTemplate.title)} to ${getName(
-            title
-        )}`
-        contentTemplate.title = title
-    }
-
-    await contentTemplate.saveWithHistory({
-        ...historyEntry,
-    })
+    await contentTemplate.save()
 
     return contentTemplate
 }
@@ -216,12 +176,14 @@ export const createProperty = async <T extends FieldType>({
         name,
     }
     if (type === 'relation') {
-        const propertyWithRelated = await createRelatedProperty({
+        const propertyWithRelated = await updateRelatedProperty({
             property: property as Property<'relation'>,
             userId,
-            templateId,
         })
         return (propertyWithRelated ?? property) as Property<T>
+    }
+    if (UNIQUE_FIELDS.includes(type)) {
+        property.unique = true
     }
     return property as Property<T>
 }
@@ -278,20 +240,9 @@ export async function updateProperties({
 
     if (!contentTemplate) throw new Error('No content template found')
 
-    // initiate object for history
-    const notes: Record<string, Note> = {
-        createdGroups: { title: 'Groups Created', entries: [] },
-        createdProperties: { title: 'Properties Created', entries: [] },
-        deletedGroups: { title: 'Groups Deleted', entries: [] },
-        deletedProperties: { title: 'Properties Deleted', entries: [] },
-        updatedGroups: { title: 'Groups Updated', entries: [] },
-        updatedProperties: { title: 'Properties Updated', entries: [] },
-    }
-
     const newProperties: Promise<Property>[] = Object.values(
         createdProperties
     ).map(({ name, type, ...rest }) => {
-        notes.createdProperties.entries!.push(name)
         return createProperty({
             name,
             propertyDetails: rest,
@@ -305,13 +256,10 @@ export async function updateProperties({
         (acc, property) => {
             //remove deleted properties
             if (deletedProperties[property.id]) {
-                notes.deletedProperties.entries!.push(property.name)
-
                 return acc
             }
             // update properties
             if (updatedProperties[property.id]) {
-                notes.updatedProperties.entries!.push(property.name)
                 acc.push(
                     updateProperty({
                         property: updatedProperties[property.id],
@@ -333,17 +281,14 @@ export async function updateProperties({
         ...Object.values(createdGroups),
     ].reduce<PropertyGroup[]>((acc, group) => {
         if (deletedGroups[group.id]) {
-            notes.deletedGroups.entries!.push(group.name)
             return acc
         }
         let tmpGroup = group
         if (updatedGroups[group.id]) {
-            notes.updatedGroups.entries!.push(group.name)
             tmpGroup = updatedGroups[group.id]
         }
 
         if (createdGroups[group.id]) {
-            notes.createdGroups.entries!.push(group.name)
             tmpGroup = createdGroups[group.id]
         }
 
@@ -360,13 +305,20 @@ export async function updateProperties({
         return acc
     }, [])
 
-    const propertyUpdates = await Promise.all(properties)
-    contentTemplate.properties = propertyUpdates
+    // find deleted relation properties and remove reciprocal properties
+    const deletedRelations = Object.values(deletedProperties).filter(
+        ({ reciprocalPropertyId }) => reciprocalPropertyId
+    )
+    await Promise.all(
+        deletedRelations.map(async (property) => {
+            await deleteRelatedProperty({
+                property: property as Property<'relation'>,
+            })
+        })
+    )
+
+    contentTemplate.properties = await Promise.all(properties)
     contentTemplate.propertyGroups = propertyGroups
-    await contentTemplate.saveWithHistory({
-        editedBy: userId,
-        title: `${contentTemplate.name} Updated`,
-        notes: Object.values(notes).filter(({ entries }) => entries?.length),
-    })
+    await contentTemplate.save()
     return contentTemplate
 }

@@ -1,42 +1,59 @@
-import { SmartForm } from "@components/smartForm";
-import { Keys } from "@data/contentTemplate/constants";
-import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { contentTemplateState } from "@state/contentTemplate";
-import { useQueryClient } from "react-query";
-import { CleanedCamel } from "type-helpers";
-import { useSnapshot } from "valtio";
+import { SmartForm } from '@components/smartForm'
+import { contentTemplateState } from '@state/contentTemplate'
+import { useSnapshot } from 'valtio'
+import { useGetOrganisationContentTemplates } from '@data/contentTemplate/hooks'
+import { useRouter } from 'next/router'
 //import { ComponentSelectItem } from "./componentSelectItem";
 
 export const FieldsComponent = () => {
-    // get content templates from query store
-    const queryClient = useQueryClient();
-    const data = queryClient.getQueryData<{
-        contentTemplates: CleanedCamel<ContentTemplate>[];
-    }>([Keys.GET_ORGANISATION_CONTENT_TEMPLATES]);
+    const { query } = useRouter()
+    const { orgId } = query
+    const { data } = useGetOrganisationContentTemplates(orgId as string)
 
-    const { contentTemplateId } = useSnapshot(contentTemplateState);
+    const { contentTemplateId } = useSnapshot(contentTemplateState)
 
-    const selectData: any[] = [];
-    data?.contentTemplates.forEach((template) => {
-        // check if id matches parent template
-        // prevent infinitely nested components
-        const idMatchesParent = template.id === contentTemplateId;
-        /*if (template.type === "component" && template.status === "published" && !idMatchesParent) {
-            selectData.push({
-                icon: template.icon,
+    const components = data?.contentTemplates.reduce<
+        { label: string; value: string; disabled: boolean }[]
+    >((acc, template) => {
+        const isInTemplate = template.properties.some(
+            (property) =>
+                property.type === 'component' &&
+                property.componentId === contentTemplateId
+        )
+        const nonPublished = template.status !== 'published'
+        if (
+            template.templateType === 'component' &&
+            template.id !== contentTemplateId
+        ) {
+            acc.push({
+                label: `${template.name}${
+                    isInTemplate
+                        ? ' - disabled(components cannot reference each other)'
+                        : nonPublished
+                        ? ` - disabled(publish to use)`
+                        : ''
+                }`,
                 value: template.id,
-                label: template.name,
-            });
-        }*/
-    });
+                disabled: isInTemplate || nonPublished,
+            })
+        }
+        return acc
+    }, [])
 
     return (
-        <SmartForm.Select
-            name="componentId"
-            label="Select Component"
-            required
-            //itemComponent={ComponentSelectItem}
-            data={selectData}
-        />
-    );
-};
+        <>
+            <SmartForm.Select
+                name="componentId"
+                label="Select Component"
+                required
+                //itemComponent={ComponentSelectItem}
+                data={components ?? []}
+            />
+            <SmartForm.Checkbox
+                name="repeatable"
+                label="Repeatable"
+                description={''}
+            />
+        </>
+    )
+}

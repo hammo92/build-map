@@ -30,8 +30,11 @@ export const TitleInputElement = ({
             />
         )
     }
-    if (element.type === 'string' || element.type === 'variable') {
-        return <Text>{element.value}</Text>
+    if (
+        (element.type === 'string' || element.type === 'variable') &&
+        element.value
+    ) {
+        return <TextInput disabled={true} value={element.value} />
     }
     return null
 }

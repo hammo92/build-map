@@ -1,18 +1,18 @@
-import { useUpdateContentTemplateProperties } from "@data/contentTemplate/hooks";
-import { ContentTemplate } from "@lib/contentTemplate/data/contentTemplate.model";
-import { Button, Group } from "@mantine/core";
-import { propertyManager } from "@state/propertyManager";
-import React, { FC } from "react";
-import { CleanedCamel } from "type-helpers";
-import { useSnapshot } from "valtio";
-import { ContentTemplateDelete } from "../contentTemplate-delete";
-import { ContentTemplateIcon } from "../contentTemplate-icon";
-import { ContentTemplateStatus } from "../contentTemplate-status";
-import { ContentTemplateTitle } from "../contentTemplate-title";
+import { useUpdateContentTemplateProperties } from '@data/contentTemplate/hooks'
+import { ContentTemplate } from '@lib/contentTemplate/data/contentTemplate.model'
+import { Button, Group } from '@mantine/core'
+import { propertyManager } from '@state/propertyManager'
+import React, { FC } from 'react'
+import { CleanedCamel } from 'type-helpers'
+import { useSnapshot } from 'valtio'
+import { ContentTemplateDelete } from '../contentTemplate-delete'
+import { ContentTemplateIcon } from '../contentTemplate-icon'
+import { ContentTemplateStatus } from '../contentTemplate-status'
+import { ContentTemplateTitle } from '../contentTemplate-title'
 
-export const ContentTemplateHeader: FC<{ contentTemplate: CleanedCamel<ContentTemplate> }> = ({
-    contentTemplate,
-}) => {
+export const ContentTemplateHeader: FC<{
+    contentTemplate: CleanedCamel<ContentTemplate>
+}> = ({ contentTemplate }) => {
     const {
         changed,
         createdGroups,
@@ -21,8 +21,9 @@ export const ContentTemplateHeader: FC<{ contentTemplate: CleanedCamel<ContentTe
         deletedProperties,
         updatedGroups,
         updatedProperties,
-    } = useSnapshot(propertyManager);
-    const { mutateAsync, isLoading } = useUpdateContentTemplateProperties();
+        emptyGroup,
+    } = useSnapshot(propertyManager)
+    const { mutateAsync, isLoading } = useUpdateContentTemplateProperties()
     return (
         <Group position="apart" noWrap>
             <Group noWrap>
@@ -31,16 +32,19 @@ export const ContentTemplateHeader: FC<{ contentTemplate: CleanedCamel<ContentTe
                     editable
                     contentTemplate={contentTemplate}
                 />
-                <ContentTemplateTitle editable contentTemplate={contentTemplate} />
+                <ContentTemplateTitle
+                    editable
+                    contentTemplate={contentTemplate}
+                />
             </Group>
 
             <Group noWrap sx={{ flexShrink: 0 }} spacing="sm">
                 <ContentTemplateStatus contentTemplate={contentTemplate} />
                 <Button
-                    disabled={!changed || isLoading}
+                    disabled={!changed || isLoading || emptyGroup}
                     loading={isLoading}
                     onClick={async () => {
-                        mutateAsync({
+                        await mutateAsync({
                             contentTemplateId: contentTemplate.id,
                             createdGroups,
                             createdProperties,
@@ -48,7 +52,7 @@ export const ContentTemplateHeader: FC<{ contentTemplate: CleanedCamel<ContentTe
                             deletedProperties,
                             updatedGroups,
                             updatedProperties,
-                        });
+                        })
                     }}
                 >
                     Save
@@ -56,5 +60,5 @@ export const ContentTemplateHeader: FC<{ contentTemplate: CleanedCamel<ContentTe
                 <ContentTemplateDelete contentTemplate={contentTemplate} />
             </Group>
         </Group>
-    );
-};
+    )
+}

@@ -13,14 +13,14 @@ export const ELEMENTS: {
     type: TitleElementProps['type']
     options: readonly TitleElementProps['variant'][]
 }[] = [
-    {
+    /*{
         type: 'input',
         title: 'User input',
         options: ['text', 'number'],
-    },
+    },*/
     {
         type: 'variable',
-        title: 'Generated value',
+        title: 'Values',
         options: ELEMENT_OPTIONS,
     },
 ]

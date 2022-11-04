@@ -1,4 +1,4 @@
-import { api, data } from '@serverless/cloud'
+import { api } from '@serverless/cloud'
 import { getProjectById } from '../../project/data'
 import {
     createContentTemplate,
@@ -9,14 +9,19 @@ import {
     updateProperties,
     UpdatePropertiesProps,
 } from '../data'
-import { ContentTemplate } from '../../../lib/contentTemplate/data/contentTemplate.model'
-import { objectify } from 'radash'
-import { parentIsRepeatable } from '../../../lib/contentTemplate/data/functions/group'
 
 export const contentTemplates = () => {
     //* Create contentTemplate */
     api.post('/contentTemplates', async function (req: any, res: any) {
-        const { name, organisationId, icon, templateType } = req.body
+        const {
+            name,
+            organisationId,
+            icon,
+            templateType,
+            properties,
+            propertyGroups,
+            status,
+        } = req.body
         try {
             const { user } = req
             const contentTemplate = await createContentTemplate({
@@ -25,6 +30,9 @@ export const contentTemplates = () => {
                 userId: user.id,
                 icon,
                 templateType,
+                properties,
+                propertyGroups,
+                status,
             })
             return res.status(200).send({
                 newContentTemplate: contentTemplate && contentTemplate.clean(),
@@ -64,7 +72,7 @@ export const contentTemplates = () => {
         `/contentTemplates/:contentTemplateId`,
         async function (req: any, res: any) {
             const { contentTemplateId } = req.params
-            const { name, status, icon, title } = req.body
+            const { name, status, icon } = req.body
             const { user } = req
             try {
                 const contentTemplate = await updateContentTemplate({
@@ -72,7 +80,6 @@ export const contentTemplates = () => {
                     name,
                     status,
                     icon,
-                    title,
                     userId: user.id,
                 })
                 return res.status(200).send({

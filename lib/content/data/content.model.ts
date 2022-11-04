@@ -7,7 +7,7 @@ import {
     Model,
     timekey,
 } from 'serverless-cloud-data-utils'
-import { ModelWithHistory } from '../../../lib/models'
+import { BaseModel, ModelWithHistory } from '../../../lib/models'
 
 export type FieldGroup = PropertyGroup
 
@@ -50,7 +50,7 @@ export const ContentStatus = ({
     })
 
 //model: Content */
-export class Content extends ModelWithHistory<Content> {
+export class Content extends BaseModel<Content> {
     object = 'Content'
     contentTemplateId: string
     projectId: string

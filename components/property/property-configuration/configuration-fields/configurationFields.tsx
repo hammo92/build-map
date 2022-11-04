@@ -5,15 +5,23 @@ import { Stack } from '@mantine/core'
 import React from 'react'
 import { FieldsCheckbox } from './fields-checkbox'
 import { FieldsNumber } from './fields-number'
-import { FieldsRelation } from './fields-relation'
+import { FieldsRelation, FieldsRelationOptions } from './fields-relation'
+import { FieldsDeadline } from './fields-deadline'
 import { FieldsSelect } from './fields-select'
 import { FieldsTitle } from '@components/property/property-configuration/configuration-fields/fields-title/fieldsTitle'
+import { FieldsComponent } from '@components/property/property-configuration/configuration-fields/fields-component'
+
+export type ConfigurationOptions = FieldsRelationOptions
 
 interface ConfigurationFieldsProps {
     type: FieldType
+    options?: ConfigurationOptions
 }
 
-const configurationTypeFields = (type: FieldType) => {
+const configurationTypeFields = (
+    type: FieldType,
+    options?: ConfigurationOptions
+) => {
     switch (type) {
         case 'checkbox':
             return <FieldsCheckbox />
@@ -22,17 +30,23 @@ const configurationTypeFields = (type: FieldType) => {
         case 'number':
             return <FieldsNumber />
         case 'relation':
-            return <FieldsRelation />
+            return <FieldsRelation {...options} />
         case 'select':
             return <FieldsSelect type="select" />
         case 'title':
             return <FieldsTitle />
+        case 'component':
+            return <FieldsComponent />
+
         default:
             return null
     }
 }
 
-export const ConfigurationFields = ({ type }: ConfigurationFieldsProps) => {
+export const ConfigurationFields = ({
+    type,
+    options,
+}: ConfigurationFieldsProps) => {
     const variants = FIELD_TYPES[type]?.variants
     return (
         <Stack spacing="sm">
@@ -56,7 +70,7 @@ export const ConfigurationFields = ({ type }: ConfigurationFieldsProps) => {
                     />
                 ) : null}
             </SmartForm.FieldGroup>
-            {configurationTypeFields(type)}
+            {configurationTypeFields(type, options)}
         </Stack>
     )
 }

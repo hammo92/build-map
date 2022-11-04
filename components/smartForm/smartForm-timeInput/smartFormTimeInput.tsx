@@ -3,7 +3,11 @@ import dayjs from 'dayjs'
 import { SmartFormController } from '../smartForm-controller'
 import { SmartFormInputBaseProps } from '../types'
 
-type SmartFormTimeProps = SmartFormInputBaseProps & TimeInputProps
+type SmartFormTimeProps = SmartFormInputBaseProps &
+    Omit<TimeInputProps, 'value' | 'defaultValue'> & {
+        value?: string | Date | null
+        defaultValue?: string | Date | null
+    }
 
 export const SmartFormTimeInput = (props: SmartFormTimeProps) => {
     return (

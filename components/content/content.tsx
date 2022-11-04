@@ -92,14 +92,6 @@ export const Content = ({
     if (data?.contentFields && data.content) {
         const defaultValues = convertContentDataForSmartForm(data.contentFields)
 
-        console.log(
-            'fieldGroups',
-            groupFields({
-                propertyGroups: data.content.fieldGroups,
-                fields: data.contentFields,
-            })
-        )
-
         // split into categories
         const { active, hidden, additional } = data.contentFields.reduce<{
             active: CleanedCamel<Field>[]
@@ -216,6 +208,15 @@ export const Content = ({
                                             )}
                                             <FieldCreate
                                                 parentId={content.id}
+                                                hiddenTypes={[
+                                                    'title',
+                                                    'deadline',
+                                                    'assignee',
+                                                    'status',
+                                                ]}
+                                                configurationOptions={{
+                                                    disableReciprocal: true,
+                                                }}
                                             />
                                         </Stack>
                                     </Tabs.Panel>

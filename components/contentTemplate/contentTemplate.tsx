@@ -6,9 +6,7 @@ import { ContentTemplate as ContentTemplateProps } from '@lib/contentTemplate/da
 import {
     Card,
     Container,
-    Divider,
     Grid,
-    Select,
     SimpleGrid,
     Stack,
     Text,
@@ -20,7 +18,6 @@ import Image from 'next/image'
 import { CleanedCamel } from 'type-helpers'
 import Illustration from '../../public/images/tokyo/2.0-04.svg'
 import { ContentTemplateHeader } from './contentTemplate-header/contentTemplateHeader'
-import { ContentTemplateTitleSelect } from './contentTemplate-titleSelect/contentTemplateTitleSelect'
 
 const NoContentTemplates = () => (
     <Container p="md" fluid>
@@ -38,6 +35,7 @@ export const ContentTemplate = ({
     contentTemplate: CleanedCamel<ContentTemplateProps>
 }) => {
     contentTemplateState.contentTemplateId = contentTemplate.id
+    contentTemplateState.templateType = contentTemplate.templateType
     const { data } = useGetContentTemplate(contentTemplate.id, {
         contentTemplate,
     })
@@ -69,12 +67,6 @@ export const ContentTemplate = ({
                                     <Title order={4}>Info</Title>
                                 </Card.Section>
                                 <Card.Section p="sm">
-                                    <ContentTemplateTitleSelect
-                                        contentTemplate={data.contentTemplate}
-                                    />
-                                </Card.Section>
-                                <Divider />
-                                <Card.Section p="sm">
                                     <SimpleGrid cols={2} spacing="sm">
                                         <Text>Created at:</Text>
                                         <Text>
@@ -91,15 +83,6 @@ export const ContentTemplate = ({
                                         </Text>
                                     </SimpleGrid>
                                 </Card.Section>
-                                {data?.contentTemplate.history && (
-                                    <Card.Section withBorder p="sm">
-                                        <History
-                                            historyEntries={
-                                                data?.contentTemplate.history
-                                            }
-                                        />
-                                    </Card.Section>
-                                )}
                             </Card>
                         </Grid.Col>
                     </Grid>

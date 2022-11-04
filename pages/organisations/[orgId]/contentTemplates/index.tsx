@@ -6,13 +6,7 @@ import { PageHeader } from '@components/ui/page-header'
 import { useGetOrganisationContentTemplates } from '@data/contentTemplate/hooks'
 import { faFile, faHouse, faUser } from '@fortawesome/pro-regular-svg-icons'
 import { ContentTemplate as ContentTemplateProps } from '@lib/contentTemplate/data/contentTemplate.model'
-import {
-    Grid,
-    Group,
-    SegmentedControl,
-    Stack,
-    useMantineTheme,
-} from '@mantine/core'
+import { Grid, Group, SegmentedControl, Stack } from '@mantine/core'
 import { params as cloudParams } from '@serverless/cloud'
 import axios from 'axios'
 import camelcaseKeys from 'camelcase-keys'
@@ -61,7 +55,6 @@ function ContentTemplatePage({
         organisationId,
         initialData
     )
-    console.log('👉 data >>', data)
     // display either collection or components
     const [templateType, setTemplateType] =
         useState<ContentTemplateProps['templateType']>('collection')
@@ -110,7 +103,7 @@ function ContentTemplatePage({
                                         label: 'Templates',
                                     },
                                     {
-                                        value: 'task',
+                                        value: 'component',
                                         label: 'Components',
                                     },
                                 ]}

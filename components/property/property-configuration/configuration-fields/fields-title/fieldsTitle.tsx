@@ -13,7 +13,10 @@ export const FieldsTitle = () => {
                     label="Template"
                 />
             )}
-            <SmartForm.Checkbox name={'useTemplate'} label={'Use Template'} />
+            <SmartForm.Checkbox
+                name={'useTemplate'}
+                label={'Generate from template'}
+            />
         </>
     )
 }

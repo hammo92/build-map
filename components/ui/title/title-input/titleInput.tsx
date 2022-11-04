@@ -37,7 +37,7 @@ export const TitleInput = ({
     }
 
     return (
-        <Group spacing={0} p={'sm'} noWrap>
+        <Group spacing={0} p={0} noWrap>
             {_value.map((element, i) => (
                 <>
                     <TitleInputElement

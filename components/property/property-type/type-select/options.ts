@@ -1,26 +1,23 @@
-import {
-    fa1,
-    faAt,
-    faCalendar,
-    faImage,
-    faLink,
-    faListCheck,
-    faListDropdown,
-    faParagraph,
-    faSquareCheck,
-    faText,
-    faUser,
-} from '@fortawesome/pro-regular-svg-icons'
 import { FontAwesomeIconProps } from '@fortawesome/react-fontawesome'
 import { FieldType } from '@lib/field/data/field.model'
+import { alphabetical } from 'radash'
 import {
-    faAlarmClock,
-    faArrowUpRight,
-    faPenLine,
-    faSpinner,
+    fa1,
+    faListCheck,
+    faListDropdown,
+    faSquareCheck,
+    faText,
+    faParagraph,
+    faImage,
+    faCalendar,
+    faAt,
     faTableCellsLarge,
-} from '@fortawesome/pro-light-svg-icons'
-import { alphabetical, boil, sort } from 'radash'
+    faAlarmClock,
+    faLink,
+    faSpinner,
+    faUser,
+    faPenLine,
+} from '@fortawesome/pro-solid-svg-icons'
 
 interface variant {
     type: string
@@ -35,15 +32,22 @@ export interface FieldTypeProps {
     icon: FontAwesomeIconProps['icon']
     variants?: variant[]
     /** whether there can be multiple instances of a field */
-    single?: boolean
+    unique?: boolean
     disabled?: boolean
 }
+
+export const UNIQUE_FIELDS: readonly FieldType[] = [
+    'title',
+    'deadline',
+    'assignee',
+    'status',
+] as const
 
 // object key must match type
 export const FIELD_TYPES: { [key in FieldType]: FieldTypeProps } = {
     select: {
         type: 'select',
-        description: 'Pick a single option from a list',
+        description: 'Pick a unique option from a list',
         label: 'Select',
         icon: faListDropdown,
     },
@@ -170,21 +174,21 @@ export const FIELD_TYPES: { [key in FieldType]: FieldTypeProps } = {
         description: 'Set a due date',
         label: 'Deadline',
         icon: faAlarmClock,
-        single: true,
+        unique: true,
     },
     title: {
         type: 'title',
         description: 'Content title',
         label: 'Title',
         icon: faPenLine,
-        single: true,
+        unique: true,
     },
     assignee: {
         type: 'assignee',
         description: 'Assign to a user',
         label: 'Assignee',
         icon: faUser,
-        single: true,
+        unique: true,
     },
 
     status: {
@@ -192,7 +196,7 @@ export const FIELD_TYPES: { [key in FieldType]: FieldTypeProps } = {
         description: 'Set options for content progress',
         label: 'status',
         icon: faSpinner,
-        single: true,
+        unique: true,
     },
     people: {
         type: 'people',

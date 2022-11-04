@@ -1,10 +1,13 @@
-import { duplicateField } from '../../../../lib/field/data'
+import { deleteField, duplicateField } from '../../../../lib/field/data'
 import { Field, PropertyGroup } from '../../../../lib/field/data/field.model'
 import pluralize from 'pluralize'
 import { objectify } from 'radash'
 import { ulid } from 'ulid'
 import { objArrayToHashmap } from '../../../../utils/arrayModify'
 import { Content, FieldGroup } from '../content.model'
+import invariant from 'tiny-invariant'
+import { getContentById } from '../../../../lib/content/data'
+import { WithUser } from '@lib/types/types'
 
 // restructure repeatable group to nest inside a parent
 export function processGroup(group: PropertyGroup): FieldGroup[] {
@@ -20,6 +23,7 @@ export function processGroup(group: PropertyGroup): FieldGroup[] {
             children: [fieldGroup.id],
             name: pluralize(group.name),
         } as FieldGroup
+        fieldGroup.parent = `${parentGroup.id!}`
         return [parentGroup, fieldGroup]
     }
     return [group as FieldGroup]
@@ -32,7 +36,7 @@ export const generateFieldGroups = ({
     fields: Field[]
     propertyGroups: PropertyGroup[]
 }): FieldGroup[] => {
-    const fieldMap = objArrayToHashmap(fields, 'templatePropertyId')
+    const fieldMap = objectify(fields, (t) => t.templatePropertyId!)
     const fieldGroups = propertyGroups.map((propertyGroup) => {
         // replace templateFieldId with field id
         propertyGroup.children = propertyGroup.children.map((id) => {
@@ -49,19 +53,20 @@ export const generateFieldGroups = ({
     return fieldGroups.flat()
 }
 
+export type duplicateGroupProps = {
+    content: Content
+    fields: Field[]
+    groupId: string
+    keepValues?: boolean
+}
+
 export async function duplicateGroup({
     content,
     fields,
     groupId,
     userId,
     keepValues,
-}: {
-    content: Content
-    fields: Field[]
-    groupId: string
-    userId: string
-    keepValues?: boolean
-}) {
+}: WithUser<duplicateGroupProps>) {
     const groupMap = objectify(content.fieldGroups, (c) => c.id)
     const fieldMap = objectify(fields, (f) => f.id)
 
@@ -70,7 +75,7 @@ export async function duplicateGroup({
     if (!parentGroup) throw new Error('no group found')
     if (!parentGroup.repeatable) throw new Error('Group not repeatable')
 
-    const nestedFields: string[] = []
+    const nestedFields: Field[] = []
     const nestedGroups: FieldGroup[] = []
 
     // get first child, used as structure for new group
@@ -86,11 +91,13 @@ export async function duplicateGroup({
                     keepValue: keepValues,
                     shouldSave: true,
                 })
-                nestedFields.push(duplicate.id)
+                duplicate.parent = `${copy.id}`
+                nestedFields.push(duplicate)
                 copy.children.push(duplicate.id)
             }
             if (groupMap[id]) {
                 const groupCopy = await clone(groupMap[id])
+                groupCopy.parent = `${copy.id}`
                 nestedGroups.push(groupCopy)
                 copy.children.push(groupCopy.id)
             }
@@ -106,4 +113,61 @@ export async function duplicateGroup({
 
     const newGroup = await clone(groupTemplate)
     return { newGroup, nestedFields, nestedGroups }
+}
+
+export async function deleteGroup({
+    contentId,
+    groupId,
+    userId,
+}: {
+    contentId: string
+    groupId: string
+    userId: string
+}) {
+    const { content, contentFields } = await getContentById(contentId)
+
+    const groupMap = objectify(content.fieldGroups, (c) => c.id)
+    const fieldMap = objectify(contentFields, (f) => f.id)
+
+    console.log('👉 content.fieldGroups >>', content.fieldGroups)
+
+    const group = groupMap[groupId]
+    invariant(group, 'Group not found')
+
+    console.log('👉 group >>', group)
+
+    const groupParent = group.parent && groupMap[group.parent]
+    invariant(groupParent, 'Group parent not found')
+
+    if (groupParent.children.length! <= 1)
+        throw new Error('Cannot delete last group')
+
+    /** remove from parent **/
+    groupMap[groupParent.id].children = groupParent.children.filter(
+        (id) => id !== groupId
+    )
+
+    /** recursively delete fields **/
+    const handleDelete = async (id: string | number) => {
+        if (fieldMap[id]) {
+            delete fieldMap[id]
+            await deleteField({ fieldId: `${id}`, userId })
+        }
+        if (groupMap[id]) {
+            await Promise.all(groupMap[id].children.map(handleDelete))
+            delete groupMap[id]
+        }
+    }
+
+    await handleDelete(groupId)
+
+    content.fields = Object.keys(fieldMap)
+    content.fieldGroups = Object.values(groupMap)
+
+    console.log('👉 content.fields >>', content.fields)
+    console.log('👉 content.groups >>', content.fieldGroups)
+
+    await content.save()
+
+    return content
 }

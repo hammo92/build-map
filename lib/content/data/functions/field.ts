@@ -10,6 +10,8 @@ import { ContentTemplate } from '../../../../lib/contentTemplate/data/contentTem
 import { Content } from '../../../../lib/content/data/content.model'
 import { getContentTemplateById } from '../../../../lib/contentTemplate/data'
 import dayjs from 'dayjs'
+import { TitleElementProps } from '@components/ui/title/title-builder/titleBuilder-element'
+import { CleanedCamel } from '../../../../type-helpers'
 export function fieldBaseValues({
     userId,
     date,
@@ -77,30 +79,76 @@ export function getContentTitle({
     contentFields: Field[]
     contentTemplate: ContentTemplate
 }) {
-    const titleProperty = contentFields.find((field) => field.type === 'title')
-    console.log('👉 titleProperty >>', titleProperty)
+    const titleField = contentFields.find((field) => field.type === 'title')
     if (
-        !titleProperty ||
-        !titleProperty.value ||
-        (!titleProperty.stringTemplate && titleProperty.useTemplate)
+        !titleField ||
+        !titleField.value ||
+        (!titleField.stringTemplate && titleField.useTemplate)
     ) {
         return `${contentTemplate.name}:${
-            content.status === 'draft' && 'draft-'
+            content.status === 'draft' ? 'draft:' : ''
         }${content.entryNumber}`
     }
-    return titleProperty.value!.map((element) => element.value).join('')
+    if (!titleField.useTemplate) {
+        return titleField.value
+    }
+    return titleField
+        .value!.map((element: TitleElementProps) =>
+            element.variant === 'entryNumber' && content.status === 'draft'
+                ? `draft-${content.entryNumber}`
+                : element.variant === 'entryNumber' &&
+                  content.status !== 'draft'
+                ? content.entryNumber
+                : element.value
+        )
+        .join('')
+}
+
+export function populateTitleValue({
+    content,
+    property,
+}: {
+    content: Content
+    property: CleanedCamel<Property>
+}) {
+    if (property.useTemplate && property.stringTemplate) {
+        return property.stringTemplate.map((element) => {
+            switch (element.variant) {
+                case 'createdTime':
+                    return {
+                        ...element,
+                        value: dayjs(content.createdTime).format('H:m:s'),
+                    }
+                case 'createdDate':
+                    return {
+                        ...element,
+                        value: dayjs(content.createdTime).format('D/YY/MMMM'),
+                    }
+                case 'entryNumber':
+                    return {
+                        ...element,
+                        value: `${content.status === 'draft' ? 'draft-' : ''}${
+                            content.entryNumber
+                        }`,
+                    }
+                default:
+                    return element
+            }
+        })
+    }
+    return null
 }
 
 export function generateFields({
-    contentTemplate,
+    properties,
     content,
     userId,
 }: {
-    contentTemplate: ContentTemplate
+    properties: Property[]
     content: Content
     userId: string
 }) {
-    return contentTemplate.properties
+    return properties
         .filter((property) => property.active !== false && !property.archived)
         .map((property) => {
             const field = fieldFromTemplateProperty({
@@ -111,33 +159,7 @@ export function generateFields({
                 parent: content.id,
             })
             if (property.type === 'title') {
-                if (property.useTemplate && property.stringTemplate) {
-                    field.value = property.stringTemplate.map((element) => {
-                        switch (element.variant) {
-                            case 'createdTime':
-                                return {
-                                    ...element,
-                                    value: dayjs(content.createdTime).format(
-                                        'H:m:s'
-                                    ),
-                                }
-                            case 'createdDate':
-                                return {
-                                    ...element,
-                                    value: dayjs(content.createdTime).format(
-                                        'D/YY/MMMM'
-                                    ),
-                                }
-                            case 'entryNumber':
-                                return {
-                                    ...element,
-                                    value: content.entryNumber,
-                                }
-                            default:
-                                return element
-                        }
-                    })
-                }
+                field.value = populateTitleValue({ content, property }) ?? ''
             }
             return field
         })
