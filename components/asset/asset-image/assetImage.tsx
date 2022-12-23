@@ -1,15 +1,15 @@
-import { useGetImageUrl } from "@data/asset/hooks";
-import { Group, Image, Loader } from "@mantine/core";
-import { useStyles } from "./styles";
+import { useGetImageUrl } from '@data/asset/hooks'
+import { Group, Image, Loader } from '@mantine/core'
+import { useStyles } from './styles'
 
 interface AssetImageProps {
-    assetId: string;
-    height?: number;
+    assetId: string
+    height?: number
 }
 
 export const AssetImage = ({ assetId, height = 150 }: AssetImageProps) => {
-    const { data } = useGetImageUrl({ assetId, height });
-    const { classes } = useStyles();
+    const { data } = useGetImageUrl({ assetId, height })
+    const { classes } = useStyles()
     return (
         <Group
             className={classes.imageWrapper}
@@ -18,7 +18,16 @@ export const AssetImage = ({ assetId, height = 150 }: AssetImageProps) => {
                 height,
             }}
         >
-            {data?.url ? <Image src={data?.url} alt={assetId} height={height} /> : <Loader />}
+            {data?.url ? (
+                <Image
+                    src={data?.url}
+                    alt={assetId}
+                    height={height}
+                    fit="contain"
+                />
+            ) : (
+                <Loader />
+            )}
         </Group>
-    );
-};
+    )
+}

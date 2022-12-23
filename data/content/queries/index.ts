@@ -16,7 +16,7 @@ export async function createContent({
     const { data } = await apiClient.post<{
         newContent: CleanedSnake<Content>
         contentTemplate: CleanedSnake<ContentTemplate>
-    }>(`/content`, {
+    }>(`/api/proxy/content`, {
         contentTemplateId,
         projectId,
     })
@@ -28,7 +28,7 @@ export async function getContent(contentId: string) {
         content: CleanedSnake<Content>
         contentTemplate: CleanedSnake<ContentTemplate>
         contentFields: CleanedCamel<Field>[]
-    }>(`/content/${contentId}`)
+    }>(`/api/proxy/content/${contentId}`)
     return camelcaseKeys(data, { deep: true })
 }
 
@@ -36,7 +36,7 @@ export async function deleteContent(contentId: string) {
     console.log('contentId', contentId)
     const { data } = await apiClient.delete<{
         content: CleanedSnake<Content>
-    }>(`/content/${contentId}`)
+    }>(`/api/proxy/content/${contentId}`)
     return camelcaseKeys(data, { deep: true })
 }
 
@@ -48,7 +48,7 @@ export async function getContentOfTemplate({
     projectId: string
 }) {
     const { data } = await apiClient.get(
-        `/projects/${projectId}/contentTemplates/${contentTemplateId}`
+        `/api/proxy/projects/${projectId}/contentTemplates/${contentTemplateId}`
     )
     return camelcaseKeys(data, { deep: true }) as {
         content: CleanedCamel<Content>[]
@@ -65,7 +65,7 @@ export async function updateContentStatus({
 }) {
     const { data } = await apiClient.patch<{
         Content: CleanedSnake<Content>
-    }>(`/content/${contentId}/status`, {
+    }>(`/api/proxy/content/${contentId}/status`, {
         status,
     })
     return camelcaseKeys(data, { deep: true })
@@ -80,7 +80,7 @@ export async function updateContentValues({
 }) {
     const { data } = await apiClient.patch<{
         Content: CleanedSnake<Content>
-    }>(`/content/${contentId}/values`, {
+    }>(`/api/proxy/content/${contentId}/values`, {
         values,
     })
     return camelcaseKeys(data, { deep: true })
@@ -97,7 +97,7 @@ export async function updateContentFields({
 }) {
     const { data } = await apiClient.patch<{
         Content: CleanedSnake<Content>
-    }>(`/content/${contentId}/fields`, {
+    }>(`/api/proxy/content/${contentId}/fields`, {
         updates,
         deletions,
     })
@@ -114,7 +114,7 @@ export async function repeatGroup({
     const { data } = await apiClient.post<{
         content: CleanedSnake<Content>
         newFields: CleanedSnake<Field>[]
-    }>(`/content/${contentId}/groups/${groupId}`)
+    }>(`/api/proxy/content/${contentId}/groups/${groupId}`)
     return camelcaseKeys(data, { deep: true })
 }
 
@@ -127,7 +127,7 @@ export async function deleteGroup({
 }) {
     const { data } = await apiClient.delete<{
         Content: CleanedSnake<Content>
-    }>(`/content/${contentId}/groups/${groupId}`)
+    }>(`/api/proxy/content/${contentId}/groups/${groupId}`)
     return camelcaseKeys(data, { deep: true })
 }
 
@@ -138,6 +138,6 @@ export async function updateContentFromTemplate({
 }) {
     const { data } = await apiClient.patch<{
         Content: CleanedSnake<Content>
-    }>(`/content/${contentId}/patchFromTemplate`)
+    }>(`/api/proxy/content/${contentId}/patchFromTemplate`)
     return camelcaseKeys(data, { deep: true })
 }

@@ -31,7 +31,7 @@ export async function createContentTemplate({
 }) {
     const { data } = await apiClient.post<{
         newContentTemplate: CleanedSnake<ContentTemplate>
-    }>(`/contentTemplates`, {
+    }>(`/api/proxy/contentTemplates`, {
         name,
         organisationId,
         icon,
@@ -46,7 +46,7 @@ export async function createContentTemplate({
 export async function getContentTemplate(contentTemplateId: string) {
     const { data } = await apiClient.get<{
         contentTemplate: CleanedSnake<ContentTemplate>
-    }>(`/contentTemplates/${contentTemplateId}`)
+    }>(`/api/proxy/contentTemplates/${contentTemplateId}`)
     return camelcaseKeys(data, { deep: true })
 }
 
@@ -65,7 +65,7 @@ export async function updateContentTemplate({
 }) {
     const { data } = await apiClient.patch<{
         contentTemplate: CleanedSnake<ContentTemplate>
-    }>(`/contentTemplates/${contentTemplateId}`, {
+    }>(`/api/proxy/contentTemplates/${contentTemplateId}`, {
         name,
         status,
         icon,
@@ -80,7 +80,7 @@ export async function updateContentTemplateProperties({
 }: UpdatePropertiesProps) {
     const { data } = await apiClient.post<{
         contentTemplate: CleanedSnake<ContentTemplate>
-    }>(`/contentTemplates/${contentTemplateId}/properties`, {
+    }>(`/api/proxy/contentTemplates/${contentTemplateId}/properties`, {
         ...rest,
     })
     return camelcaseKeys(data, { deep: true })
@@ -89,13 +89,13 @@ export async function updateContentTemplateProperties({
 export async function deleteContentTemplate(contentTemplateId: string) {
     const { data } = await apiClient.delete<{
         contentTemplate: CleanedSnake<ContentTemplate>
-    }>(`/contentTemplates/${contentTemplateId}`)
+    }>(`/api/proxy/contentTemplates/${contentTemplateId}`)
     return camelcaseKeys(data, { deep: true })
 }
 
 export async function getOrganisationContentTemplates(organisationId: string) {
     const { data } = await apiClient.get(
-        `/organisations/${organisationId}/contentTemplates`
+        `/api/proxy/organisations/${organisationId}/contentTemplates`
     )
     return camelcaseKeys(data, { deep: true }) as {
         contentTemplates: CleanedCamel<ContentTemplate>[]
@@ -104,7 +104,7 @@ export async function getOrganisationContentTemplates(organisationId: string) {
 
 export async function getProjectContentTemplates(projectId: string) {
     const { data } = await apiClient.get(
-        `/projects/${projectId}/contentTemplates`
+        `/api/proxy/projects/${projectId}/contentTemplates`
     )
     return camelcaseKeys(data, { deep: true }) as {
         contentTemplates: CleanedCamel<ContentTemplate>[]

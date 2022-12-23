@@ -25,6 +25,7 @@ import { ListGrouped } from '@components/field/field-list/list-grouped'
 import { FieldList } from '@components/field/field-list'
 import { FieldCreate } from '@components/field/field-create'
 dayjs.extend(relativeTime)
+import IIIFViewer from '@components/ui/tiledViewer'
 
 export const FIELD_SUFFIXES = {
     NOTE: '-note',

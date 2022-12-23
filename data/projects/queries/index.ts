@@ -11,7 +11,7 @@ export async function createProject({
     organisationId: string
 }) {
     const { data } = await apiClient.post<{ project: CleanedSnake<Project> }>(
-        `projects`,
+        `/api/proxy/projects`,
         {
             name,
             organisationId,
@@ -22,14 +22,14 @@ export async function createProject({
 
 export async function getMyProjects() {
     const { data } = await apiClient.get<{ projects: CleanedSnake<Project>[] }>(
-        `me/projects`
+        `/api/proxy/me/projects`
     )
     return camelcaseKeys(data, { deep: true })
 }
 
 export async function deleteProject({ projectId }: { projectId: string }) {
     const { data } = await apiClient.delete<{ project: CleanedSnake<Project> }>(
-        `/projects/${projectId}`
+        `/api/proxy/projects/${projectId}`
     )
     return camelcaseKeys(data, { deep: true })
 }
@@ -40,7 +40,7 @@ export async function getOrgProjects({
     organisationId: string
 }) {
     const { data } = await apiClient.get<{ projects: CleanedSnake<Project>[] }>(
-        `/organisation/${organisationId}/projects`
+        `/api/proxy/organisation/${organisationId}/projects`
     )
     return camelcaseKeys(data, { deep: true })
 }

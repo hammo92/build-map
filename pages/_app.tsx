@@ -6,6 +6,7 @@ import '../styles/globals.css'
 import type { ReactElement, ReactNode } from 'react'
 import type { NextPage } from 'next'
 import type { AppProps } from 'next/app'
+import { UserProvider } from '@auth0/nextjs-auth0'
 
 type NextPageWithLayout = NextPage & {
     getLayout?: (page: ReactElement) => ReactNode
@@ -21,49 +22,50 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     // Create a client
     const queryClient = new QueryClient()
     return (
-        <QueryClientProvider client={queryClient}>
-            <MantineProvider
-                withGlobalStyles
-                withNormalizeCSS
-                theme={{
-                    colors: {
-                        dark: [
-                            '#B7B8C3',
-                            '#8C8EA2',
-                            '#6A6D88',
-                            '#53556E',
-                            '#40435A',
-                            '#32344A',
-                            '#26283D',
-                            '#1E1F2C',
-                            '#171821',
-                            '#121218',
-                        ],
-                    },
-                    spacing: {
-                        xs: 5,
-                        sm: 8,
-                    },
-                    fontFamilyMonospace:
-                        'relative-mono-11-pitch-pro, Menlo, monospace',
-                    headings: {
+        <UserProvider>
+            <QueryClientProvider client={queryClient}>
+                <MantineProvider
+                    withGlobalStyles
+                    withNormalizeCSS
+                    theme={{
+                        colors: {
+                            dark: [
+                                '#B7B8C3',
+                                '#8C8EA2',
+                                '#6A6D88',
+                                '#53556E',
+                                '#40435A',
+                                '#32344A',
+                                '#26283D',
+                                '#1E1F2C',
+                                '#171821',
+                                '#121218',
+                            ],
+                        },
+                        spacing: {
+                            xs: 5,
+                            sm: 8,
+                        },
+                        fontFamilyMonospace: 'relative-mono, Menlo, monospace',
+                        headings: {
+                            fontFamily:
+                                'relative-pro, Roboto, system-ui, -apple-system, BlinkMacSystemFont',
+                        },
+                        defaultRadius: 'sm',
+                        //primaryShade: 8,
                         fontFamily:
-                            'relative-medium-pro, Roboto, system-ui, -apple-system, BlinkMacSystemFont',
-                    },
-                    defaultRadius: 'sm',
-                    //primaryShade: 8,
-                    fontFamily:
-                        'relative-book-pro, Roboto, system-ui, -apple-system, BlinkMacSystemFont',
-                    colorScheme: 'dark',
-                }}
-            >
-                <NotificationsProvider>
-                    <ModalsProvider>
-                        {getLayout(<Component {...pageProps} />)}
-                    </ModalsProvider>
-                </NotificationsProvider>
-            </MantineProvider>
-        </QueryClientProvider>
+                            'relative-pro, Roboto, system-ui, -apple-system, BlinkMacSystemFont',
+                        colorScheme: 'dark',
+                    }}
+                >
+                    <NotificationsProvider>
+                        <ModalsProvider>
+                            {getLayout(<Component {...pageProps} />)}
+                        </ModalsProvider>
+                    </NotificationsProvider>
+                </MantineProvider>
+            </QueryClientProvider>
+        </UserProvider>
     )
 }
 

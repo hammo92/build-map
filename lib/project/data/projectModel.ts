@@ -1,5 +1,5 @@
 /* project.model.ts */
-import { BaseModel, BaseModelId } from '../../../lib/models'
+import { BaseModel } from '../../../lib/models'
 import { buildIndex, indexBy, Model } from 'serverless-cloud-data-utils'
 import { Address } from '../../../types/common'
 

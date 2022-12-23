@@ -1,3 +1,4 @@
+import { DrawingCollection } from '../../../lib/drawing/data/drawing.model'
 import { params } from '@serverless/cloud'
 import axios from 'axios'
 import { Oso } from 'oso-cloud'
@@ -59,6 +60,19 @@ export async function createProject({
         newProject.address.latitude = latitude
         newProject.address.longitude = longitude
     }
+
+    // initialise drawing group for project
+    const newDrawingCollection = new DrawingCollection()
+    newDrawingCollection.parent = newProject.id
+    newDrawingCollection.groups = [
+        {
+            id: '1',
+            children: [],
+            name: 'root',
+            type: 'drawingGroup',
+        },
+    ]
+
     // create projectUser for creator
     const newProjectUser = new ProjectUser()
 
@@ -71,6 +85,7 @@ export async function createProject({
         }),
         newProject.save(),
         newProjectUser.save(),
+        newDrawingCollection.save(),
     ])
     return newProject
 }
@@ -167,7 +182,7 @@ export async function deleteProjectById(projectId: string) {
 //* Get all projects created by a user */
 export async function getProjectsByCreator(ownerId: string) {
     errorIfUndefined({ ownerId })
-    const [projects] = await indexBy(ProjectCreator(ownerId)).get(Project)
+    const projects = await indexBy(ProjectCreator(ownerId)).get(Project)
     return projects
 }
 

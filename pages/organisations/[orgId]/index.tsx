@@ -48,7 +48,7 @@ const WelcomeBanner = () => {
         hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'
     return (
         <>{`Good ${timeOfDay}${
-            data?.user ? `, ${capitalise(data.user.nickname)}` : ''
+            data?.user ? `, ${capitalise(data.user?.nickname)}` : ''
         }`}</>
     )
 }

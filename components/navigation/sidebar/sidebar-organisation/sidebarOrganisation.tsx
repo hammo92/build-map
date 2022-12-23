@@ -1,32 +1,32 @@
-import { NavigationList } from "@components/navigation/linkList";
-import { LinkListContentTemplates } from "@components/navigation/linkList/linkList-contentTemplates";
-import { faCompassDrafting, faFile, faHouse, faUser } from "@fortawesome/pro-regular-svg-icons";
-import { Stack } from "@mantine/core";
-import { organisationState } from "@state/organisation";
-import { useSnapshot } from "valtio";
+'use client'
 
-export const SidebarProjects = () => {
-    const { activeOrganisation } = useSnapshot(organisationState);
+import { NavigationList } from '@components/navigation/linkList'
+import { faFile, faHouse, faUser } from '@fortawesome/pro-regular-svg-icons'
+import { organisationState } from '@state/organisation'
+import { useSnapshot } from 'valtio'
+
+export const SidebarOrganisation = () => {
+    const { activeOrganisation } = useSnapshot(organisationState)
     return (
         <NavigationList
             items={[
                 {
-                    link: "/home",
+                    link: '/home',
                     icon: faHouse,
-                    text: "Home",
+                    text: 'Home',
                 },
                 {
-                    link: "/contentTemplates",
+                    link: '/contentTemplates',
                     icon: faFile,
-                    text: "Content Templates",
+                    text: 'Content Templates',
                     active: false,
                 },
                 {
-                    link: "/users",
+                    link: '/users',
                     icon: faUser,
-                    text: "Users",
+                    text: 'Users',
                 },
             ]}
         />
-    );
-};
+    )
+}

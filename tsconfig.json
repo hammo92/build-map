@@ -1,56 +1,115 @@
 {
-    "compilerOptions": {
-        "target": "esnext",
-        "lib": ["dom", "dom.iterable", "esnext"],
-        "allowJs": true,
-        "skipLibCheck": true,
-        "strict": true,
-        "forceConsistentCasingInFileNames": true,
-        "strictPropertyInitialization": false,
-        "noEmit": true,
-        "esModuleInterop": true,
-        "module": "esnext",
-        "moduleResolution": "node",
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "downlevelIteration": true,
-        "jsx": "preserve",
-        "incremental": true,
-        "baseUrl": ".",
-        "paths": {
-            "@definitions/*": ["definitions/*"],
-            "@definitions": ["definitions"],
-            "@styles/*": ["styles/*"],
-            "@styles": ["styles"],
-            "@components/*": ["components/*"],
-            "@components": ["components"],
-            "@public/*": ["public/*"],
-            "@public": ["public"],
-            "@layout/*": ["layout/*"],
-            "@layout": ["layout"],
-            "@views/*": ["layout/*"],
-            "@views": ["layout"],
-            "@state/*": ["state/*"],
-            "@state": ["state"],
-            "@lib/*": ["lib/*"],
-            "@lib": ["lib"],
-            "@data/*": ["data/*"],
-            "@data": ["data"],
-            "@hooks/*": ["hooks/*"],
-            "@hooks": ["hooks"],
-            "@oso/*": ["hooks/*"],
-            "@oso": ["oso"],
-            "*": ["*", "./types/*"]
-        }
-    },
-    "include": [
-        "next-env.d.ts",
-        "**/*.ts",
-        "**/*.tsx",
-        "components/project/project-create/project-create-button/index.tss",
-        "lib/organisation/tests/api.test.disabled",
-        "middleware.unused",
-        "types/oso.d.ts.disabled"
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
     ],
-    "exclude": ["node_modules"]
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "strictPropertyInitialization": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "downlevelIteration": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@definitions/*": [
+        "definitions/*"
+      ],
+      "@definitions": [
+        "definitions"
+      ],
+      "@styles/*": [
+        "styles/*"
+      ],
+      "@styles": [
+        "styles"
+      ],
+      "@components/*": [
+        "components/*"
+      ],
+      "@components": [
+        "components"
+      ],
+      "@public/*": [
+        "public/*"
+      ],
+      "@public": [
+        "public"
+      ],
+      "@layout/*": [
+        "layout/*"
+      ],
+      "@layout": [
+        "layout"
+      ],
+      "@views/*": [
+        "layout/*"
+      ],
+      "@views": [
+        "layout"
+      ],
+      "@state/*": [
+        "state/*"
+      ],
+      "@state": [
+        "state"
+      ],
+      "@lib/*": [
+        "lib/*"
+      ],
+      "@lib": [
+        "lib"
+      ],
+      "@data/*": [
+        "data/*"
+      ],
+      "@data": [
+        "data"
+      ],
+      "@hooks/*": [
+        "hooks/*"
+      ],
+      "@hooks": [
+        "hooks"
+      ],
+      "@oso/*": [
+        "hooks/*"
+      ],
+      "@oso": [
+        "oso"
+      ],
+      "*": [
+        "*",
+        "./types/*"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "components/project/project-create/project-create-button/index.tss",
+    "lib/organisation/tests/api.test.disabled",
+    "middleware.unused",
+    "types/oso.d.ts.disabled",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

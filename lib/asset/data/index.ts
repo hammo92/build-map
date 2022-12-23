@@ -6,6 +6,8 @@ import sharp from 'sharp'
 import { ulid } from 'ulid'
 import { errorIfUndefined } from '../../utils'
 import { Asset, AssetId, UserAssetsWithTypeFilter } from './asset.model'
+import invariant from 'tiny-invariant'
+import { DrawingData } from '@state/uploader'
 
 //* Get asset by id */
 export async function getAssetById(assetId: string) {
@@ -41,10 +43,14 @@ export async function generateUploadLink({
     filename,
     path,
     userId,
+    type = 'asset',
+    drawingData,
 }: {
     filename: string
     path: string
     userId: string
+    type?: 'asset' | 'drawing'
+    drawingData: DrawingData
 }) {
     errorIfUndefined({ filename, userId })
     const fileType = mime.lookup(filename)
@@ -62,10 +68,13 @@ export async function generateUploadLink({
         `upload_${id}`,
         {
             id,
+            uid,
             filename,
             fileType,
             ext,
             userId,
+            type,
+            drawingData,
         },
         {
             // Remove the item after an hour if the upload doesn't succeed
@@ -91,7 +100,6 @@ export async function getImageUrl({
     height?: number
     userId: string
 }) {
-    //errorIfUndefined({ imageId, userId });
     const { name, ext } = path.parse(imageId)
 
     // prefix used to remove upload entry in data
@@ -119,9 +127,7 @@ export async function getImageUrl({
 
     // get file buffer
     const file = await storage.readBuffer(asset.path)
-    if (!file) {
-        throw new Error('No Image at path')
-    }
+    invariant(file, 'file not found')
 
     // process with sharp
     const sharpImage = sharp(file)
@@ -138,7 +144,7 @@ export async function getImageUrl({
     await storage.write(resizedFilePath, resized)
 
     // create file item in data
-    // Create an file item in data
+    // Create a file item in data
     const newFile = new Asset({
         userId,
         id: resizedImageId,

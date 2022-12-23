@@ -7,15 +7,14 @@ import { useGetOrganisationContentTemplates } from '@data/contentTemplate/hooks'
 import { faFile, faHouse, faUser } from '@fortawesome/pro-regular-svg-icons'
 import { ContentTemplate as ContentTemplateProps } from '@lib/contentTemplate/data/contentTemplate.model'
 import { Grid, Group, SegmentedControl, Stack } from '@mantine/core'
-import { params as cloudParams } from '@serverless/cloud'
 import axios from 'axios'
 import camelcaseKeys from 'camelcase-keys'
-import { getCookie } from 'cookies-next'
 import { LayoutShellSideNav } from 'layouts'
 import { GetServerSidePropsContext } from 'next'
 import Head from 'next/head'
 import { ReactElement, useState } from 'react'
 import { CleanedCamel } from 'type-helpers'
+import auth0 from 'utils/auth0'
 
 interface ContentTemplatePageProps {
     organisationId: string
@@ -174,16 +173,18 @@ ContentTemplatePage.getLayout = (page: ReactElement) => (
 export async function getServerSideProps({
     params,
     req,
+    res,
 }: GetServerSidePropsContext<{ orgId: string }>) {
+    const session = auth0.getSession(req, res)
+    const headers = {
+        ...req.cookies,
+        ...(session && { Authorization: `Bearer ${session.idToken}` }),
+    }
     const { orgId } = params!
-    const token = getCookie('token', { req })
     const { data } = await axios.get(
-        `${cloudParams.CLOUD_URL}/organisations/${orgId}/contentTemplates`,
+        `${process.env.NEXT_PUBLIC_CLOUD_API_URL}/organisations/${orgId}/contentTemplates`,
         {
-            headers: {
-                'Content-type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
+            headers,
         }
     )
     return {

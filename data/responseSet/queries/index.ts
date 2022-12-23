@@ -20,7 +20,7 @@ export async function createResponseSet({
 }: NoUser<CreateResponseSetProps>) {
     const { data } = await apiClient.post<{
         responseSet: CleanedSnake<ResponseSet>
-    }>(`/responseSets`, {
+    }>(`/api/proxy/responseSets`, {
         options,
         parent,
         name,
@@ -33,7 +33,7 @@ export async function getResponseSet({
 }: NoUser<GetResponseSetProps>) {
     const { data } = await apiClient.get<{
         responseSet: CleanedSnake<ResponseSet>
-    }>(`/responseSets/${responseSetId}`)
+    }>(`/api/proxy/responseSets/${responseSetId}`)
     return camelcaseKeys(data, { deep: true })
 }
 
@@ -42,7 +42,7 @@ export async function getResponseSetCollection({
 }: NoUser<GetResponseSetCollectionProps>) {
     const { data } = await apiClient.get<{
         responseSets: CleanedSnake<ResponseSet>[]
-    }>(`/responseSets/collections/${collectionId}`)
+    }>(`/api/proxy/responseSets/collections/${collectionId}`)
     return camelcaseKeys(data, { deep: true })
 }
 
@@ -53,7 +53,7 @@ export async function updateResponseSet({
 }: NoUser<UpdateResponseSetProps>) {
     const { data } = await apiClient.patch<{
         responseSet: CleanedSnake<ResponseSet>
-    }>(`/responseSets/${responseSetId}`, {
+    }>(`/api/proxy/responseSets/${responseSetId}`, {
         options,
         name,
     })
@@ -65,6 +65,6 @@ export async function deleteResponseSet({
 }: NoUser<DeleteResponseSetProps>) {
     const { data } = await apiClient.delete<{
         responseSet: CleanedSnake<ResponseSet>
-    }>(`/responseSets/${responseSetId}`)
+    }>(`/api/proxy/responseSets/${responseSetId}`)
     return camelcaseKeys(data, { deep: true })
 }

@@ -143,29 +143,6 @@ export class Field<T extends FieldType = FieldType> extends BaseModel<
     }
 }
 
-/*type Options<T extends FieldType> = T extends "number"
-    ? {
-          maximumValue?: "number";
-          minimumValue?: "number";
-      }
-    : T extends "select" | "multiSelect"
-    ? {
-          data: string[];
-      }
-    : T extends "relation"
-    ? {
-          relatedTo: string;
-          isReciprocal?: T extends "relation" ? boolean : T extends FieldType ? never : any;
-          reciprocalPropertyId?: T extends "relation" ? string : T extends FieldType ? never : any;
-          reciprocalPropertyName?: T extends "relation"
-              ? string
-              : T extends FieldType
-              ? never
-              : any;
-      }
-    : null;
-*/
-
 export type FieldType =
     | 'checkbox'
     | 'date'

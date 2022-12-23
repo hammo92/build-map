@@ -548,8 +548,18 @@ export const deleteGroup = ({
     if (!deleteContents) {
         // update parent for all children
         group.children.forEach((id) => {
-            const child = propertyMap[id] ?? propertyGroupMap[id]
-            child.parent = `${parentGroup.id}`
+            if (propertyMap[id]) {
+                updateProperty({
+                    propertyId: `${id}`,
+                    newConfig: { parent: group.parent },
+                })
+            }
+            if (propertyGroupMap[id]) {
+                updateGroup({
+                    groupId: `${id}`,
+                    newConfig: { parent: group.parent },
+                })
+            }
         })
 
         updateGroup({
@@ -560,11 +570,6 @@ export const deleteGroup = ({
                     ...group.children,
                 ],
             },
-        })
-
-        updateGroup({
-            groupId: `${group.id}`,
-            newConfig: { parent: parentGroup.parent },
         })
 
         // remove group and any update values

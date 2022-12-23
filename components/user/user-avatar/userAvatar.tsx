@@ -1,31 +1,32 @@
-import { StrippedUser } from "@lib/user/data";
-import { Avatar, AvatarProps, MantineSize } from "@mantine/core";
-import React from "react";
-import { CleanedCamel } from "type-helpers";
+import { UserProfile } from '@auth0/nextjs-auth0'
+import { StrippedUser } from '@lib/user/data'
+import { Avatar, AvatarProps, MantineSize } from '@mantine/core'
+import React from 'react'
+import { CleanedCamel } from 'type-helpers'
 
-interface UserAvatarProps extends Omit<AvatarProps, "src"> {
-    user: CleanedCamel<StrippedUser>;
+interface UserAvatarProps extends Omit<AvatarProps, 'src'> {
+    user: UserProfile
 }
 
 export const UserAvatar = ({ user, size, ...rest }: UserAvatarProps) => {
     const avatarSize = (): MantineSize => {
-        if (typeof size === "string") {
-            return size;
+        if (typeof size === 'string') {
+            return size
         }
-        if (typeof size === "number") {
+        if (typeof size === 'number') {
             size < 50
-                ? "xs"
+                ? 'xs'
                 : size < 100
-                ? "sm"
+                ? 'sm'
                 : size < 200
-                ? "md"
+                ? 'md'
                 : size < 400
-                ? "lg"
+                ? 'lg'
                 : size < 800
-                ? "xl"
-                : "full";
+                ? 'xl'
+                : 'full'
         }
-        return "sm";
-    };
-    return <Avatar {...rest} size={size} src={user?.avatar?.[avatarSize()]} />;
-};
+        return 'sm'
+    }
+    return <Avatar {...rest} size={size} src={user.picture} />
+}

@@ -41,7 +41,7 @@ export class ContentTemplate extends BaseModel<ContentTemplate> {
     organisationId: string
     status: 'draft' | 'archived' | 'published'
     templateType: 'collection' | 'component' | 'task'
-    properties: Property<FieldType>[]
+    properties: Property[]
     propertyGroups: PropertyGroup[]
 
     //* counters for content instances created *//
@@ -77,7 +77,7 @@ export const TemplatePropertyHistory = (contentTemplateId: string) =>
 export class PropertyHistory extends BaseModel<PropertyHistory> {
     object = 'PropertyHistory'
     contentTemplateId: string
-    properties: Property<FieldType>[]
+    properties: Property[]
     propertyGroups: PropertyGroup[]
     modelKeys() {
         return [
