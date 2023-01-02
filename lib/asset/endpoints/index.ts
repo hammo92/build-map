@@ -248,27 +248,34 @@ export const asset = () => {
         })
     }
 
-    const uploadDirectory = async (
-        dir: string,
-        promiseArray: Promise<WriteResponse>[] = []
-    ) => {
+    const uploadDirectory = async ({
+        dir,
+        promiseArray = [],
+        targetDir,
+    }: {
+        dir: string
+        promiseArray?: Promise<WriteResponse>[]
+        targetDir?: string
+    }) => {
+        console.log('targetDir', targetDir)
         fs.readdir(dir, (err, files) => {
             for (const file of files) {
                 const elementPath = nodePath.join(dir, file)
                 let isDirectory = fs.statSync(elementPath).isDirectory()
                 if (isDirectory) {
-                    uploadDirectory(elementPath, promiseArray)
+                    uploadDirectory({
+                        dir: elementPath,
+                        promiseArray,
+                        targetDir,
+                    })
                 } else {
+                    const path = `${
+                        targetDir ? targetDir : 'files'
+                    }${elementPath.replace(dir, '')}`
+                    console.log('path', path)
                     fs.readFile(elementPath, (err, data) => {
                         if (err) throw err
-
-                        // convert image file to base64-encoded string
-                        /*const base64Image =
-                            Buffer.from(data).toString('base64')*/
-
-                        promiseArray.push(
-                            storage.write(elementPath.slice(5), data)
-                        )
+                        promiseArray.push(storage.write(path, data))
                     })
                 }
             }
@@ -314,7 +321,7 @@ export const asset = () => {
                         const upload = client.send(
                             new PutObjectCommand({
                                 Bucket: 'serverless-pdf-source-bucket',
-                                Key: `uploads/${drawing.id}.pdf`,
+                                Key: `uploads/${drawing.id}__0.pdf`,
                                 Body: buffer,
                             })
                         )
@@ -362,6 +369,19 @@ export const asset = () => {
                             pyramid: true,
                         })
                         .toBuffer()
+
+                    createDirectory(`tmp/${drawing.id}`)
+
+                    await sharp(buffer)
+                        .tile({ layout: 'zoomify' })
+                        .toFile(`tmp/${drawing.id}/output.dz`)
+
+                    await uploadDirectory({
+                        dir: `tmp/${drawing.id}/output/TileGroup0`,
+                        targetDir: `/files/${drawing.id}`,
+                    })
+
+                    removeDirectory(`tmp/${drawing.id}`)
 
                     const data = await client.send(
                         new PutObjectCommand({

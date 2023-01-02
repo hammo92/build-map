@@ -1,11 +1,10 @@
 /* Field.model.ts */
 
-import { BaseModel } from '../../models'
-import { buildIndex, indexBy } from 'serverless-cloud-data-utils'
-import { DistributiveClean, StripModel } from 'type-helpers'
-import { Option } from '../../../lib/responseSet/data/responseSet.model'
 import { TitleElementProps } from '@components/ui/title/title-builder/titleBuilder-element'
-import { UNIQUE_FIELDS } from '@components/property/property-type/type-select/options'
+import { buildIndex, indexBy } from 'serverless-cloud-data-utils'
+import { StripModel } from 'type-helpers'
+import { Option } from '../../../lib/responseSet/data/responseSet.model'
+import { BaseModel } from '../../models'
 
 export interface FieldTitle {
     setType: 'manual' | 'auto'

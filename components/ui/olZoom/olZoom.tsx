@@ -4,8 +4,8 @@ import { Tile as LayerTile } from 'ol/layer'
 
 import 'ol/ol.css'
 import IIIF from 'ol/source/IIIF'
-import React, { useEffect, useMemo, useState } from 'react'
-import { RContextType, RLayer, RMap } from 'rlayers'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { RContextType, RLayer, RLayerVector, RMap } from 'rlayers'
 import { RLayerRasterProps } from 'rlayers/layer/RLayerRaster'
 
 export interface RLayerIIIFProps extends RLayerRasterProps {
@@ -26,7 +26,9 @@ class RLayerIIIF extends RLayer<RLayerIIIFProps> {
     ) {
         super(props, context)
         this.source = this.props.iiif
-        this.ol = new LayerTile({ source: this.source })
+        this.ol = new LayerTile({
+            source: this.source,
+        })
         this.eventSources = [this.ol, this.source]
     }
 }
@@ -34,7 +36,6 @@ class RLayerIIIF extends RLayer<RLayerIIIFProps> {
 export default function IiifTile({ url }: IiifTIleProps) {
     const [iiif, setIiif] = useState<IIIF>()
     const [error, setError] = useState<string>()
-
     useEffect(() => {
         fetch(url)
             .then((response) => response.json())
@@ -50,9 +51,8 @@ export default function IiifTile({ url }: IiifTIleProps) {
             })
     }, [url])
 
-    const layer = useMemo((iiif: IIIF) => <RLayerIIIF iiif={iiif} />, [url])
-
     if (error) return <p>error</p>
+
     if (iiif) {
         return (
             <RMap
@@ -60,7 +60,8 @@ export default function IiifTile({ url }: IiifTIleProps) {
                 height={'90vh'}
                 initial={{
                     center: [0, 0],
-                    zoom: 1,
+                    zoom: 3,
+                    resolution: 3,
                 }}
                 extent={iiif.getTileGrid()?.getExtent()}
             >

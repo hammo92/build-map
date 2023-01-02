@@ -23,7 +23,7 @@ import {
     DraggableProvided,
     Droppable,
 } from 'react-beautiful-dnd'
-import { Box, Container, Group, Stack } from '@mantine/core'
+import { Box, Card, Container, Flex, Group, Stack } from '@mantine/core'
 import { DrawingUpload } from '@components/ui/drawingUpload'
 import {
     useGetDrawingCollection,
@@ -62,7 +62,6 @@ const convertToTree = (
         },
         {}
     )
-    console.log('items', { ...items, ...indexedGroups })
     return {
         rootId: '1',
         items: {
@@ -94,6 +93,7 @@ function Drawings({
     })
     const [url, setUrl] = useState<string>()
     const [tree, setTree] = useState<TreeData>({})
+    const [active, setActive] = useState<string>()
 
     if (isLoading || !data?.collection || !data?.drawings) return <p>Loading</p>
 
@@ -104,14 +104,25 @@ function Drawings({
         provided,
     }: RenderItemParams) {
         return (
-            <div
-                ref={provided.innerRef}
-                {...provided.draggableProps}
-                {...provided.dragHandleProps}
-                onClick={() => setUrl(item.data.tiledPath)}
-            >
-                {item.data.name}
-            </div>
+            <Box py="xs">
+                <Card
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    onClick={() => {
+                        setUrl(item.data.tiledPath)
+                        setActive(item.data.id)
+                    }}
+                    sx={(theme) => ({
+                        cursor: 'pointer',
+                        ...(item.id === active && {
+                            background: theme.colors.dark[5],
+                        }),
+                    })}
+                >
+                    <Card.Section p="sm">{item.data.name}</Card.Section>
+                </Card>
+            </Box>
         )
     }
 
@@ -132,8 +143,11 @@ function Drawings({
     }
 
     return (
-        <Group p="md" spacing="sm">
-            <Stack>
+        <Flex p="md" gap="sm">
+            <Stack
+                justify="flex-start"
+                sx={{ flexBasis: '30%', flexShrink: '0' }}
+            >
                 <FileUpload
                     multiple
                     onUpload={console.log}
@@ -155,9 +169,13 @@ function Drawings({
                 />
             </Stack>
             <Box sx={{ flex: 1 }} p="md">
-                {url ? <OlViewer url={url} /> : <p>Click a drawing to view</p>}
+                {url ? (
+                    <OlViewer url={url} key={url} />
+                ) : (
+                    <p>Click a drawing to view</p>
+                )}
             </Box>
-        </Group>
+        </Flex>
     )
 }
 

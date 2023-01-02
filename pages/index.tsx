@@ -26,7 +26,7 @@ function Home() {
                         </Title>
                     </Group>
                     <OlViewer
-                        url={`https://tf43qhrirlalypcf3vrp65iwzm0zmnmy.lambda-url.eu-west-2.on.aws/iiif/2/01GMX0QCA2MTBVMSVED7CAJ70B/info.json`}
+                        url={`https://iiif.ub.uni-leipzig.de/iiif/j2k/0000/0107/0000010732/00000072.jpx/info.json`}
                     />
                 </Stack>
             </Group>
