@@ -20,60 +20,57 @@ schedule.every('60 minutes', async () => {
 
 api.use(cors())
 
-//* Get Tiled Image Tile */
-api.get(
-    '/images/:imageId/tiled/:region/:size/:rotation/:quality.:format',
-    async (req: any, res: any) => {
-        const { imageId, region, size, rotation, quality, format } = req.params
-        try {
-            const readableStream = (await storage.read(
-                `files/${imageId}/tiled/${region}/${size}/${rotation}/${quality}.${format}`
-            )) as unknown as ReadableStream
+// //* Get Tiled Image Tile */
+// api.get(
+//     '/images/:imageId/tiled/:region/:size/:rotation/:quality.:format',
+//     async (req: any, res: any) => {
+//         const { imageId, region, size, rotation, quality, format } = req.params
+//         try {
+//             const readableStream = (await storage.read(
+//                 `files/${imageId}/tiled/${region}/${size}/${rotation}/${quality}.${format}`
+//             )) as unknown as ReadableStream
 
+//             readableStream.pipe(res)
+
+//             readableStream.on('error', (err) => {
+//                 throw new Error('Error reading file')
+//             })
+//         } catch (error: any) {
+//             console.log(error)
+//             return res.status(403).send({
+//                 message: error.message,
+//             })
+//         }
+//     }
+// )
+
+//x/y/z format
+api.get('/drawings/:drawingId/:z/:x/:y', async (req: any, res: any) => {
+    const { drawingId, z, x, y } = req.params
+    console.log('z,x,y', z, x, y)
+    try {
+        const readableStream = (await storage.read(
+            `files/${drawingId}/tiled/${z}-${x}-${y}.jpg`
+        )) as unknown as ReadableStream
+
+        if (readableStream) {
             readableStream.pipe(res)
-
             readableStream.on('error', (err) => {
                 throw new Error('Error reading file')
             })
-        } catch (error: any) {
-            console.log(error)
+        } else {
             return res.status(403).send({
-                message: error.message,
+                message: 'No image found',
             })
         }
+    } catch (error: any) {
+        console.log(error)
+        return res.status(403).send({
+            message: error.message,
+        })
     }
-)
+})
 
-//x/y/z format
-/*api.get(
-    '/images/:imageId/tiled/:z/:x/:y.:format',
-    async (req: any, res: any) => {
-        const { imageId, region, z, x, y, format } = req.params
-        console.log('z,x,y', z, x, y)
-        try {
-            const readableStream = (await storage.read(
-                `files/${imageId}/tiled/${z}/${x}/${y}.${format}`
-            )) as unknown as ReadableStream
-
-            if (readableStream) {
-                readableStream.pipe(res)
-                readableStream.on('error', (err) => {
-                    throw new Error('Error reading file')
-                })
-            } else {
-                return res.status(403).send({
-                    message: 'No image found',
-                })
-            }
-        } catch (error: any) {
-            console.log(error)
-            return res.status(403).send({
-                message: error.message,
-            })
-        }
-    }
-)
-*/
 //* Get Tiled Image Tile */
 api.get('/images/:imageId/tiled/info.json', async (req: any, res: any) => {
     const { imageId } = req.params
